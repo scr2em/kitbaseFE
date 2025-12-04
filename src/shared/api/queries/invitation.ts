@@ -5,12 +5,12 @@ import { ORGANIZATION_MEMBERS_QUERY_KEY } from './organization';
 
 export const INVITATIONS_QUERY_KEY = ['invitations'];
 
-export function useCreateInvitationMutation(orgId: string) {
+export function useCreateInvitationMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: CreateInvitationRequest) => {
-      const response = await apiClient.organizations.sendInvitation(orgId, data);
+      const response = await apiClient.invite.sendInvitation(data);
       return response.data;
     },
     onSuccess: () => {

@@ -22,9 +22,7 @@ export function AppDetailPage() {
   const { bundleId } = useParams<{ bundleId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentOrganization } = useCurrentOrganization();
-  const organizationId = currentOrganization?.organization?.id || '';
-  const { data: app, isLoading, isError } = useMobileAppQuery(organizationId, bundleId || '');
+  const { data: app, isLoading, isError } = useMobileAppQuery(bundleId || '');
 
   const navigationItems = [
     {

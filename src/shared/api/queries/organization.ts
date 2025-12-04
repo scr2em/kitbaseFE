@@ -21,26 +21,22 @@ export function useCreateOrganizationMutation() {
   });
 }
 
-export function useGetOrganizationQuery(orgId?: string) {
+export function useGetOrganizationQuery() {
   return useQuery({
-    queryKey: [...ORGANIZATION_QUERY_KEY, orgId],
+    queryKey: ORGANIZATION_QUERY_KEY,
     queryFn: async () => {
-      if (!orgId) {
-        throw new Error('Organization ID is required');
-      }
-      const response = await apiClient.organizations.getOrganization(orgId);
+      const response = await apiClient.organizations.getCurrentOrganization();
       return response.data;
     },
-    enabled: !!orgId,
   });
 }
 
-export function useUpdateOrganizationMutation(orgId: string) {
+export function useUpdateOrganizationMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: UpdateOrganizationRequest) => {
-      const response = await apiClient.organizations.updateOrganization(orgId, data);
+      const response = await apiClient.organizations.updateOrganization(data);
       return response.data;
     },
     onSuccess: () => {
@@ -51,14 +47,14 @@ export function useUpdateOrganizationMutation(orgId: string) {
   });
 }
 
-export function useOrganizationMembersQuery(orgId: string) {
+export function useOrganizationMembersQuery() {
   return useInfiniteQuery({
-    queryKey: [...ORGANIZATION_MEMBERS_QUERY_KEY, orgId],
+    queryKey: ORGANIZATION_MEMBERS_QUERY_KEY,
     queryFn: async ({ pageParam }) => {
       const page = pageParam as number;
       const limit = 20;
       
-      const response = await apiClient.organizations.listOrganizationMembers(orgId, { page, limit });
+      const response = await apiClient.users.listOrganizationMembers({ page, limit });
       return response.data;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -70,36 +66,35 @@ export function useOrganizationMembersQuery(orgId: string) {
     },
     initialPageParam: 0,
     staleTime: 30 * 1000, // 30 seconds
-    enabled: !!orgId,
   });
 }
 
-export function useRemoveMemberMutation(orgId: string) {
+export function useRemoveMemberMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (membershipId: string) => {
-      const response = await apiClient.organizations.removeMember(orgId, membershipId);
+      const response = await apiClient.users.removeMember(membershipId);
       return response.data;
     },
     onSuccess: () => {
       // Invalidate members query to refetch the teams page
-      queryClient.invalidateQueries({ queryKey: [...ORGANIZATION_MEMBERS_QUERY_KEY, orgId] });
+      queryClient.invalidateQueries({ queryKey: ORGANIZATION_MEMBERS_QUERY_KEY });
     },
   });
 }
 
-export function useUpdateMemberRoleMutation(orgId: string) {
+export function useUpdateMemberRoleMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ membershipId, roleId }: { membershipId: string; roleId: string }) => {
-      const response = await apiClient.organizations.updateMemberRole(orgId, membershipId, { roleId });
+      const response = await apiClient.users.updateMemberRole(membershipId, { roleId });
       return response.data;
     },
     onSuccess: () => {
       // Invalidate members query to refetch the teams page
-      queryClient.invalidateQueries({ queryKey: [...ORGANIZATION_MEMBERS_QUERY_KEY, orgId] });
+      queryClient.invalidateQueries({ queryKey: ORGANIZATION_MEMBERS_QUERY_KEY });
     },
   });
 }

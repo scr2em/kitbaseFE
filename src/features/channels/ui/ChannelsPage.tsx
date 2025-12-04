@@ -40,7 +40,6 @@ export function ChannelsPage() {
   }>({ opened: false, channel: null });
 
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();
-  const orgId = currentOrganization?.organization?.id || '';
   
   const {
     data,
@@ -49,9 +48,9 @@ export function ChannelsPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useChannelsInfiniteQuery(orgId);
+  } = useChannelsInfiniteQuery();
 
-  const deleteChannelMutation = useDeleteChannelMutation(orgId);
+  const deleteChannelMutation = useDeleteChannelMutation();
   const { showError } = useShowBackendError();
 
   const handleDeleteChannel = (channelId: string, channelName: string) => {
@@ -277,14 +276,12 @@ export function ChannelsPage() {
       <CreateChannelModal
         opened={createModalOpened}
         onClose={() => setCreateModalOpened(false)}
-        orgId={orgId}
       />
 
       {updateModalData.channel && (
         <UpdateChannelModal
           opened={updateModalData.opened}
           onClose={() => setUpdateModalData({ opened: false, channel: null })}
-          orgId={orgId}
           channel={updateModalData.channel}
         />
       )}

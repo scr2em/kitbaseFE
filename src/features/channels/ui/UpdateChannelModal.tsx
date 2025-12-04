@@ -12,13 +12,12 @@ import type { ChannelResponse } from '../../../generated-api';
 interface UpdateChannelModalProps {
   opened: boolean;
   onClose: () => void;
-  orgId: string;
   channel: ChannelResponse;
 }
 
-export function UpdateChannelModal({ opened, onClose, orgId, channel }: UpdateChannelModalProps) {
+export function UpdateChannelModal({ opened, onClose, channel }: UpdateChannelModalProps) {
   const { t } = useTranslation();
-  const updateMutation = useUpdateChannelMutation(orgId, channel.id);
+  const updateMutation = useUpdateChannelMutation(channel.id);
   const { showError } = useShowBackendError();
 
   const { control, handleSubmit, reset } = useForm<UpdateChannelFormData>({

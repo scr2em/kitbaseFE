@@ -31,12 +31,8 @@ export function AppBuildsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
 
-  const { currentOrganization } = useCurrentOrganization();
-  const orgId = currentOrganization?.organization?.id || '';
-
   const pageSize = 10;
   const { data, isLoading, isError } = useBuildsQuery(
-    orgId,
     bundleId || '',
     currentPage - 1, // API uses 0-based pagination
     pageSize

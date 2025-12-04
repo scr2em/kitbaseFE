@@ -4,23 +4,22 @@ import { apiClient } from '../client';
 export const BUILDS_QUERY_KEY = 'builds';
 
 export function useBuildsQuery(
-  orgId: string,
   bundleId: string,
   page: number,
   size: number,
   sort: 'asc' | 'desc' = 'desc'
 ) {
   return useQuery({
-    queryKey: [BUILDS_QUERY_KEY, orgId, bundleId, page, size, sort],
+    queryKey: [BUILDS_QUERY_KEY, bundleId, page, size, sort],
     queryFn: async () => {
-      const response = await apiClient.orgId.getBuilds(orgId, bundleId, {
+      const response = await apiClient.bundleId.getBuilds(bundleId, {
         page,
         size,
         sort,
       });
       return response.data;
     },
-    enabled: !!orgId && !!bundleId,
+    enabled: !!bundleId,
   });
 }
 

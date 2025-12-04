@@ -32,9 +32,8 @@ export function AppsPage() {
   const navigate = useNavigate();
   const [createModalOpened, setCreateModalOpened] = useState(false);
   const { currentOrganization, hasOrganizations, isLoading: isLoadingUser } = useCurrentOrganization();
-  const organizationId = currentOrganization?.organization?.id || '';
-  const { data: apps, isLoading, isError } = useMobileAppsQuery(organizationId);
-  const deleteAppMutation = useDeleteMobileAppMutation(organizationId);
+  const { data: apps, isLoading, isError } = useMobileAppsQuery();
+  const deleteAppMutation = useDeleteMobileAppMutation();
   const { showError } = useShowBackendError();
   const { canCreateMobileApp, canDeleteMobileApp } = usePermissions();
 

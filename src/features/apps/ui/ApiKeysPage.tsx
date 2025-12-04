@@ -33,12 +33,8 @@ export function ApiKeysPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
 
-  const { currentOrganization } = useCurrentOrganization();
-  const orgId = currentOrganization?.organization?.id || '';
-
   const pageSize = 10;
   const { data, isLoading, isError } = useApiKeysQuery(
-    orgId,
     bundleId || '',
     currentPage - 1, // API uses 0-based pagination
     pageSize
@@ -53,7 +49,6 @@ export function ApiKeysPage() {
   const handleCreateKey = async (name: string) => {
     try {
       const result = await createApiKeyMutation.mutateAsync({
-        orgId,
         bundleId: bundleId || '',
         name,
       });
@@ -86,7 +81,6 @@ export function ApiKeysPage() {
       onConfirm: async () => {
         try {
           await deleteApiKeyMutation.mutateAsync({
-            orgId,
             bundleId: bundleId || '',
             keyId,
           });

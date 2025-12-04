@@ -1,11 +1,25 @@
 openapi: 3.0.0
 info:
   title: Flyway API
-  description: API for Flyway application
+  description: |
+    API for Flyway application.
+    
+    ## Subdomain-based Organization Context
+    
+    Most endpoints require organization context, which is determined by the subdomain of the request.
+    For example, requests to `myorg.flyway.com/api/...` will operate in the context of the "myorg" organization.
+    
+    For local development, use the `X-Subdomain` header to specify the organization subdomain.
   version: 1.0.0
 servers:
   - url: http://localhost:8080/api
     description: Local development server
+  - url: https://{subdomain}.flyway.com/api
+    description: Production server with subdomain
+    variables:
+      subdomain:
+        default: app
+        description: Organization subdomain
 
 tags:
   - name: Authentication
@@ -120,7 +134,7 @@ components:
           pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
           minLength: 3
           maxLength: 63
-          description: Organization subdomain (lowercase alphanumeric with hyphens, 3-63 characters)
+          description: Organization subdomain (lowercase alphanumeric with hyphens, 3-63 characters). Must be unique.
         description:
           type: string
           description: Organization description
@@ -345,7 +359,7 @@ components:
           description: Organization name
         subdomain:
           type: string
-          description: Organization subdomain
+          description: Organization subdomain (unique identifier used in URLs)
         description:
           type: string
           description: Organization description
@@ -951,6 +965,15 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
+  parameters:
+    SubdomainHeader:
+      name: X-Subdomain
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Organization subdomain (required for local development when not using subdomain-based URLs)
+
 paths:
   /auth/signup:
     post:
@@ -1065,7 +1088,7 @@ paths:
     get:
       operationId: listOrganizations
       summary: List user's organizations
-      description: Returns all organizations that the authenticated user is a member of
+      description: Returns all organizations that the authenticated user is a member of. Does not require subdomain context.
       tags:
         - Organizations
       security:
@@ -1085,7 +1108,7 @@ paths:
     post:
       operationId: createOrganization
       summary: Create a new organization
-      description: Users can create up to 3 organizations
+      description: Users can create up to 3 organizations. Does not require subdomain context.
       tags:
         - Organizations
       security:
@@ -1107,23 +1130,20 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-  /organizations/{orgId}:
+  /organizations/current:
     get:
-      operationId: getOrganization
-      summary: Get organization details
-      description: Get organization details. User must be a member of the organization.
+      operationId: getCurrentOrganization
+      summary: Get current organization details
+      description: Get organization details based on the subdomain context. User must be a member of the organization.
       tags:
         - Organizations
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       responses:
         '200':
           description: Organization retrieved successfully
@@ -1131,6 +1151,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrganizationResponse'
+        '400':
+          description: Subdomain is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -1141,18 +1167,13 @@ paths:
     patch:
       operationId: updateOrganization
       summary: Update organization (name only)
-      description: Update organization. Only name can be updated (slug is immutable). Requires Owner/Admin role.
+      description: Update organization. Only name can be updated (subdomain is immutable). Requires Owner/Admin role.
       tags:
         - Organizations
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       requestBody:
         required: true
         content:
@@ -1226,22 +1247,17 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /organizations/{orgId}/invite:
+  /invite:
     post:
       operationId: sendInvitation
       summary: Send invitation
-      description: Send an invitation to add a new member to the organization. Requires Owner/Admin role.
+      description: Send an invitation to add a new member to the organization. Organization context determined by subdomain. Requires Owner/Admin role.
       tags:
         - Invitations
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       requestBody:
         required: true
         content:
@@ -1264,22 +1280,17 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /organizations/{orgId}/invitations:
+  /invitations:
     get:
       operationId: listPendingInvitations
       summary: List pending invitations
-      description: List all pending invitations for the organization. Requires Owner/Admin role.
+      description: List all pending invitations for the organization. Organization context determined by subdomain. Requires Owner/Admin role.
       tags:
         - Invitations
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       responses:
         '200':
           description: Invitations retrieved successfully
@@ -1298,12 +1309,13 @@ paths:
     delete:
       operationId: revokeInvitation
       summary: Revoke invitation (deletes user too)
-      description: Revoke an invitation. Also deletes the associated user if created. Requires Owner/Admin role.
+      description: Revoke an invitation. Also deletes the associated user if created. Organization context determined by subdomain. Requires Owner/Admin role.
       tags:
         - Invitations
       security:
         - BearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: invitationId
           in: path
           required: true
@@ -1372,22 +1384,17 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /organizations/{orgId}/users:
+  /users:
     get:
       operationId: listOrganizationMembers
       summary: List organization members
-      description: List all members of the organization. Any member can view.
+      description: List all members of the organization. Organization context determined by subdomain. Any member can view.
       tags:
         - Users/Members
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: page
           in: query
           description: Page number (0-based)
@@ -1417,22 +1424,17 @@ paths:
         '403':
           $ref: '#/components/responses/ForbiddenError'
 
-  /organizations/{orgId}/users/{membershipId}:
+  /users/{membershipId}:
     patch:
       operationId: updateMemberRole
       summary: Update member role
-      description: Update a member's role. Requires Owner/Admin role.
+      description: Update a member's role. Organization context determined by subdomain. Requires Owner/Admin role.
       tags:
         - Users/Members
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: membershipId
           in: path
           required: true
@@ -1464,18 +1466,13 @@ paths:
     delete:
       operationId: removeMember
       summary: Remove member
-      description: Remove a member from the organization. Requires Owner/Admin role. Owner cannot remove themselves.
+      description: Remove a member from the organization. Organization context determined by subdomain. Requires Owner/Admin role. Owner cannot remove themselves.
       tags:
         - Users/Members
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: membershipId
           in: path
           required: true
@@ -1492,22 +1489,17 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /organizations/{orgId}/apps:
+  /apps:
     get:
       operationId: listApplications
       summary: List applications
-      description: List all mobile applications for the organization. Any member can view.
+      description: List all mobile applications for the organization. Organization context determined by subdomain. Any member can view.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       responses:
         '200':
           description: Mobile applications retrieved successfully
@@ -1525,18 +1517,13 @@ paths:
     post:
       operationId: createApplication
       summary: Create application
-      description: Create a new mobile application. Requires Developer+ role.
+      description: Create a new mobile application. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       requestBody:
         required: true
         content:
@@ -1559,22 +1546,17 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /organizations/{orgId}/apps/{appId}:
+  /apps/{appId}:
     get:
       operationId: getApplication
       summary: Get application details
-      description: Get mobile application details. Any member can view.
+      description: Get mobile application details. Organization context determined by subdomain. Any member can view.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: appId
           in: path
           required: true
@@ -1598,18 +1580,13 @@ paths:
     patch:
       operationId: updateApplication
       summary: Update application
-      description: Update mobile application. Requires Developer+ role.
+      description: Update mobile application. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: appId
           in: path
           required: true
@@ -1641,18 +1618,13 @@ paths:
     delete:
       operationId: deleteApplication
       summary: Delete application
-      description: Delete mobile application. Requires Developer+ role.
+      description: Delete mobile application. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: appId
           in: path
           required: true
@@ -1669,21 +1641,17 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /{orgId}/{bundleId}/builds:
+  /{bundleId}/builds:
     get:
       operationId: getBuilds
       summary: Get builds with pagination and sorting
+      description: Organization context determined by subdomain.
       tags:
         - Builds
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: bundleId
           in: path
           required: true
@@ -1725,82 +1693,18 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-    
-    post:
-      operationId: uploadBuild
-      summary: Upload a new build
-      deprecated: true
-      description: "DEPRECATED: This endpoint has been removed. Use the API key-based upload endpoint at /v1/builds instead."
-      tags:
-        - Builds
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
-        - name: bundleId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Bundle ID of the mobile application
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - commitHash
-                - branchName
-                - nativeVersion
-                - file
-              properties:
-                commitHash:
-                  type: string
-                  description: Git commit hash (unique identifier for the build)
-                branchName:
-                  type: string
-                  description: Git branch name
-                commitMessage:
-                  type: string
-                  description: Git commit message
-                nativeVersion:
-                  type: string
-                  description: Native app version (e.g., "1.0.0")
-                file:
-                  type: string
-                  format: binary
-                  description: The build file (APK/IPA, max 30MB)
-      responses:
-        '201':
-          description: Build uploaded successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BuildResponse'
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '409':
-          $ref: '#/components/responses/ConflictError'
 
   /builds/{buildId}:
     delete:
       operationId: deleteBuild
       summary: Delete a build by its UUID
+      description: Organization context determined by subdomain.
       tags:
         - Builds
       security:
         - BearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: buildId
           in: path
           required: true
@@ -1821,7 +1725,7 @@ paths:
     post:
       operationId: uploadBuildWithApiKey
       summary: Upload a new build using API key authentication
-      description: "Upload builds using API key authentication. This is the only way to upload builds and is designed for CI/CD pipelines. Requires X-API-Key header instead of JWT token."
+      description: "Upload builds using API key authentication. This is the only way to upload builds and is designed for CI/CD pipelines. Requires X-API-Key header instead of JWT token. Organization context is determined by the API key."
       tags:
         - Builds
         - API Keys
@@ -1874,21 +1778,17 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /{orgId}/{bundleId}/api-keys:
+  /{bundleId}/api-keys:
     get:
       operationId: getApiKeys
       summary: Get API keys with pagination and sorting
+      description: Organization context determined by subdomain.
       tags:
         - API Keys
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: bundleId
           in: path
           required: true
@@ -1940,17 +1840,13 @@ paths:
     post:
       operationId: createApiKey
       summary: Create a new API key
+      description: Organization context determined by subdomain.
       tags:
         - API Keys
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: bundleId
           in: path
           required: true
@@ -1979,21 +1875,17 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /{orgId}/{bundleId}/api-keys/{keyId}:
+  /{bundleId}/api-keys/{keyId}:
     delete:
       operationId: deleteApiKey
       summary: Delete an API key
+      description: Organization context determined by subdomain.
       tags:
         - API Keys
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: bundleId
           in: path
           required: true
@@ -2016,22 +1908,17 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /organizations/{orgId}/channels:
+  /channels:
     get:
       operationId: listChannels
       summary: List channels
-      description: List all channels for the organization. Any member can view.
+      description: List all channels for the organization. Organization context determined by subdomain. Any member can view.
       tags:
         - Channels
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: page
           in: query
           required: false
@@ -2075,18 +1962,13 @@ paths:
     post:
       operationId: createChannel
       summary: Create channel
-      description: Create a new channel. Requires Developer+ role.
+      description: Create a new channel. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Channels
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
       requestBody:
         required: true
         content:
@@ -2113,22 +1995,17 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /organizations/{orgId}/channels/{channelId}:
+  /channels/{channelId}:
     get:
       operationId: getChannel
       summary: Get channel details
-      description: Get channel details. Any member can view.
+      description: Get channel details. Organization context determined by subdomain. Any member can view.
       tags:
         - Channels
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: channelId
           in: path
           required: true
@@ -2152,18 +2029,13 @@ paths:
     patch:
       operationId: updateChannel
       summary: Update channel
-      description: Update channel. Requires Developer+ role.
+      description: Update channel. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Channels
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: channelId
           in: path
           required: true
@@ -2201,18 +2073,13 @@ paths:
     delete:
       operationId: deleteChannel
       summary: Delete channel
-      description: Delete channel. Requires Developer+ role.
+      description: Delete channel. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Channels
       security:
         - BearerAuth: []
       parameters:
-        - name: orgId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization ID
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: channelId
           in: path
           required: true
@@ -2233,12 +2100,13 @@ paths:
     get:
       operationId: getAuditLogs
       summary: Get audit logs for an organization
-      description: Retrieve paginated audit logs with optional filtering by action, resource type, user, and date range
+      description: Retrieve paginated audit logs with optional filtering by action, resource type, user, and date range. Organization context determined by subdomain.
       tags:
         - Audit Logs
       security:
         - BearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
         - name: action
           in: query
           required: false
@@ -2304,4 +2172,3 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-

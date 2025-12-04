@@ -18,9 +18,7 @@ interface CreateAppModalProps {
 
 export function CreateAppModal({ opened, onClose }: CreateAppModalProps) {
   const { t } = useTranslation();
-  const { currentOrganization } = useCurrentOrganization();
-  const organizationId = currentOrganization?.organization?.id || '';
-  const createAppMutation = useCreateMobileAppMutation(organizationId);
+  const createAppMutation = useCreateMobileAppMutation();
   const { showError } = useShowBackendError();
 
   const form = useForm<CreateAppFormData>({

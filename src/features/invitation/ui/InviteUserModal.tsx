@@ -6,7 +6,7 @@ import { inviteUserSchema,type  InviteUserFormData } from '../model/schema';
 import { ControlledTextInput } from '../../../shared/controlled-form-fields/ControlledTextInput';
 
 import { useCreateInvitationMutation } from '../../../shared/api/queries/invitation';
-import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError } from '../../../shared/hooks';
 import { usePermissions } from '../../../shared/hooks/usePermission';
 import { notifications } from '@mantine/notifications';
 import { ControlledRolesSelect } from '../../../shared/controlled-form-fields/ControlledSelect';
@@ -18,9 +18,7 @@ interface InviteUserModalProps {
 
 export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
   const { t } = useTranslation();
-  const { currentOrganization } = useCurrentOrganization();
-  const organizationId = currentOrganization?.organization?.id || '';
-  const createInvitationMutation = useCreateInvitationMutation(organizationId);
+  const createInvitationMutation = useCreateInvitationMutation();
   const showBackendError = useShowBackendError();
   const { canCreateInvitation } = usePermissions();
 

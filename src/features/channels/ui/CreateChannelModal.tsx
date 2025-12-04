@@ -11,12 +11,11 @@ import { createChannelSchema, type CreateChannelFormData } from '../model/schema
 interface CreateChannelModalProps {
   opened: boolean;
   onClose: () => void;
-  orgId: string;
 }
 
-export function CreateChannelModal({ opened, onClose, orgId }: CreateChannelModalProps) {
+export function CreateChannelModal({ opened, onClose }: CreateChannelModalProps) {
   const { t } = useTranslation();
-  const createMutation = useCreateChannelMutation(orgId);
+  const createMutation = useCreateChannelMutation();
   const { showError } = useShowBackendError();
 
   const { control, handleSubmit, reset } = useForm<CreateChannelFormData>({

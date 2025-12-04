@@ -73,7 +73,7 @@ export interface CreateOrganizationRequest {
   /** Organization name */
   name: string;
   /**
-   * Organization subdomain (lowercase alphanumeric with hyphens, 3-63 characters)
+   * Organization subdomain (lowercase alphanumeric with hyphens, 3-63 characters). Must be unique.
    * @minLength 3
    * @maxLength 63
    * @pattern ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$
@@ -220,7 +220,7 @@ export interface OrganizationResponse {
   id: string;
   /** Organization name */
   name: string;
-  /** Organization subdomain */
+  /** Organization subdomain (unique identifier used in URLs) */
   subdomain: string;
   /** Organization description */
   description?: string;
@@ -766,7 +766,14 @@ export class HttpClient<SecurityDataType = unknown> {
  * @version 1.0.0
  * @baseUrl http://localhost:8080/api
  *
- * API for Flyway application
+ * API for Flyway application.
+ *
+ * ## Subdomain-based Organization Context
+ *
+ * Most endpoints require organization context, which is determined by the subdomain of the request.
+ * For example, requests to `myorg.flyway.com/api/...` will operate in the context of the "myorg" organization.
+ *
+ * For local development, use the `X-Subdomain` header to specify the organization subdomain.
  */
 export class Api<
   SecurityDataType extends unknown,
@@ -865,7 +872,7 @@ export class Api<
   };
   organizations = {
     /**
-     * @description Returns all organizations that the authenticated user is a member of
+     * @description Returns all organizations that the authenticated user is a member of. Does not require subdomain context.
      *
      * @tags Organizations
      * @name ListOrganizations
@@ -883,7 +890,7 @@ export class Api<
       }),
 
     /**
-     * @description Users can create up to 3 organizations
+     * @description Users can create up to 3 organizations. Does not require subdomain context.
      *
      * @tags Organizations
      * @name CreateOrganization
@@ -906,17 +913,17 @@ export class Api<
       }),
 
     /**
-     * @description Get organization details. User must be a member of the organization.
+     * @description Get organization details based on the subdomain context. User must be a member of the organization.
      *
      * @tags Organizations
-     * @name GetOrganization
-     * @summary Get organization details
-     * @request GET:/organizations/{orgId}
+     * @name GetCurrentOrganization
+     * @summary Get current organization details
+     * @request GET:/organizations/current
      * @secure
      */
-    getOrganization: (orgId: string, params: RequestParams = {}) =>
+    getCurrentOrganization: (params: RequestParams = {}) =>
       this.request<OrganizationResponse, ErrorResponse>({
-        path: `/organizations/${orgId}`,
+        path: `/organizations/current`,
         method: "GET",
         secure: true,
         format: "json",
@@ -924,392 +931,25 @@ export class Api<
       }),
 
     /**
-     * @description Update organization. Only name can be updated (slug is immutable). Requires Owner/Admin role.
+     * @description Update organization. Only name can be updated (subdomain is immutable). Requires Owner/Admin role.
      *
      * @tags Organizations
      * @name UpdateOrganization
      * @summary Update organization (name only)
-     * @request PATCH:/organizations/{orgId}
+     * @request PATCH:/organizations/current
      * @secure
      */
     updateOrganization: (
-      orgId: string,
       data: UpdateOrganizationRequest,
       params: RequestParams = {},
     ) =>
       this.request<OrganizationResponse, ErrorResponse>({
-        path: `/organizations/${orgId}`,
+        path: `/organizations/current`,
         method: "PATCH",
         body: data,
         secure: true,
         type: ContentType.Json,
         format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Send an invitation to add a new member to the organization. Requires Owner/Admin role.
-     *
-     * @tags Invitations
-     * @name SendInvitation
-     * @summary Send invitation
-     * @request POST:/organizations/{orgId}/invite
-     * @secure
-     */
-    sendInvitation: (
-      orgId: string,
-      data: CreateInvitationRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<InvitationResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/invite`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description List all pending invitations for the organization. Requires Owner/Admin role.
-     *
-     * @tags Invitations
-     * @name ListPendingInvitations
-     * @summary List pending invitations
-     * @request GET:/organizations/{orgId}/invitations
-     * @secure
-     */
-    listPendingInvitations: (orgId: string, params: RequestParams = {}) =>
-      this.request<InvitationResponse[], ErrorResponse>({
-        path: `/organizations/${orgId}/invitations`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description List all members of the organization. Any member can view.
-     *
-     * @tags Users/Members
-     * @name ListOrganizationMembers
-     * @summary List organization members
-     * @request GET:/organizations/{orgId}/users
-     * @secure
-     */
-    listOrganizationMembers: (
-      orgId: string,
-      query?: {
-        /**
-         * Page number (0-based)
-         * @min 0
-         * @default 0
-         */
-        page?: number;
-        /**
-         * Number of items per page
-         * @min 1
-         * @max 100
-         * @default 20
-         */
-        limit?: number;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<PaginatedOrganizationMemberResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/users`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update a member's role. Requires Owner/Admin role.
-     *
-     * @tags Users/Members
-     * @name UpdateMemberRole
-     * @summary Update member role
-     * @request PATCH:/organizations/{orgId}/users/{membershipId}
-     * @secure
-     */
-    updateMemberRole: (
-      orgId: string,
-      membershipId: string,
-      data: UpdateMemberRoleRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<OrganizationMemberResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/users/${membershipId}`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Remove a member from the organization. Requires Owner/Admin role. Owner cannot remove themselves.
-     *
-     * @tags Users/Members
-     * @name RemoveMember
-     * @summary Remove member
-     * @request DELETE:/organizations/{orgId}/users/{membershipId}
-     * @secure
-     */
-    removeMember: (
-      orgId: string,
-      membershipId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<void, ErrorResponse>({
-        path: `/organizations/${orgId}/users/${membershipId}`,
-        method: "DELETE",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * @description List all mobile applications for the organization. Any member can view.
-     *
-     * @tags Mobile Applications
-     * @name ListApplications
-     * @summary List applications
-     * @request GET:/organizations/{orgId}/apps
-     * @secure
-     */
-    listApplications: (orgId: string, params: RequestParams = {}) =>
-      this.request<MobileApplicationResponse[], ErrorResponse>({
-        path: `/organizations/${orgId}/apps`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new mobile application. Requires Developer+ role.
-     *
-     * @tags Mobile Applications
-     * @name CreateApplication
-     * @summary Create application
-     * @request POST:/organizations/{orgId}/apps
-     * @secure
-     */
-    createApplication: (
-      orgId: string,
-      data: CreateMobileApplicationRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/apps`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get mobile application details. Any member can view.
-     *
-     * @tags Mobile Applications
-     * @name GetApplication
-     * @summary Get application details
-     * @request GET:/organizations/{orgId}/apps/{appId}
-     * @secure
-     */
-    getApplication: (
-      orgId: string,
-      appId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/apps/${appId}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update mobile application. Requires Developer+ role.
-     *
-     * @tags Mobile Applications
-     * @name UpdateApplication
-     * @summary Update application
-     * @request PATCH:/organizations/{orgId}/apps/{appId}
-     * @secure
-     */
-    updateApplication: (
-      orgId: string,
-      appId: string,
-      data: UpdateMobileApplicationRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/apps/${appId}`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete mobile application. Requires Developer+ role.
-     *
-     * @tags Mobile Applications
-     * @name DeleteApplication
-     * @summary Delete application
-     * @request DELETE:/organizations/{orgId}/apps/{appId}
-     * @secure
-     */
-    deleteApplication: (
-      orgId: string,
-      appId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<void, ErrorResponse>({
-        path: `/organizations/${orgId}/apps/${appId}`,
-        method: "DELETE",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * @description List all channels for the organization. Any member can view.
-     *
-     * @tags Channels
-     * @name ListChannels
-     * @summary List channels
-     * @request GET:/organizations/{orgId}/channels
-     * @secure
-     */
-    listChannels: (
-      orgId: string,
-      query?: {
-        /**
-         * Page number (0-based)
-         * @default 0
-         */
-        page?: number;
-        /**
-         * Number of items per page
-         * @default 20
-         */
-        size?: number;
-        /**
-         * Sort direction by creation date
-         * @default "desc"
-         */
-        sort?: "asc" | "desc";
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<PaginatedChannelResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/channels`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new channel. Requires Developer+ role.
-     *
-     * @tags Channels
-     * @name CreateChannel
-     * @summary Create channel
-     * @request POST:/organizations/{orgId}/channels
-     * @secure
-     */
-    createChannel: (
-      orgId: string,
-      data: CreateChannelRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/channels`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get channel details. Any member can view.
-     *
-     * @tags Channels
-     * @name GetChannel
-     * @summary Get channel details
-     * @request GET:/organizations/{orgId}/channels/{channelId}
-     * @secure
-     */
-    getChannel: (
-      orgId: string,
-      channelId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/channels/${channelId}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update channel. Requires Developer+ role.
-     *
-     * @tags Channels
-     * @name UpdateChannel
-     * @summary Update channel
-     * @request PATCH:/organizations/{orgId}/channels/{channelId}
-     * @secure
-     */
-    updateChannel: (
-      orgId: string,
-      channelId: string,
-      data: UpdateChannelRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/organizations/${orgId}/channels/${channelId}`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete channel. Requires Developer+ role.
-     *
-     * @tags Channels
-     * @name DeleteChannel
-     * @summary Delete channel
-     * @request DELETE:/organizations/{orgId}/channels/{channelId}
-     * @secure
-     */
-    deleteChannel: (
-      orgId: string,
-      channelId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<void, ErrorResponse>({
-        path: `/organizations/${orgId}/channels/${channelId}`,
-        method: "DELETE",
-        secure: true,
         ...params,
       }),
   };
@@ -1350,9 +990,51 @@ export class Api<
         ...params,
       }),
   };
+  invite = {
+    /**
+     * @description Send an invitation to add a new member to the organization. Organization context determined by subdomain. Requires Owner/Admin role.
+     *
+     * @tags Invitations
+     * @name SendInvitation
+     * @summary Send invitation
+     * @request POST:/invite
+     * @secure
+     */
+    sendInvitation: (
+      data: CreateInvitationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<InvitationResponse, ErrorResponse>({
+        path: `/invite`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
   invitations = {
     /**
-     * @description Revoke an invitation. Also deletes the associated user if created. Requires Owner/Admin role.
+     * @description List all pending invitations for the organization. Organization context determined by subdomain. Requires Owner/Admin role.
+     *
+     * @tags Invitations
+     * @name ListPendingInvitations
+     * @summary List pending invitations
+     * @request GET:/invitations
+     * @secure
+     */
+    listPendingInvitations: (params: RequestParams = {}) =>
+      this.request<InvitationResponse[], ErrorResponse>({
+        path: `/invitations`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Revoke an invitation. Also deletes the associated user if created. Organization context determined by subdomain. Requires Owner/Admin role.
      *
      * @tags Invitations
      * @name RevokeInvitation
@@ -1400,18 +1082,196 @@ export class Api<
         ...params,
       }),
   };
-  orgId = {
+  users = {
     /**
-     * No description
+     * @description List all members of the organization. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Users/Members
+     * @name ListOrganizationMembers
+     * @summary List organization members
+     * @request GET:/users
+     * @secure
+     */
+    listOrganizationMembers: (
+      query?: {
+        /**
+         * Page number (0-based)
+         * @min 0
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @min 1
+         * @max 100
+         * @default 20
+         */
+        limit?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedOrganizationMemberResponse, ErrorResponse>({
+        path: `/users`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a member's role. Organization context determined by subdomain. Requires Owner/Admin role.
+     *
+     * @tags Users/Members
+     * @name UpdateMemberRole
+     * @summary Update member role
+     * @request PATCH:/users/{membershipId}
+     * @secure
+     */
+    updateMemberRole: (
+      membershipId: string,
+      data: UpdateMemberRoleRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<OrganizationMemberResponse, ErrorResponse>({
+        path: `/users/${membershipId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Remove a member from the organization. Organization context determined by subdomain. Requires Owner/Admin role. Owner cannot remove themselves.
+     *
+     * @tags Users/Members
+     * @name RemoveMember
+     * @summary Remove member
+     * @request DELETE:/users/{membershipId}
+     * @secure
+     */
+    removeMember: (membershipId: string, params: RequestParams = {}) =>
+      this.request<void, ErrorResponse>({
+        path: `/users/${membershipId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+  };
+  apps = {
+    /**
+     * @description List all mobile applications for the organization. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Mobile Applications
+     * @name ListApplications
+     * @summary List applications
+     * @request GET:/apps
+     * @secure
+     */
+    listApplications: (params: RequestParams = {}) =>
+      this.request<MobileApplicationResponse[], ErrorResponse>({
+        path: `/apps`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new mobile application. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Mobile Applications
+     * @name CreateApplication
+     * @summary Create application
+     * @request POST:/apps
+     * @secure
+     */
+    createApplication: (
+      data: CreateMobileApplicationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<MobileApplicationResponse, ErrorResponse>({
+        path: `/apps`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get mobile application details. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Mobile Applications
+     * @name GetApplication
+     * @summary Get application details
+     * @request GET:/apps/{appId}
+     * @secure
+     */
+    getApplication: (appId: string, params: RequestParams = {}) =>
+      this.request<MobileApplicationResponse, ErrorResponse>({
+        path: `/apps/${appId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update mobile application. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Mobile Applications
+     * @name UpdateApplication
+     * @summary Update application
+     * @request PATCH:/apps/{appId}
+     * @secure
+     */
+    updateApplication: (
+      appId: string,
+      data: UpdateMobileApplicationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<MobileApplicationResponse, ErrorResponse>({
+        path: `/apps/${appId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete mobile application. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Mobile Applications
+     * @name DeleteApplication
+     * @summary Delete application
+     * @request DELETE:/apps/{appId}
+     * @secure
+     */
+    deleteApplication: (appId: string, params: RequestParams = {}) =>
+      this.request<void, ErrorResponse>({
+        path: `/apps/${appId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+  };
+  bundleId = {
+    /**
+     * @description Organization context determined by subdomain.
      *
      * @tags Builds
      * @name GetBuilds
      * @summary Get builds with pagination and sorting
-     * @request GET:/{orgId}/{bundleId}/builds
+     * @request GET:/{bundleId}/builds
      * @secure
      */
     getBuilds: (
-      orgId: string,
       bundleId: string,
       query?: {
         /**
@@ -1433,7 +1293,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<PaginatedBuildResponse, ErrorResponse>({
-        path: `/${orgId}/${bundleId}/builds`,
+        path: `/${bundleId}/builds`,
         method: "GET",
         query: query,
         secure: true,
@@ -1442,56 +1302,15 @@ export class Api<
       }),
 
     /**
-     * @description DEPRECATED: This endpoint has been removed. Use the API key-based upload endpoint at /v1/builds instead.
-     *
-     * @tags Builds
-     * @name UploadBuild
-     * @summary Upload a new build
-     * @request POST:/{orgId}/{bundleId}/builds
-     * @deprecated
-     * @secure
-     */
-    uploadBuild: (
-      orgId: string,
-      bundleId: string,
-      data: {
-        /** Git commit hash (unique identifier for the build) */
-        commitHash: string;
-        /** Git branch name */
-        branchName: string;
-        /** Git commit message */
-        commitMessage?: string;
-        /** Native app version (e.g., "1.0.0") */
-        nativeVersion: string;
-        /**
-         * The build file (APK/IPA, max 30MB)
-         * @format binary
-         */
-        file: File;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<BuildResponse, ErrorResponse>({
-        path: `/${orgId}/${bundleId}/builds`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.FormData,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
+     * @description Organization context determined by subdomain.
      *
      * @tags API Keys
      * @name GetApiKeys
      * @summary Get API keys with pagination and sorting
-     * @request GET:/{orgId}/{bundleId}/api-keys
+     * @request GET:/{bundleId}/api-keys
      * @secure
      */
     getApiKeys: (
-      orgId: string,
       bundleId: string,
       query?: {
         /**
@@ -1513,7 +1332,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<PaginatedApiKeyResponse, ErrorResponse>({
-        path: `/${orgId}/${bundleId}/api-keys`,
+        path: `/${bundleId}/api-keys`,
         method: "GET",
         query: query,
         secure: true,
@@ -1522,22 +1341,21 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Organization context determined by subdomain.
      *
      * @tags API Keys
      * @name CreateApiKey
      * @summary Create a new API key
-     * @request POST:/{orgId}/{bundleId}/api-keys
+     * @request POST:/{bundleId}/api-keys
      * @secure
      */
     createApiKey: (
-      orgId: string,
       bundleId: string,
       data: CreateApiKeyRequest,
       params: RequestParams = {},
     ) =>
       this.request<ApiKeyResponse, ErrorResponse>({
-        path: `/${orgId}/${bundleId}/api-keys`,
+        path: `/${bundleId}/api-keys`,
         method: "POST",
         body: data,
         secure: true,
@@ -1547,22 +1365,21 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Organization context determined by subdomain.
      *
      * @tags API Keys
      * @name DeleteApiKey
      * @summary Delete an API key
-     * @request DELETE:/{orgId}/{bundleId}/api-keys/{keyId}
+     * @request DELETE:/{bundleId}/api-keys/{keyId}
      * @secure
      */
     deleteApiKey: (
-      orgId: string,
       bundleId: string,
       keyId: string,
       params: RequestParams = {},
     ) =>
       this.request<void, ErrorResponse>({
-        path: `/${orgId}/${bundleId}/api-keys/${keyId}`,
+        path: `/${bundleId}/api-keys/${keyId}`,
         method: "DELETE",
         secure: true,
         ...params,
@@ -1570,7 +1387,7 @@ export class Api<
   };
   builds = {
     /**
-     * No description
+     * @description Organization context determined by subdomain.
      *
      * @tags Builds
      * @name DeleteBuild
@@ -1588,7 +1405,7 @@ export class Api<
   };
   v1 = {
     /**
-     * @description Upload builds using API key authentication. This is the only way to upload builds and is designed for CI/CD pipelines. Requires X-API-Key header instead of JWT token.
+     * @description Upload builds using API key authentication. This is the only way to upload builds and is designed for CI/CD pipelines. Requires X-API-Key header instead of JWT token. Organization context is determined by the API key.
      *
      * @tags Builds, API Keys
      * @name UploadBuildWithApiKey
@@ -1622,9 +1439,127 @@ export class Api<
         ...params,
       }),
   };
+  channels = {
+    /**
+     * @description List all channels for the organization. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Channels
+     * @name ListChannels
+     * @summary List channels
+     * @request GET:/channels
+     * @secure
+     */
+    listChannels: (
+      query?: {
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 20
+         */
+        size?: number;
+        /**
+         * Sort direction by creation date
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedChannelResponse, ErrorResponse>({
+        path: `/channels`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new channel. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Channels
+     * @name CreateChannel
+     * @summary Create channel
+     * @request POST:/channels
+     * @secure
+     */
+    createChannel: (data: CreateChannelRequest, params: RequestParams = {}) =>
+      this.request<ChannelResponse, ErrorResponse>({
+        path: `/channels`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get channel details. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Channels
+     * @name GetChannel
+     * @summary Get channel details
+     * @request GET:/channels/{channelId}
+     * @secure
+     */
+    getChannel: (channelId: string, params: RequestParams = {}) =>
+      this.request<ChannelResponse, ErrorResponse>({
+        path: `/channels/${channelId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update channel. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Channels
+     * @name UpdateChannel
+     * @summary Update channel
+     * @request PATCH:/channels/{channelId}
+     * @secure
+     */
+    updateChannel: (
+      channelId: string,
+      data: UpdateChannelRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChannelResponse, ErrorResponse>({
+        path: `/channels/${channelId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete channel. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Channels
+     * @name DeleteChannel
+     * @summary Delete channel
+     * @request DELETE:/channels/{channelId}
+     * @secure
+     */
+    deleteChannel: (channelId: string, params: RequestParams = {}) =>
+      this.request<void, ErrorResponse>({
+        path: `/channels/${channelId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+  };
   auditLogs = {
     /**
-     * @description Retrieve paginated audit logs with optional filtering by action, resource type, user, and date range
+     * @description Retrieve paginated audit logs with optional filtering by action, resource type, user, and date range. Organization context determined by subdomain.
      *
      * @tags Audit Logs
      * @name GetAuditLogs

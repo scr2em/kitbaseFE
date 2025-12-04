@@ -4,11 +4,11 @@ import type { CreateChannelRequest, UpdateChannelRequest } from '../../../genera
 
 export const CHANNELS_QUERY_KEY = ['channels'];
 
-export function useChannelsInfiniteQuery(orgId: string) {
+export function useChannelsInfiniteQuery() {
   return useInfiniteQuery({
-    queryKey: [...CHANNELS_QUERY_KEY, orgId],
+    queryKey: CHANNELS_QUERY_KEY,
     queryFn: async ({ pageParam = 0 }) => {
-      const response = await apiClient.organizations.listChannels(orgId, {
+      const response = await apiClient.channels.listChannels({
         page: pageParam,
         size: 20,
         sort: 'desc',
@@ -22,49 +22,48 @@ export function useChannelsInfiniteQuery(orgId: string) {
       }
       return undefined;
     },
-    enabled: !!orgId,
     staleTime: 30 * 1000, // 30 seconds
   });
 }
 
-export function useCreateChannelMutation(orgId: string) {
+export function useCreateChannelMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: CreateChannelRequest) => {
-      const response = await apiClient.organizations.createChannel(orgId, data);
+      const response = await apiClient.channels.createChannel(data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...CHANNELS_QUERY_KEY, orgId] });
+      queryClient.invalidateQueries({ queryKey: CHANNELS_QUERY_KEY });
     },
   });
 }
 
-export function useUpdateChannelMutation(orgId: string, channelId: string) {
+export function useUpdateChannelMutation(channelId: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: UpdateChannelRequest) => {
-      const response = await apiClient.organizations.updateChannel(orgId, channelId, data);
+      const response = await apiClient.channels.updateChannel(channelId, data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...CHANNELS_QUERY_KEY, orgId] });
+      queryClient.invalidateQueries({ queryKey: CHANNELS_QUERY_KEY });
     },
   });
 }
 
-export function useDeleteChannelMutation(orgId: string) {
+export function useDeleteChannelMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (channelId: string) => {
-      const response = await apiClient.organizations.deleteChannel(orgId, channelId);
+      const response = await apiClient.channels.deleteChannel(channelId);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...CHANNELS_QUERY_KEY, orgId] });
+      queryClient.invalidateQueries({ queryKey: CHANNELS_QUERY_KEY });
     },
   });
 }
