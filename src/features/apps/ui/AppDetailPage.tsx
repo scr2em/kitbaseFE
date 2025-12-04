@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation, Outlet } from 'react-router';
 import { AlertCircle, Package, ArrowLeft, Hammer, Key } from 'lucide-react';
 import { useMobileAppQuery } from '../../../shared/api/queries';
-import { useCurrentOrganization } from '../../../shared/hooks';
 
 export function AppDetailPage() {
   const { t } = useTranslation();

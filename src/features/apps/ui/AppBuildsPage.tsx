@@ -22,7 +22,7 @@ import { MoreVertical, Trash2, AlertCircle, Package } from 'lucide-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useBuildsQuery, useDeleteBuildMutation } from '../../../shared/api/queries';
-import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError } from '../../../shared/hooks';
 import type { BuildResponse } from '../../../generated-api';
 
 export function AppBuildsPage() {

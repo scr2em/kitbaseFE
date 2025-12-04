@@ -31,7 +31,7 @@ export function AppsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [createModalOpened, setCreateModalOpened] = useState(false);
-  const { currentOrganization, hasOrganizations, isLoading: isLoadingUser } = useCurrentOrganization();
+  const { hasOrganizations, isLoading: isLoadingUser } = useCurrentOrganization();
   const { data: apps, isLoading, isError } = useMobileAppsQuery();
   const deleteAppMutation = useDeleteMobileAppMutation();
   const { showError } = useShowBackendError();

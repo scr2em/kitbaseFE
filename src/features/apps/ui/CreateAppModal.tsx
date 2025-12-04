@@ -9,7 +9,7 @@ import {
   ControlledTextInput,
   ControlledTextArea,
 } from '../../../shared/controlled-form-fields';
-import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError } from '../../../shared/hooks';
 
 interface CreateAppModalProps {
   opened: boolean;

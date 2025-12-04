@@ -21,7 +21,7 @@ import { MoreVertical, Trash2, AlertCircle, Key } from 'lucide-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useApiKeysQuery, useCreateApiKeyMutation, useDeleteApiKeyMutation } from '../../../shared/api/queries';
-import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError } from '../../../shared/hooks';
 import { CreateApiKeyModal } from './CreateApiKeyModal';
 import { ApiKeyCreatedModal } from './ApiKeyCreatedModal';
 
