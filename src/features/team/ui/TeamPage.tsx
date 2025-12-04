@@ -44,7 +44,7 @@ export function TeamPage() {
   
   const removeMemberMutation = useRemoveMemberMutation();
   const { showError } = useShowBackendError();
-  const { canCreateInvitation, canRemoveMember } = usePermissions();
+  const { canInviteMember, canRemoveMember } = usePermissions();
 
 
   const handleDeleteMember = (memberId: string, memberName: string) => {
@@ -168,7 +168,7 @@ export function TeamPage() {
               {t('team.subtitle', { count: totalMembers })}
             </Text>
           </Box>
-          {canCreateInvitation && (
+          {canInviteMember && (
             <Button
               leftSection={<UserPlus size={18} />}
               variant="gradient"

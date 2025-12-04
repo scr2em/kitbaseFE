@@ -10,6 +10,24 @@
  * ---------------------------------------------------------------
  */
 
+/** Permission code enum representing all available permissions in the system */
+export type PermissionCode =
+  | "organization.update"
+  | "member.view"
+  | "member.invite"
+  | "member.remove"
+  | "member.update_role"
+  | "app.read"
+  | "app.create"
+  | "app.update"
+  | "app.delete"
+  | "channel.read"
+  | "channel.create"
+  | "channel.update"
+  | "channel.delete"
+  | "analytics.view"
+  | "support.operations";
+
 /** Invitation status */
 export type InvitationStatusEnum =
   | "pending"
@@ -176,6 +194,37 @@ export interface UserResponse {
   updatedAt?: string;
 }
 
+/** Current user information with role and permissions for the current organization (determined by subdomain) */
+export interface CurrentUserResponse {
+  /** User ID */
+  id: string;
+  /**
+   * User's email address
+   * @format email
+   */
+  email: string;
+  /** User's first name */
+  firstName: string;
+  /** User's last name */
+  lastName: string;
+  /** User status information */
+  status: UserStatusResponse;
+  /** List of organizations the user is a member of */
+  organizations: UserOrganizationMembership[];
+  /** The user's role with permissions in the current organization (determined by subdomain). Null if not accessing via organization subdomain. */
+  currentOrganizationRole?: RoleWithPermissionsResponse | null;
+  /**
+   * When the user was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the user was last updated
+   * @format date-time
+   */
+  updatedAt?: string;
+}
+
 /** User's membership in an organization */
 export interface UserOrganizationMembership {
   /** Minimal organization information for user response */
@@ -244,8 +293,28 @@ export interface RoleResponse {
   name: string;
   /** Role description */
   description?: string;
-  /** Bitwise permissions value as a string (e.g., "12345") */
-  permissionsValue: string;
+  /**
+   * When the role was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the role was last updated
+   * @format date-time
+   */
+  updatedAt?: string;
+}
+
+/** Role information with associated permissions */
+export interface RoleWithPermissionsResponse {
+  /** Role ID */
+  id: string;
+  /** Role name */
+  name: string;
+  /** Role description */
+  description?: string;
+  /** List of permission codes associated with this role */
+  permissions: PermissionCode[];
   /**
    * When the role was created
    * @format date-time
@@ -478,8 +547,6 @@ export interface PermissionResponse {
   description: string;
   /** Permission category (e.g., "organization", "member", "role") */
   category: string;
-  /** Bitwise permission value as a string */
-  bitValue: string;
 }
 
 /** Channel information */
@@ -816,16 +883,16 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Returns the current user's information including their role and permissions for the current organization (determined by the subdomain in the Origin header). If not accessing via an organization subdomain, currentOrganizationRole will be null.
      *
      * @tags Authentication
      * @name GetCurrentUser
-     * @summary Get current user info
+     * @summary Get current user info with role and permissions for current organization
      * @request GET:/auth/me
      * @secure
      */
     getCurrentUser: (params: RequestParams = {}) =>
-      this.request<UserResponse, ErrorResponse>({
+      this.request<CurrentUserResponse, ErrorResponse>({
         path: `/auth/me`,
         method: "GET",
         secure: true,
@@ -966,24 +1033,6 @@ export class Api<
     listRoles: (params: RequestParams = {}) =>
       this.request<RoleResponse[], ErrorResponse>({
         path: `/roles`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Returns all permissions for a specific role
-     *
-     * @tags Roles & Permissions
-     * @name GetRolePermissions
-     * @summary Get role permissions
-     * @request GET:/roles/{roleId}/permissions
-     * @secure
-     */
-    getRolePermissions: (roleId: string, params: RequestParams = {}) =>
-      this.request<PermissionResponse[], ErrorResponse>({
-        path: `/roles/${roleId}/permissions`,
         method: "GET",
         secure: true,
         format: "json",

@@ -35,7 +35,7 @@ export function AppsPage() {
   const { data: apps, isLoading, isError } = useMobileAppsQuery();
   const deleteAppMutation = useDeleteMobileAppMutation();
   const { showError } = useShowBackendError();
-  const { canCreateMobileApp, canDeleteMobileApp } = usePermissions();
+  const { canCreateApp, canDeleteApp } = usePermissions();
 
   const handleDeleteApp = (appId: string, appName: string) => {
     modals.openConfirmModal({
@@ -124,7 +124,7 @@ export function AppsPage() {
               {t('apps.subtitle', { count: appsList.length })}
             </Text>
           </Box>
-          {canCreateMobileApp && (
+          {canCreateApp && (
             <Button
               leftSection={<Plus size={18} />}
               variant="gradient"
@@ -145,7 +145,7 @@ export function AppsPage() {
                 <Text c="dimmed" size="lg">
                   {t('apps.no_apps')}
                 </Text>
-                {canCreateMobileApp && (
+                {canCreateApp && (
                   <Button
                     leftSection={<Plus size={18} />}
                     onClick={() => setCreateModalOpened(true)}
@@ -185,7 +185,7 @@ export function AppsPage() {
                       </Badge>
                     </Box>
                     
-                    {canDeleteMobileApp && (
+                    {canDeleteApp && (
                       <Menu shadow="md" width={200} position="bottom-end">
                         <Menu.Target>
                           <ActionIcon 

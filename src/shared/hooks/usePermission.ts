@@ -1,99 +1,51 @@
-import { useRolePermissionsQuery } from '../api/queries/permission';
-import { useCurrentOrganization } from './useCurrentOrganization';
-
-
-/**
- * Convert permission code to camelCase property name
- * e.g., "mobile_app.create" -> "canCreateMobileApp"
- */
-function permissionCodeToCamelCase(code: string): string {
-  const parts = code.split('.');
-  if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    console.warn(`Invalid permission code format: ${code}`);
-    return 'canUnknown';
-  }
-  
-  const category = parts[0];
-  const action = parts[1];
-  const categoryParts = category.split('_');
-  const actionParts = action.split('_');
-  
-  const camelCategory = categoryParts
-    .map((part, index) => index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-  
-  const camelAction = actionParts
-    .map((part, index) => index === 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-  
-  return `can${camelAction}${camelCategory.charAt(0).toUpperCase() + camelCategory.slice(1)}`;
-}
+import { useCurrentUserQuery } from '../api/queries/user';
+import type { PermissionCode } from '../../generated-api';
 
 /**
- * Hook to get all permissions as boolean values
- * @returns Object with all permissions as boolean values (e.g., { canCreateMobileApp: true, canDeleteMobileApp: false, ... })
+ * Hook to check if the user has specific permissions in the current organization
+ * @returns Object with permission checker function and individual permission flags
  * 
  * @example
- * const { canCreateMobileApp, canDeleteMobileApp, canUpdateOrganization } = usePermissions();
+ * const { hasPermission, canCreateApp, canUpdateOrganization } = usePermissions();
  * 
- * if (canCreateMobileApp) {
+ * if (canCreateApp) {
  *   // Show create button
+ * }
+ * 
+ * // Or dynamically check
+ * if (hasPermission('app.delete')) {
+ *   // Show delete button
  * }
  */
 export function usePermissions() {
-  const { currentOrganization } = useCurrentOrganization();
-  const roleId = currentOrganization?.role?.id;
-  const { data: rolePermissions } = useRolePermissionsQuery(roleId);
+  const { data: user } = useCurrentUserQuery();
+  const permissions = user?.currentOrganizationRole?.permissions || [];
 
-  // Default all permissions to false
-  const defaultPermissions = {
-    canUpdateOrganization: false,
-    canViewMember: false,
-    canAddMember: false,
-    canRemoveMember: false,
-    canUpdateRoleMember: false,
-    canViewRole: false,
-    canCreateRole: false,
-    canUpdateRole: false,
-    canDeleteRole: false,
-    canAssignPermissionsRole: false,
-    canViewPermission: false,
-    canViewInvitation: false,
-    canCreateInvitation: false,
-    canCancelInvitation: false,
-    canViewUser: false,
-    canUpdateUser: false,
-    canDeleteUser: false,
-    canCreateDeployment: false,
-    canViewDeployment: false,
-    canRollbackDeployment: false,
-    canViewBilling: false,
-    canManageBilling: false,
-    canReadMobileApp: false,
-    canCreateMobileApp: false,
-    canUpdateMobileApp: false,
-    canDeleteMobileApp: false,
-    canViewBuild: false,
-    canUploadBuild: false,
-    canDeleteBuild: false,
-    canViewApiKey: false,
-    canCreateApiKey: false,
-    canDeleteApiKey: false,
-    canViewChannel: false,
-    canCreateChannel: false,
-    canUpdateChannel: false,
-    canDeleteChannel: false,
+  const hasPermission = (permission: PermissionCode) => {
+    return permissions.includes(permission);
   };
 
-  // If we have role permissions, set them to true
-  if (rolePermissions) {
-    for (const permission of rolePermissions) {
-      const key = permissionCodeToCamelCase(permission.code);
-      if (key in defaultPermissions) {
-        (defaultPermissions as Record<string, boolean>)[key] = true;
-      }
-    }
-  }
-
-  return defaultPermissions;
+  return {
+    hasPermission,
+    // Organization permissions
+    canUpdateOrganization: hasPermission('organization.update'),
+    // Member permissions
+    canViewMember: hasPermission('member.view'),
+    canInviteMember: hasPermission('member.invite'),
+    canRemoveMember: hasPermission('member.remove'),
+    canUpdateMemberRole: hasPermission('member.update_role'),
+    // App permissions
+    canReadApp: hasPermission('app.read'),
+    canCreateApp: hasPermission('app.create'),
+    canUpdateApp: hasPermission('app.update'),
+    canDeleteApp: hasPermission('app.delete'),
+    // Channel permissions
+    canReadChannel: hasPermission('channel.read'),
+    canCreateChannel: hasPermission('channel.create'),
+    canUpdateChannel: hasPermission('channel.update'),
+    canDeleteChannel: hasPermission('channel.delete'),
+    // Analytics & Support
+    canViewAnalytics: hasPermission('analytics.view'),
+    canOperateSupport: hasPermission('support.operations'),
+  };
 }

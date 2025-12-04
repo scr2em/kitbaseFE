@@ -20,7 +20,7 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
   const { t } = useTranslation();
   const createInvitationMutation = useCreateInvitationMutation();
   const showBackendError = useShowBackendError();
-  const { canCreateInvitation } = usePermissions();
+  const { canInviteMember } = usePermissions();
 
   const {
     control,
@@ -36,7 +36,7 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
   });
 
   // Defense-in-depth: Don't render modal content if user doesn't have permission
-  if (!canCreateInvitation) {
+  if (!canInviteMember) {
     return null;
   }
 

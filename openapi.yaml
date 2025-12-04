@@ -277,6 +277,51 @@ components:
           type: string
           format: date-time
           description: When the user was last updated
+
+    CurrentUserResponse:
+      type: object
+      description: Current user information with role and permissions for the current organization (determined by subdomain)
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - status
+        - organizations
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: User ID
+        email:
+          type: string
+          format: email
+          description: User's email address
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        status:
+          $ref: '#/components/schemas/UserStatusResponse'
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserOrganizationMembership'
+          description: List of organizations the user is a member of
+        currentOrganizationRole:
+          $ref: '#/components/schemas/RoleWithPermissionsResponse'
+          description: The user's role with permissions in the current organization (determined by subdomain). Null if not accessing via organization subdomain.
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: When the user was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the user was last updated
     
     UserOrganizationMembership:
       type: object
@@ -378,7 +423,6 @@ components:
       required:
         - id
         - name
-        - permissionsValue
         - createdAt
       properties:
         id:
@@ -390,9 +434,58 @@ components:
         description:
           type: string
           description: Role description
-        permissionsValue:
+        createdAt:
           type: string
-          description: Bitwise permissions value as a string (e.g., "12345")
+          format: date-time
+          description: When the role was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the role was last updated
+
+    PermissionCode:
+      type: string
+      description: Permission code enum representing all available permissions in the system
+      enum:
+        - organization.update
+        - member.view
+        - member.invite
+        - member.remove
+        - member.update_role
+        - app.read
+        - app.create
+        - app.update
+        - app.delete
+        - channel.read
+        - channel.create
+        - channel.update
+        - channel.delete
+        - analytics.view
+        - support.operations
+
+    RoleWithPermissionsResponse:
+      type: object
+      description: Role information with associated permissions
+      required:
+        - id
+        - name
+        - permissions
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Role ID
+        name:
+          type: string
+          description: Role name
+        description:
+          type: string
+          description: Role description
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionCode'
+          description: List of permission codes associated with this role
         createdAt:
           type: string
           format: date-time
@@ -732,7 +825,6 @@ components:
         - label
         - description
         - category
-        - bitValue
       properties:
         code:
           type: string
@@ -746,9 +838,6 @@ components:
         category:
           type: string
           description: Permission category (e.g., "organization", "member", "role")
-        bitValue:
-          type: string
-          description: Bitwise permission value as a string
 
     ChannelResponse:
       type: object
@@ -1026,18 +1115,22 @@ paths:
   /auth/me:
     get:
       operationId: getCurrentUser
-      summary: Get current user info
+      summary: Get current user info with role and permissions for current organization
+      description: |
+        Returns the current user's information including their role and permissions 
+        for the current organization (determined by the subdomain in the Origin header).
+        If not accessing via an organization subdomain, currentOrganizationRole will be null.
       tags:
         - Authentication
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: User information retrieved
+          description: User information retrieved with role and permissions for current organization
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/CurrentUserResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
@@ -1216,36 +1309,6 @@ paths:
                   $ref: '#/components/schemas/RoleResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
-  /roles/{roleId}/permissions:
-    get:
-      operationId: getRolePermissions
-      summary: Get role permissions
-      description: Returns all permissions for a specific role
-      tags:
-        - Roles & Permissions
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: roleId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Role ID
-      responses:
-        '200':
-          description: Role permissions retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PermissionResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
 
   /invite:
     post:

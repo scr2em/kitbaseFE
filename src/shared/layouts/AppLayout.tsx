@@ -64,7 +64,7 @@ export function AppLayout() {
       icon: Folder,
       label: t('navigation.apps'),
       path: '/apps',
-      permission: permissions.canReadMobileApp,
+      permission: permissions.canReadApp,
     },
     {
       icon: Radio,
