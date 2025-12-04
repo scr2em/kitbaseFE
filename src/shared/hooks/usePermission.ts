@@ -1,5 +1,4 @@
-import { usePermissionsQuery } from '../api/queries';
-import { hasPermission } from '../../features/permissions-calculator/model/permissions';
+import { useRolePermissionsQuery } from '../api/queries/permission';
 import { useCurrentOrganization } from './useCurrentOrganization';
 
 
@@ -32,7 +31,6 @@ function permissionCodeToCamelCase(code: string): string {
 
 /**
  * Hook to get all permissions as boolean values
- * @param enabled - Whether to enable the query (default: true)
  * @returns Object with all permissions as boolean values (e.g., { canCreateMobileApp: true, canDeleteMobileApp: false, ... })
  * 
  * @example
@@ -44,54 +42,58 @@ function permissionCodeToCamelCase(code: string): string {
  */
 export function usePermissions() {
   const { currentOrganization } = useCurrentOrganization();
-  const { data: permissionDefinitions } = usePermissionsQuery();
-  const permissionsValue = currentOrganization?.role?.permissionsValue;
+  const roleId = currentOrganization?.role?.id;
+  const { data: rolePermissions } = useRolePermissionsQuery(roleId);
 
-  const permissions: Record<string, boolean> = {};
+  // Default all permissions to false
+  const defaultPermissions = {
+    canUpdateOrganization: false,
+    canViewMember: false,
+    canAddMember: false,
+    canRemoveMember: false,
+    canUpdateRoleMember: false,
+    canViewRole: false,
+    canCreateRole: false,
+    canUpdateRole: false,
+    canDeleteRole: false,
+    canAssignPermissionsRole: false,
+    canViewPermission: false,
+    canViewInvitation: false,
+    canCreateInvitation: false,
+    canCancelInvitation: false,
+    canViewUser: false,
+    canUpdateUser: false,
+    canDeleteUser: false,
+    canCreateDeployment: false,
+    canViewDeployment: false,
+    canRollbackDeployment: false,
+    canViewBilling: false,
+    canManageBilling: false,
+    canReadMobileApp: false,
+    canCreateMobileApp: false,
+    canUpdateMobileApp: false,
+    canDeleteMobileApp: false,
+    canViewBuild: false,
+    canUploadBuild: false,
+    canDeleteBuild: false,
+    canViewApiKey: false,
+    canCreateApiKey: false,
+    canDeleteApiKey: false,
+    canViewChannel: false,
+    canCreateChannel: false,
+    canUpdateChannel: false,
+    canDeleteChannel: false,
+  };
 
-  if (permissionDefinitions) {
-    for (const permission of permissionDefinitions) {
+  // If we have role permissions, set them to true
+  if (rolePermissions) {
+    for (const permission of rolePermissions) {
       const key = permissionCodeToCamelCase(permission.code);
-      permissions[key] = hasPermission(permissionsValue, permission.code, permissionDefinitions);
+      if (key in defaultPermissions) {
+        (defaultPermissions as Record<string, boolean>)[key] = true;
+      }
     }
   }
 
-  return permissions as {
-    canUpdateOrganization: boolean;
-    canViewMember: boolean;
-    canAddMember: boolean;
-    canRemoveMember: boolean;
-    canUpdateRoleMember: boolean;
-    canViewRole: boolean;
-    canCreateRole: boolean;
-    canUpdateRole: boolean;
-    canDeleteRole: boolean;
-    canAssignPermissionsRole: boolean;
-    canViewPermission: boolean;
-    canViewInvitation: boolean;
-    canCreateInvitation: boolean;
-    canCancelInvitation: boolean;
-    canViewUser: boolean;
-    canUpdateUser: boolean;
-    canDeleteUser: boolean;
-    canCreateDeployment: boolean;
-    canViewDeployment: boolean;
-    canRollbackDeployment: boolean;
-    canViewBilling: boolean;
-    canManageBilling: boolean;
-    canReadMobileApp: boolean;
-    canCreateMobileApp: boolean;
-    canUpdateMobileApp: boolean;
-    canDeleteMobileApp: boolean;
-    canViewBuild: boolean;
-    canUploadBuild: boolean;
-    canDeleteBuild: boolean;
-    canViewApiKey: boolean;
-    canCreateApiKey: boolean;
-    canDeleteApiKey: boolean;
-    canViewChannel: boolean;
-    canCreateChannel: boolean;
-    canUpdateChannel: boolean;
-    canDeleteChannel: boolean;
-  };
+  return defaultPermissions;
 }

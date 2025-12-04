@@ -8,7 +8,7 @@ export function useChannelsInfiniteQuery(orgId: string) {
   return useInfiniteQuery({
     queryKey: [...CHANNELS_QUERY_KEY, orgId],
     queryFn: async ({ pageParam = 0 }) => {
-      const response = await apiClient.orgId.getChannels(orgId, {
+      const response = await apiClient.organizations.listChannels(orgId, {
         page: pageParam,
         size: 20,
         sort: 'desc',
@@ -32,7 +32,7 @@ export function useCreateChannelMutation(orgId: string) {
   
   return useMutation({
     mutationFn: async (data: CreateChannelRequest) => {
-      const response = await apiClient.orgId.createChannel(orgId, data);
+      const response = await apiClient.organizations.createChannel(orgId, data);
       return response.data;
     },
     onSuccess: () => {
@@ -46,7 +46,7 @@ export function useUpdateChannelMutation(orgId: string, channelId: string) {
   
   return useMutation({
     mutationFn: async (data: UpdateChannelRequest) => {
-      const response = await apiClient.orgId.updateChannel(orgId, channelId, data);
+      const response = await apiClient.organizations.updateChannel(orgId, channelId, data);
       return response.data;
     },
     onSuccess: () => {
@@ -60,7 +60,7 @@ export function useDeleteChannelMutation(orgId: string) {
   
   return useMutation({
     mutationFn: async (channelId: string) => {
-      const response = await apiClient.orgId.deleteChannel(orgId, channelId);
+      const response = await apiClient.organizations.deleteChannel(orgId, channelId);
       return response.data;
     },
     onSuccess: () => {

@@ -33,6 +33,7 @@ export function TeamPage() {
   const [inviteModalOpened, setInviteModalOpened] = useState(false);
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();
   const { data: currentUser } = useCurrentUserQuery();
+  const organizationId = currentOrganization?.organization?.id || '';
   const {
     data,
     fetchNextPage,
@@ -40,9 +41,9 @@ export function TeamPage() {
     isFetchingNextPage,
     isLoading,
     isError,
-  } = useOrganizationMembersQuery();
+  } = useOrganizationMembersQuery(organizationId);
   
-  const removeMemberMutation = useRemoveMemberMutation();
+  const removeMemberMutation = useRemoveMemberMutation(organizationId);
   const { showError } = useShowBackendError();
   const { canCreateInvitation, canRemoveMember } = usePermissions();
 

@@ -9,7 +9,7 @@ export function useLoginMutation() {
   
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
-      const response = await apiClient.auth.login(data);
+      const response = await apiClient.auth.signin(data);
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {
@@ -26,7 +26,7 @@ export function useSignupMutation() {
   
   return useMutation({
     mutationFn: async (data: UserRegistrationRequest) => {
-      const response = await apiClient.auth.register(data);
+      const response = await apiClient.auth.signup(data);
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {

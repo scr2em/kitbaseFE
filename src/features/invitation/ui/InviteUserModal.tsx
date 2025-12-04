@@ -6,7 +6,7 @@ import { inviteUserSchema,type  InviteUserFormData } from '../model/schema';
 import { ControlledTextInput } from '../../../shared/controlled-form-fields/ControlledTextInput';
 
 import { useCreateInvitationMutation } from '../../../shared/api/queries/invitation';
-import { useShowBackendError } from '../../../shared/hooks/useShowBackendError';
+import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
 import { usePermissions } from '../../../shared/hooks/usePermission';
 import { notifications } from '@mantine/notifications';
 import { ControlledRolesSelect } from '../../../shared/controlled-form-fields/ControlledSelect';
@@ -18,7 +18,9 @@ interface InviteUserModalProps {
 
 export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
   const { t } = useTranslation();
-  const createInvitationMutation = useCreateInvitationMutation();
+  const { currentOrganization } = useCurrentOrganization();
+  const organizationId = currentOrganization?.organization?.id || '';
+  const createInvitationMutation = useCreateInvitationMutation(organizationId);
   const showBackendError = useShowBackendError();
   const { canCreateInvitation } = usePermissions();
 
@@ -30,10 +32,8 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
   } = useForm<InviteUserFormData>({
     resolver: zodResolver(inviteUserSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
       email: '',
-      roleId: '',
+      role: '',
     },
   });
 
@@ -73,24 +73,6 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack gap="md">
           <ControlledTextInput
-            name="firstName"
-            control={control}
-            label={t('invitation.first_name_label')}
-            placeholder={t('invitation.first_name_placeholder')}
-            error={errors.firstName && t(errors.firstName.message as string)}
-            required
-          />
-
-          <ControlledTextInput
-            name="lastName"
-            control={control}
-            label={t('invitation.last_name_label')}
-            placeholder={t('invitation.last_name_placeholder')}
-            error={errors.lastName && t(errors.lastName.message as string)}
-            required
-          />
-
-          <ControlledTextInput
             name="email"
             control={control}
             label={t('invitation.email_label')}
@@ -101,11 +83,11 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
           />
 
          <ControlledRolesSelect
-            name="roleId"
+            name="role"
             control={control}
             label={t('invitation.role_label')}
             placeholder={t('invitation.role_placeholder')}
-            error={errors.roleId && t(errors.roleId.message as string)}
+            error={errors.role && t(errors.role.message as string)}
             required
           />
 

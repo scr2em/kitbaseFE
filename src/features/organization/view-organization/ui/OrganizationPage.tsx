@@ -31,8 +31,9 @@ export function OrganizationPage() {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();
-  const { data: organization, isLoading, isError } = useGetOrganizationQuery(currentOrganization?.organization?.subdomain);
-  const updateOrganizationMutation = useUpdateOrganizationMutation();
+  const organizationId = currentOrganization?.organization?.id;
+  const { data: organization, isLoading, isError } = useGetOrganizationQuery(organizationId);
+  const updateOrganizationMutation = useUpdateOrganizationMutation(organizationId || '');
   const { showError } = useShowBackendError();
   const { canUpdateOrganization } = usePermissions();
 

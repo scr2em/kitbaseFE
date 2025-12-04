@@ -9,7 +9,7 @@ import {
   ControlledTextInput,
   ControlledTextArea,
 } from '../../../shared/controlled-form-fields';
-import { useShowBackendError } from '../../../shared/hooks';
+import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
 
 interface CreateAppModalProps {
   opened: boolean;
@@ -18,7 +18,9 @@ interface CreateAppModalProps {
 
 export function CreateAppModal({ opened, onClose }: CreateAppModalProps) {
   const { t } = useTranslation();
-  const createAppMutation = useCreateMobileAppMutation();
+  const { currentOrganization } = useCurrentOrganization();
+  const organizationId = currentOrganization?.organization?.id || '';
+  const createAppMutation = useCreateMobileAppMutation(organizationId);
   const { showError } = useShowBackendError();
 
   const form = useForm<CreateAppFormData>({

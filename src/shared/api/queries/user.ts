@@ -7,7 +7,7 @@ export function useCurrentUserQuery(enabled = true) {
   return useQuery({
     queryKey: USER_QUERY_KEY,
     queryFn: async () => {
-      const response = await apiClient.users.getCurrentUser();
+      const response = await apiClient.auth.getCurrentUser();
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

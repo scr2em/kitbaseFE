@@ -21,26 +21,26 @@ export function useCreateOrganizationMutation() {
   });
 }
 
-export function useGetOrganizationQuery(subdomain?: string) {
+export function useGetOrganizationQuery(orgId?: string) {
   return useQuery({
-    queryKey: [...ORGANIZATION_QUERY_KEY, subdomain],
+    queryKey: [...ORGANIZATION_QUERY_KEY, orgId],
     queryFn: async () => {
-      if (!subdomain) {
-        throw new Error('Subdomain is required');
+      if (!orgId) {
+        throw new Error('Organization ID is required');
       }
-      const response = await apiClient.organizations.getOrganizationBySubdomain(subdomain);
+      const response = await apiClient.organizations.getOrganization(orgId);
       return response.data;
     },
-    enabled: !!subdomain,
+    enabled: !!orgId,
   });
 }
 
-export function useUpdateOrganizationMutation() {
+export function useUpdateOrganizationMutation(orgId: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: UpdateOrganizationRequest) => {
-      const response = await apiClient.organizations.updateCurrentOrganization(data);
+      const response = await apiClient.organizations.updateOrganization(orgId, data);
       return response.data;
     },
     onSuccess: () => {
@@ -51,14 +51,14 @@ export function useUpdateOrganizationMutation() {
   });
 }
 
-export function useOrganizationMembersQuery() {
+export function useOrganizationMembersQuery(orgId: string) {
   return useInfiniteQuery({
-    queryKey: ORGANIZATION_MEMBERS_QUERY_KEY,
+    queryKey: [...ORGANIZATION_MEMBERS_QUERY_KEY, orgId],
     queryFn: async ({ pageParam }) => {
       const page = pageParam as number;
       const limit = 20;
       
-      const response = await apiClient.members.getMembers({ page, limit });
+      const response = await apiClient.organizations.listOrganizationMembers(orgId, { page, limit });
       return response.data;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -70,20 +70,36 @@ export function useOrganizationMembersQuery() {
     },
     initialPageParam: 0,
     staleTime: 30 * 1000, // 30 seconds
+    enabled: !!orgId,
   });
 }
 
-export function useRemoveMemberMutation() {
+export function useRemoveMemberMutation(orgId: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (memberId: string) => {
-      const response = await apiClient.members.removeMember(memberId);
+    mutationFn: async (membershipId: string) => {
+      const response = await apiClient.organizations.removeMember(orgId, membershipId);
       return response.data;
     },
     onSuccess: () => {
       // Invalidate members query to refetch the teams page
-      queryClient.invalidateQueries({ queryKey: ORGANIZATION_MEMBERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: [...ORGANIZATION_MEMBERS_QUERY_KEY, orgId] });
+    },
+  });
+}
+
+export function useUpdateMemberRoleMutation(orgId: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ membershipId, roleId }: { membershipId: string; roleId: string }) => {
+      const response = await apiClient.organizations.updateMemberRole(orgId, membershipId, { roleId });
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate members query to refetch the teams page
+      queryClient.invalidateQueries({ queryKey: [...ORGANIZATION_MEMBERS_QUERY_KEY, orgId] });
     },
   });
 }

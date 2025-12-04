@@ -1,16 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../client';
 import { type CreateInvitationRequest } from '../../../generated-api';
 import { ORGANIZATION_MEMBERS_QUERY_KEY } from './organization';
 
 export const INVITATIONS_QUERY_KEY = ['invitations'];
 
-export function useCreateInvitationMutation() {
+export function useCreateInvitationMutation(orgId: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: CreateInvitationRequest) => {
-      const response = await apiClient.invitations.createInvitation(data);
+      const response = await apiClient.organizations.sendInvitation(orgId, data);
       return response.data;
     },
     onSuccess: () => {
@@ -20,45 +20,34 @@ export function useCreateInvitationMutation() {
   });
 }
 
-export function useResendInvitationMutation() {
+export function useAcceptInvitationMutation() {
+  return useMutation({
+    mutationFn: async (invitationId: string) => {
+      const response = await apiClient.invitations.acceptInvitation(invitationId);
+      return response.data;
+    },
+  });
+}
+
+export function useCancelInvitationMutation() {
+  return useMutation({
+    mutationFn: async (invitationId: string) => {
+      const response = await apiClient.invitations.cancelInvitation(invitationId);
+      return response.data;
+    },
+  });
+}
+
+export function useRevokeInvitationMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (userId: string) => {
-      const response = await apiClient.invitations.resendInvitation(userId);
+    mutationFn: async (invitationId: string) => {
+      const response = await apiClient.invitations.revokeInvitation(invitationId);
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ORGANIZATION_MEMBERS_QUERY_KEY });
-    },
-  });
-}
-
-export function useGetInvitationByToken(token: string) {
-  return useQuery({
-    queryKey: [...INVITATIONS_QUERY_KEY, 'token', token],
-    queryFn: async () => {
-      const response = await apiClient.invitations.getInvitationByToken(token);
-      return response.data;
-    },
-    enabled: !!token,
-  });
-}
-
-export function useAcceptInvitationMutation() {
-  return useMutation({
-    mutationFn: async (token: string) => {
-      const response = await apiClient.invitations.acceptInvitation(token);
-      return response.data;
-    },
-  });
-}
-
-export function useRejectInvitationMutation() {
-  return useMutation({
-    mutationFn: async (token: string) => {
-      const response = await apiClient.invitations.rejectInvitation(token);
-      return response.data;
     },
   });
 }

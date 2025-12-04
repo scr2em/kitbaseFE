@@ -1,8 +1,8 @@
-import { Container, Paper, Title, Text, Stack, Button, Group, Alert, Loader, Center } from '@mantine/core';
+import { Container, Paper, Title, Text, Stack, Button, Alert, Group } from '@mantine/core';
 import { useSearchParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Mail, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import { useGetInvitationByToken, useAcceptInvitationMutation, useRejectInvitationMutation } from '../../../shared/api/queries/invitation';
+import { useAcceptInvitationMutation, useCancelInvitationMutation } from '../../../shared/api/queries/invitation';
 import { useShowBackendError } from '../../../shared/hooks/useShowBackendError';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
@@ -14,15 +14,25 @@ export function AcceptInvitationPage() {
   const showBackendError = useShowBackendError();
   const [isProcessed, setIsProcessed] = useState(false);
 
-  const token = searchParams.get('token') || '';
+  // Note: The API now uses invitationId instead of token
+  // This may need to be updated based on how invitations are sent
+  const invitationId = searchParams.get('id') || searchParams.get('token') || '';
   
-  const { data: invitation, isLoading, error } = useGetInvitationByToken(token);
   const acceptMutation = useAcceptInvitationMutation();
-  const rejectMutation = useRejectInvitationMutation();
+  const cancelMutation = useCancelInvitationMutation();
 
   const handleAccept = async () => {
+    if (!invitationId) {
+      notifications.show({
+        title: t('common.error'),
+        message: t('invitation.accept.invalid_invitation'),
+        color: 'red',
+      });
+      return;
+    }
+
     try {
-      await acceptMutation.mutateAsync(token);
+      await acceptMutation.mutateAsync(invitationId);
       notifications.show({
         title: t('common.success'),
         message: t('invitation.accept.success_message'),
@@ -38,9 +48,18 @@ export function AcceptInvitationPage() {
     }
   };
 
-  const handleReject = async () => {
+  const handleCancel = async () => {
+    if (!invitationId) {
+      notifications.show({
+        title: t('common.error'),
+        message: t('invitation.accept.invalid_invitation'),
+        color: 'red',
+      });
+      return;
+    }
+
     try {
-      await rejectMutation.mutateAsync(token);
+      await cancelMutation.mutateAsync(invitationId);
       notifications.show({
         title: t('common.success'),
         message: t('invitation.accept.reject_success_message'),
@@ -56,18 +75,7 @@ export function AcceptInvitationPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Center h="100vh">
-        <Stack align="center" gap="md">
-          <Loader size="lg" />
-          <Text c="dimmed">{t('common.loading')}</Text>
-        </Stack>
-      </Center>
-    );
-  }
-
-  if (error || !invitation) {
+  if (!invitationId) {
     return (
       <Container size="sm" pt={80}>
         <Paper shadow="md" p="xl" radius="md" withBorder>
@@ -86,9 +94,6 @@ export function AcceptInvitationPage() {
     );
   }
 
-  const isExpired = invitation.status.status === 'expired';
-  const isAlreadyProcessed = invitation.status.status === 'accepted' || invitation.status.status === 'rejected';
-
   return (
     <Container size="sm" pt={80}>
       <Paper shadow="md" p="xl" radius="md" withBorder>
@@ -101,106 +106,32 @@ export function AcceptInvitationPage() {
             </Text>
           </Stack>
 
-          {isExpired && (
-            <Alert color="red" icon={<AlertCircle size={16} />}>
-              {t('invitation.accept.expired_message')}
-            </Alert>
-          )}
-
-          {isAlreadyProcessed && (
-            <Alert color="blue" icon={<AlertCircle size={16} />}>
-              {invitation.status.status === 'accepted' 
-                ? t('invitation.accept.already_accepted_message')
-                : t('invitation.accept.already_rejected_message')}
-            </Alert>
-          )}
-
           {isProcessed && (
             <Alert color="green" icon={<CheckCircle size={16} />}>
               {t('invitation.accept.redirecting_message')}
             </Alert>
           )}
 
-          <Stack gap="sm">
-            <Paper p="md" withBorder>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm" fw={500} c="dimmed">
-                    {t('invitation.accept.organization')}
-                  </Text>
-                  <Text size="sm" fw={600}>
-                    {invitation.organization.name}
-                  </Text>
-                </Group>
+          <Alert color="blue" icon={<AlertCircle size={16} />}>
+            <Text size="sm">
+              {t('invitation.accept.note_message')}
+            </Text>
+          </Alert>
 
-                {invitation.organization.description && (
-                  <Group justify="space-between">
-                    <Text size="sm" fw={500} c="dimmed">
-                      {t('invitation.accept.description')}
-                    </Text>
-                    <Text size="sm">
-                      {invitation.organization.description}
-                    </Text>
-                  </Group>
-                )}
-
-                <Group justify="space-between">
-                  <Text size="sm" fw={500} c="dimmed">
-                    {t('invitation.accept.role')}
-                  </Text>
-                  <Text size="sm" fw={600}>
-                    {invitation.role.name}
-                  </Text>
-                </Group>
-
-                {invitation.invitedBy && (
-                  <Group justify="space-between">
-                    <Text size="sm" fw={500} c="dimmed">
-                      {t('invitation.accept.invited_by')}
-                    </Text>
-                    <Text size="sm">
-                      {invitation.invitedBy.firstName} {invitation.invitedBy.lastName}
-                    </Text>
-                  </Group>
-                )}
-
-                <Group justify="space-between">
-                  <Text size="sm" fw={500} c="dimmed">
-                    {t('invitation.accept.email')}
-                  </Text>
-                  <Text size="sm">
-                    {invitation.email}
-                  </Text>
-                </Group>
-
-                {invitation.expiresAt && (
-                  <Group justify="space-between">
-                    <Text size="sm" fw={500} c="dimmed">
-                      {t('invitation.accept.expires_at')}
-                    </Text>
-                    <Text size="sm">
-                      {new Date(invitation.expiresAt).toLocaleDateString()}
-                    </Text>
-                  </Group>
-                )}
-              </Stack>
-            </Paper>
-          </Stack>
-
-          {!isExpired && !isAlreadyProcessed && !isProcessed && (
+          {!isProcessed && (
             <Group justify="center" mt="md">
               <Button
                 variant="subtle"
-                onClick={handleReject}
-                disabled={acceptMutation.isPending || rejectMutation.isPending}
-                loading={rejectMutation.isPending}
+                onClick={handleCancel}
+                disabled={acceptMutation.isPending || cancelMutation.isPending}
+                loading={cancelMutation.isPending}
                 leftSection={<XCircle size={18} />}
               >
                 {t('invitation.accept.reject_button')}
               </Button>
               <Button
                 onClick={handleAccept}
-                disabled={acceptMutation.isPending || rejectMutation.isPending}
+                disabled={acceptMutation.isPending || cancelMutation.isPending}
                 loading={acceptMutation.isPending}
                 variant="gradient"
                 gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
@@ -209,12 +140,6 @@ export function AcceptInvitationPage() {
                 {t('invitation.accept.accept_button')}
               </Button>
             </Group>
-          )}
-
-          {(isExpired || isAlreadyProcessed) && (
-            <Button onClick={() => navigate('/login')} variant="light" fullWidth>
-              {t('invitation.accept.go_to_login')}
-            </Button>
           )}
         </Stack>
       </Paper>

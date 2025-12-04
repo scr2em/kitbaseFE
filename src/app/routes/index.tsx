@@ -13,7 +13,6 @@ import {
   AccessPage,
   ApiKeysPage 
 } from '../../features/apps';
-import { PermissionsCalculatorPage } from '../../features/permissions-calculator';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { ChannelsPage } from '../../features/channels';
 import { LandingPage } from '../../features/landing';
@@ -51,12 +50,6 @@ export function AppRoutes() {
       <Route
         path="/invitations/accept"
         element={<AcceptInvitationPage />}
-      />
-      <Route
-        path="/permissions-calculator"
-        element={
-            <PermissionsCalculatorPage />
-        }
       />
       <Route
         path="/create-organization"

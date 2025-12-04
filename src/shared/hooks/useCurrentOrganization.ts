@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useCurrentUserQuery } from '../api/queries/user';
-import type { UserOrganizationMembership } from '../../generated-api';
 
 /**
  * Hook to get the current organization based on the subdomain from the URL
@@ -25,7 +24,7 @@ export function useCurrentOrganization() {
 
     // Find organization by subdomain
     const org = user.organizations.find(
-      (membership: UserOrganizationMembership) => 
+      (membership) => 
         membership.organization.subdomain === subdomain
     );
 

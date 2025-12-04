@@ -14,8 +14,8 @@
 export type InvitationStatusEnum =
   | "pending"
   | "accepted"
-  | "rejected"
-  | "expired";
+  | "expired"
+  | "canceled";
 
 /** User account status */
 export type UserStatusEnum = "active" | "inactive" | "pending" | "suspended";
@@ -59,6 +59,15 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
+/** Request to reset password */
+export interface ResetPasswordRequest {
+  /**
+   * User's email address
+   * @format email
+   */
+  email: string;
+}
+
 /** Request to create a new organization */
 export interface CreateOrganizationRequest {
   /** Organization name */
@@ -84,17 +93,13 @@ export interface UpdateOrganizationRequest {
 
 /** Request to create an invitation */
 export interface CreateInvitationRequest {
-  /** First name of the invited user */
-  firstName: string;
-  /** Last name of the invited user */
-  lastName: string;
   /**
    * Email of the invited user
    * @format email
    */
   email: string;
-  /** Role ID */
-  roleId: string;
+  /** Role name (e.g., developer, admin, analyst, support) */
+  role: string;
 }
 
 /** Request to add a member to an organization */
@@ -768,16 +773,34 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   auth = {
     /**
-     * No description
+     * @description Register a new user. Can optionally create an organization during signup.
      *
      * @tags Authentication
-     * @name Register
-     * @summary Register a new user
-     * @request POST:/auth/register
+     * @name Signup
+     * @summary Create user and organization
+     * @request POST:/auth/signup
      */
-    register: (data: UserRegistrationRequest, params: RequestParams = {}) =>
+    signup: (data: UserRegistrationRequest, params: RequestParams = {}) =>
       this.request<AuthResponse, ErrorResponse>({
-        path: `/auth/register`,
+        path: `/auth/signup`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Sign in user. Context-aware based on subdomain for organization-scoped sessions.
+     *
+     * @tags Authentication
+     * @name Signin
+     * @summary Sign in (context-aware based on subdomain)
+     * @request POST:/auth/signin
+     */
+    signin: (data: LoginRequest, params: RequestParams = {}) =>
+      this.request<AuthResponse, ErrorResponse>({
+        path: `/auth/signin`,
         method: "POST",
         body: data,
         type: ContentType.Json,
@@ -789,16 +812,16 @@ export class Api<
      * No description
      *
      * @tags Authentication
-     * @name Login
-     * @summary Login user
-     * @request POST:/auth/login
+     * @name GetCurrentUser
+     * @summary Get current user info
+     * @request GET:/auth/me
+     * @secure
      */
-    login: (data: LoginRequest, params: RequestParams = {}) =>
-      this.request<AuthResponse, ErrorResponse>({
-        path: `/auth/login`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
+    getCurrentUser: (params: RequestParams = {}) =>
+      this.request<UserResponse, ErrorResponse>({
+        path: `/auth/me`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),
@@ -808,76 +831,35 @@ export class Api<
      *
      * @tags Authentication
      * @name RefreshToken
-     * @summary Refresh access token
-     * @request POST:/auth/refresh
+     * @summary Refresh JWT token
+     * @request POST:/auth/refresh-token
+     * @secure
      */
     refreshToken: (data: RefreshTokenRequest, params: RequestParams = {}) =>
       this.request<AuthResponse, ErrorResponse>({
-        path: `/auth/refresh`,
+        path: `/auth/refresh-token`,
         method: "POST",
         body: data,
+        secure: true,
         type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * No description
+     * @description Request a password reset. Sends reset link to email.
      *
      * @tags Authentication
-     * @name Logout
-     * @summary Logout user
-     * @request POST:/auth/logout
+     * @name ResetPassword
+     * @summary Reset password
+     * @request POST:/auth/reset-password
      */
-    logout: (data: RefreshTokenRequest, params: RequestParams = {}) =>
+    resetPassword: (data: ResetPasswordRequest, params: RequestParams = {}) =>
       this.request<void, ErrorResponse>({
-        path: `/auth/logout`,
+        path: `/auth/reset-password`,
         method: "POST",
         body: data,
         type: ContentType.Json,
-        ...params,
-      }),
-  };
-  users = {
-    /**
-     * No description
-     *
-     * @tags Users
-     * @name GetCurrentUser
-     * @summary Get current user information
-     * @request GET:/users/me
-     * @secure
-     */
-    getCurrentUser: (params: RequestParams = {}) =>
-      this.request<UserResponse, ErrorResponse>({
-        path: `/users/me`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Users
-     * @name UpdateUser
-     * @summary Update user
-     * @request PUT:/users/{id}
-     * @secure
-     */
-    updateUser: (
-      id: string,
-      data: UpdateUserRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<UserResponse, ErrorResponse>({
-        path: `/users/${id}`,
-        method: "PUT",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
         ...params,
       }),
   };
@@ -886,12 +868,12 @@ export class Api<
      * @description Returns all organizations that the authenticated user is a member of
      *
      * @tags Organizations
-     * @name GetCurrentUserOrganizations
-     * @summary Get current user's organizations
+     * @name ListOrganizations
+     * @summary List user's organizations
      * @request GET:/organizations
      * @secure
      */
-    getCurrentUserOrganizations: (params: RequestParams = {}) =>
+    listOrganizations: (params: RequestParams = {}) =>
       this.request<OrganizationResponse[], ErrorResponse>({
         path: `/organizations`,
         method: "GET",
@@ -901,7 +883,7 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Users can create up to 3 organizations
      *
      * @tags Organizations
      * @name CreateOrganization
@@ -924,21 +906,40 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Get organization details. User must be a member of the organization.
      *
      * @tags Organizations
-     * @name UpdateCurrentOrganization
-     * @summary Update current organization
-     * @request PUT:/organizations
+     * @name GetOrganization
+     * @summary Get organization details
+     * @request GET:/organizations/{orgId}
      * @secure
      */
-    updateCurrentOrganization: (
+    getOrganization: (orgId: string, params: RequestParams = {}) =>
+      this.request<OrganizationResponse, ErrorResponse>({
+        path: `/organizations/${orgId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update organization. Only name can be updated (slug is immutable). Requires Owner/Admin role.
+     *
+     * @tags Organizations
+     * @name UpdateOrganization
+     * @summary Update organization (name only)
+     * @request PATCH:/organizations/{orgId}
+     * @secure
+     */
+    updateOrganization: (
+      orgId: string,
       data: UpdateOrganizationRequest,
       params: RequestParams = {},
     ) =>
       this.request<OrganizationResponse, ErrorResponse>({
-        path: `/organizations`,
-        method: "PUT",
+        path: `/organizations/${orgId}`,
+        method: "PATCH",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -947,80 +948,21 @@ export class Api<
       }),
 
     /**
-     * @description Get organization by subdomain. The authenticated user must be a member of the organization.
-     *
-     * @tags Organizations
-     * @name GetOrganizationBySubdomain
-     * @summary Get organization by subdomain
-     * @request GET:/organizations/subdomain/{subdomain}
-     * @secure
-     */
-    getOrganizationBySubdomain: (
-      subdomain: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<OrganizationResponse, ErrorResponse>({
-        path: `/organizations/subdomain/${subdomain}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-  };
-  roles = {
-    /**
-     * @description Returns all global roles that can be assigned to organization members
-     *
-     * @tags Roles
-     * @name GetRoles
-     * @summary Get all available roles
-     * @request GET:/roles
-     * @secure
-     */
-    getRoles: (params: RequestParams = {}) =>
-      this.request<RoleResponse[], ErrorResponse>({
-        path: `/roles`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-  };
-  permissions = {
-    /**
-     * @description Returns all permissions that can be assigned to roles
-     *
-     * @tags Permissions
-     * @name GetPermissions
-     * @summary Get all available permissions
-     * @request GET:/permissions
-     * @secure
-     */
-    getPermissions: (params: RequestParams = {}) =>
-      this.request<PermissionResponse[], ErrorResponse>({
-        path: `/permissions`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-  };
-  invitations = {
-    /**
-     * @description Create an invitation to add a new member to the organization - requires invitation.create permission
+     * @description Send an invitation to add a new member to the organization. Requires Owner/Admin role.
      *
      * @tags Invitations
-     * @name CreateInvitation
-     * @summary Create a new invitation
-     * @request POST:/invitations
+     * @name SendInvitation
+     * @summary Send invitation
+     * @request POST:/organizations/{orgId}/invite
      * @secure
      */
-    createInvitation: (
+    sendInvitation: (
+      orgId: string,
       data: CreateInvitationRequest,
       params: RequestParams = {},
     ) =>
       this.request<InvitationResponse, ErrorResponse>({
-        path: `/invitations`,
+        path: `/organizations/${orgId}/invite`,
         method: "POST",
         body: data,
         secure: true,
@@ -1030,82 +972,34 @@ export class Api<
       }),
 
     /**
-     * @description Public endpoint to retrieve invitation details by token
+     * @description List all pending invitations for the organization. Requires Owner/Admin role.
      *
      * @tags Invitations
-     * @name GetInvitationByToken
-     * @summary Get invitation by token (public endpoint)
-     * @request GET:/invitations/token/{token}
-     */
-    getInvitationByToken: (token: string, params: RequestParams = {}) =>
-      this.request<InvitationResponse, ErrorResponse>({
-        path: `/invitations/token/${token}`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Public endpoint to accept an invitation
-     *
-     * @tags Invitations
-     * @name AcceptInvitation
-     * @summary Accept invitation (public endpoint)
-     * @request POST:/invitations/token/{token}/accept
-     */
-    acceptInvitation: (token: string, params: RequestParams = {}) =>
-      this.request<InvitationResponse, ErrorResponse>({
-        path: `/invitations/token/${token}/accept`,
-        method: "POST",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Public endpoint to reject an invitation
-     *
-     * @tags Invitations
-     * @name RejectInvitation
-     * @summary Reject invitation (public endpoint)
-     * @request POST:/invitations/token/{token}/reject
-     */
-    rejectInvitation: (token: string, params: RequestParams = {}) =>
-      this.request<InvitationResponse, ErrorResponse>({
-        path: `/invitations/token/${token}/reject`,
-        method: "POST",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Resend an invitation by user ID - requires invitation.create permission
-     *
-     * @tags Invitations
-     * @name ResendInvitation
-     * @summary Resend invitation (private endpoint)
-     * @request POST:/invitations/users/{userId}/resend
+     * @name ListPendingInvitations
+     * @summary List pending invitations
+     * @request GET:/organizations/{orgId}/invitations
      * @secure
      */
-    resendInvitation: (userId: string, params: RequestParams = {}) =>
-      this.request<InvitationResponse, ErrorResponse>({
-        path: `/invitations/users/${userId}/resend`,
-        method: "POST",
+    listPendingInvitations: (orgId: string, params: RequestParams = {}) =>
+      this.request<InvitationResponse[], ErrorResponse>({
+        path: `/organizations/${orgId}/invitations`,
+        method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-  };
-  members = {
+
     /**
-     * No description
+     * @description List all members of the organization. Any member can view.
      *
-     * @tags Organization Members
-     * @name GetMembers
-     * @summary Get all members in organization
-     * @request GET:/members
+     * @tags Users/Members
+     * @name ListOrganizationMembers
+     * @summary List organization members
+     * @request GET:/organizations/{orgId}/users
      * @secure
      */
-    getMembers: (
+    listOrganizationMembers: (
+      orgId: string,
       query?: {
         /**
          * Page number (0-based)
@@ -1124,7 +1018,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<PaginatedOrganizationMemberResponse, ErrorResponse>({
-        path: `/members`,
+        path: `/organizations/${orgId}/users`,
         method: "GET",
         query: query,
         secure: true,
@@ -1133,20 +1027,85 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Update a member's role. Requires Owner/Admin role.
      *
-     * @tags Organization Members
-     * @name AddMember
-     * @summary Add a member to organization
-     * @request POST:/members
+     * @tags Users/Members
+     * @name UpdateMemberRole
+     * @summary Update member role
+     * @request PATCH:/organizations/{orgId}/users/{membershipId}
      * @secure
      */
-    addMember: (
-      data: AddOrganizationMemberRequest,
+    updateMemberRole: (
+      orgId: string,
+      membershipId: string,
+      data: UpdateMemberRoleRequest,
       params: RequestParams = {},
     ) =>
       this.request<OrganizationMemberResponse, ErrorResponse>({
-        path: `/members`,
+        path: `/organizations/${orgId}/users/${membershipId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Remove a member from the organization. Requires Owner/Admin role. Owner cannot remove themselves.
+     *
+     * @tags Users/Members
+     * @name RemoveMember
+     * @summary Remove member
+     * @request DELETE:/organizations/{orgId}/users/{membershipId}
+     * @secure
+     */
+    removeMember: (
+      orgId: string,
+      membershipId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/organizations/${orgId}/users/${membershipId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description List all mobile applications for the organization. Any member can view.
+     *
+     * @tags Mobile Applications
+     * @name ListApplications
+     * @summary List applications
+     * @request GET:/organizations/{orgId}/apps
+     * @secure
+     */
+    listApplications: (orgId: string, params: RequestParams = {}) =>
+      this.request<MobileApplicationResponse[], ErrorResponse>({
+        path: `/organizations/${orgId}/apps`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new mobile application. Requires Developer+ role.
+     *
+     * @tags Mobile Applications
+     * @name CreateApplication
+     * @summary Create application
+     * @request POST:/organizations/{orgId}/apps
+     * @secure
+     */
+    createApplication: (
+      orgId: string,
+      data: CreateMobileApplicationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<MobileApplicationResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/apps`,
         method: "POST",
         body: data,
         secure: true,
@@ -1156,17 +1115,21 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Get mobile application details. Any member can view.
      *
-     * @tags Organization Members
-     * @name GetMemberById
-     * @summary Get member by ID
-     * @request GET:/members/{memberId}
+     * @tags Mobile Applications
+     * @name GetApplication
+     * @summary Get application details
+     * @request GET:/organizations/{orgId}/apps/{appId}
      * @secure
      */
-    getMemberById: (memberId: string, params: RequestParams = {}) =>
-      this.request<OrganizationMemberResponse, ErrorResponse>({
-        path: `/members/${memberId}`,
+    getApplication: (
+      orgId: string,
+      appId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<MobileApplicationResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/apps/${appId}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1174,22 +1137,23 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Update mobile application. Requires Developer+ role.
      *
-     * @tags Organization Members
-     * @name UpdateMemberRole
-     * @summary Update member role
-     * @request PUT:/members/{memberId}
+     * @tags Mobile Applications
+     * @name UpdateApplication
+     * @summary Update application
+     * @request PATCH:/organizations/{orgId}/apps/{appId}
      * @secure
      */
-    updateMemberRole: (
-      memberId: string,
-      data: UpdateMemberRoleRequest,
+    updateApplication: (
+      orgId: string,
+      appId: string,
+      data: UpdateMobileApplicationRequest,
       params: RequestParams = {},
     ) =>
-      this.request<OrganizationMemberResponse, ErrorResponse>({
-        path: `/members/${memberId}`,
-        method: "PUT",
+      this.request<MobileApplicationResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/apps/${appId}`,
+        method: "PATCH",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -1198,35 +1162,170 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Delete mobile application. Requires Developer+ role.
      *
-     * @tags Organization Members
-     * @name RemoveMember
-     * @summary Remove member from organization
-     * @request DELETE:/members/{memberId}
+     * @tags Mobile Applications
+     * @name DeleteApplication
+     * @summary Delete application
+     * @request DELETE:/organizations/{orgId}/apps/{appId}
      * @secure
      */
-    removeMember: (memberId: string, params: RequestParams = {}) =>
+    deleteApplication: (
+      orgId: string,
+      appId: string,
+      params: RequestParams = {},
+    ) =>
       this.request<void, ErrorResponse>({
-        path: `/members/${memberId}`,
+        path: `/organizations/${orgId}/apps/${appId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description List all channels for the organization. Any member can view.
+     *
+     * @tags Channels
+     * @name ListChannels
+     * @summary List channels
+     * @request GET:/organizations/{orgId}/channels
+     * @secure
+     */
+    listChannels: (
+      orgId: string,
+      query?: {
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 20
+         */
+        size?: number;
+        /**
+         * Sort direction by creation date
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedChannelResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/channels`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new channel. Requires Developer+ role.
+     *
+     * @tags Channels
+     * @name CreateChannel
+     * @summary Create channel
+     * @request POST:/organizations/{orgId}/channels
+     * @secure
+     */
+    createChannel: (
+      orgId: string,
+      data: CreateChannelRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChannelResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/channels`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get channel details. Any member can view.
+     *
+     * @tags Channels
+     * @name GetChannel
+     * @summary Get channel details
+     * @request GET:/organizations/{orgId}/channels/{channelId}
+     * @secure
+     */
+    getChannel: (
+      orgId: string,
+      channelId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChannelResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/channels/${channelId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update channel. Requires Developer+ role.
+     *
+     * @tags Channels
+     * @name UpdateChannel
+     * @summary Update channel
+     * @request PATCH:/organizations/{orgId}/channels/{channelId}
+     * @secure
+     */
+    updateChannel: (
+      orgId: string,
+      channelId: string,
+      data: UpdateChannelRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChannelResponse, ErrorResponse>({
+        path: `/organizations/${orgId}/channels/${channelId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete channel. Requires Developer+ role.
+     *
+     * @tags Channels
+     * @name DeleteChannel
+     * @summary Delete channel
+     * @request DELETE:/organizations/{orgId}/channels/{channelId}
+     * @secure
+     */
+    deleteChannel: (
+      orgId: string,
+      channelId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/organizations/${orgId}/channels/${channelId}`,
         method: "DELETE",
         secure: true,
         ...params,
       }),
   };
-  mobileApplications = {
+  roles = {
     /**
-     * No description
+     * @description Returns all global roles that can be assigned to organization members
      *
-     * @tags Mobile Applications
-     * @name GetAllMobileApplications
-     * @summary Get all mobile applications for the organization
-     * @request GET:/mobile-applications
+     * @tags Roles & Permissions
+     * @name ListRoles
+     * @summary List available roles
+     * @request GET:/roles
      * @secure
      */
-    getAllMobileApplications: (params: RequestParams = {}) =>
-      this.request<MobileApplicationResponse[], ErrorResponse>({
-        path: `/mobile-applications`,
+    listRoles: (params: RequestParams = {}) =>
+      this.request<RoleResponse[], ErrorResponse>({
+        path: `/roles`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1234,105 +1333,70 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Returns all permissions for a specific role
      *
-     * @tags Mobile Applications
-     * @name CreateMobileApplication
-     * @summary Create a new mobile application
-     * @request POST:/mobile-applications
+     * @tags Roles & Permissions
+     * @name GetRolePermissions
+     * @summary Get role permissions
+     * @request GET:/roles/{roleId}/permissions
      * @secure
      */
-    createMobileApplication: (
-      data: CreateMobileApplicationRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/mobile-applications`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Mobile Applications
-     * @name GetMobileApplicationByBundleId
-     * @summary Get mobile application by bundle ID
-     * @request GET:/mobile-applications/bundle/{bundleId}
-     * @secure
-     */
-    getMobileApplicationByBundleId: (
-      bundleId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/mobile-applications/bundle/${bundleId}`,
+    getRolePermissions: (roleId: string, params: RequestParams = {}) =>
+      this.request<PermissionResponse[], ErrorResponse>({
+        path: `/roles/${roleId}/permissions`,
         method: "GET",
         secure: true,
         format: "json",
         ...params,
       }),
-
+  };
+  invitations = {
     /**
-     * No description
+     * @description Revoke an invitation. Also deletes the associated user if created. Requires Owner/Admin role.
      *
-     * @tags Mobile Applications
-     * @name GetMobileApplicationById
-     * @summary Get mobile application by ID
-     * @request GET:/mobile-applications/{id}
+     * @tags Invitations
+     * @name RevokeInvitation
+     * @summary Revoke invitation (deletes user too)
+     * @request DELETE:/invitations/{invitationId}/revoke
      * @secure
      */
-    getMobileApplicationById: (id: string, params: RequestParams = {}) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/mobile-applications/${id}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Mobile Applications
-     * @name UpdateMobileApplication
-     * @summary Update mobile application
-     * @request PUT:/mobile-applications/{id}
-     * @secure
-     */
-    updateMobileApplication: (
-      id: string,
-      data: UpdateMobileApplicationRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/mobile-applications/${id}`,
-        method: "PUT",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Mobile Applications
-     * @name DeleteMobileApplication
-     * @summary Delete mobile application
-     * @request DELETE:/mobile-applications/{id}
-     * @secure
-     */
-    deleteMobileApplication: (id: string, params: RequestParams = {}) =>
+    revokeInvitation: (invitationId: string, params: RequestParams = {}) =>
       this.request<void, ErrorResponse>({
-        path: `/mobile-applications/${id}`,
+        path: `/invitations/${invitationId}/revoke`,
         method: "DELETE",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description Public endpoint to accept an invitation
+     *
+     * @tags Invitations
+     * @name AcceptInvitation
+     * @summary Accept invitation
+     * @request POST:/invitations/{invitationId}/accept
+     */
+    acceptInvitation: (invitationId: string, params: RequestParams = {}) =>
+      this.request<InvitationResponse, ErrorResponse>({
+        path: `/invitations/${invitationId}/accept`,
+        method: "POST",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Public endpoint to cancel an invitation. The user account is kept.
+     *
+     * @tags Invitations
+     * @name CancelInvitation
+     * @summary Cancel/validate invitation (keeps user)
+     * @request GET:/invitations/{invitationId}/cancel
+     */
+    cancelInvitation: (invitationId: string, params: RequestParams = {}) =>
+      this.request<InvitationResponse, ErrorResponse>({
+        path: `/invitations/${invitationId}/cancel`,
+        method: "GET",
+        format: "json",
         ...params,
       }),
   };
@@ -1368,7 +1432,7 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<PaginatedBuildResponse, void | ErrorResponse>({
+      this.request<PaginatedBuildResponse, ErrorResponse>({
         path: `/${orgId}/${bundleId}/builds`,
         method: "GET",
         query: query,
@@ -1407,7 +1471,7 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<BuildResponse, void | ErrorResponse>({
+      this.request<BuildResponse, ErrorResponse>({
         path: `/${orgId}/${bundleId}/builds`,
         method: "POST",
         body: data,
@@ -1472,7 +1536,7 @@ export class Api<
       data: CreateApiKeyRequest,
       params: RequestParams = {},
     ) =>
-      this.request<ApiKeyResponse, void | ErrorResponse>({
+      this.request<ApiKeyResponse, ErrorResponse>({
         path: `/${orgId}/${bundleId}/api-keys`,
         method: "POST",
         body: data,
@@ -1499,115 +1563,6 @@ export class Api<
     ) =>
       this.request<void, ErrorResponse>({
         path: `/${orgId}/${bundleId}/api-keys/${keyId}`,
-        method: "DELETE",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Channels
-     * @name GetChannels
-     * @summary Get paginated list of channels
-     * @request GET:/{orgId}/channels
-     * @secure
-     */
-    getChannels: (
-      orgId: string,
-      query?: {
-        /**
-         * Page number (0-based)
-         * @default 0
-         */
-        page?: number;
-        /**
-         * Number of items per page
-         * @default 20
-         */
-        size?: number;
-        /**
-         * Sort direction by creation date
-         * @default "desc"
-         */
-        sort?: "asc" | "desc";
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<PaginatedChannelResponse, ErrorResponse>({
-        path: `/${orgId}/channels`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Channels
-     * @name CreateChannel
-     * @summary Create a new channel
-     * @request POST:/{orgId}/channels
-     * @secure
-     */
-    createChannel: (
-      orgId: string,
-      data: CreateChannelRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/${orgId}/channels`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Channels
-     * @name UpdateChannel
-     * @summary Update a channel
-     * @request PUT:/{orgId}/channels/{channelId}
-     * @secure
-     */
-    updateChannel: (
-      orgId: string,
-      channelId: string,
-      data: UpdateChannelRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/${orgId}/channels/${channelId}`,
-        method: "PUT",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Channels
-     * @name DeleteChannel
-     * @summary Delete a channel
-     * @request DELETE:/{orgId}/channels/{channelId}
-     * @secure
-     */
-    deleteChannel: (
-      orgId: string,
-      channelId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<void, ErrorResponse>({
-        path: `/${orgId}/channels/${channelId}`,
         method: "DELETE",
         secure: true,
         ...params,
@@ -1658,7 +1613,7 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<BuildResponse, void | ErrorResponse>({
+      this.request<BuildResponse, ErrorResponse>({
         path: `/v1/builds`,
         method: "POST",
         body: data,

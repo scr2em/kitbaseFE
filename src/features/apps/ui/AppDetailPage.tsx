@@ -15,13 +15,16 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation, Outlet } from 'react-router';
 import { AlertCircle, Package, ArrowLeft, Hammer, Key } from 'lucide-react';
 import { useMobileAppQuery } from '../../../shared/api/queries';
+import { useCurrentOrganization } from '../../../shared/hooks';
 
 export function AppDetailPage() {
   const { t } = useTranslation();
   const { bundleId } = useParams<{ bundleId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: app, isLoading, isError } = useMobileAppQuery(bundleId || '');
+  const { currentOrganization } = useCurrentOrganization();
+  const organizationId = currentOrganization?.organization?.id || '';
+  const { data: app, isLoading, isError } = useMobileAppQuery(organizationId, bundleId || '');
 
   const navigationItems = [
     {

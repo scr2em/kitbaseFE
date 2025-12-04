@@ -10,26 +10,22 @@ servers:
 tags:
   - name: Authentication
     description: User authentication and authorization operations
-  - name: Users
-    description: User management operations
   - name: Organizations
     description: Organization management operations
-  - name: Roles
-    description: Role management operations
-  - name: Permissions
-    description: Permission management operations
   - name: Invitations
     description: Invitation management operations
-  - name: Organization Members
-    description: Organization member management operations
+  - name: Users/Members
+    description: Organization members management operations
+  - name: Roles & Permissions
+    description: Role and permission management operations
   - name: Mobile Applications
     description: Mobile application management operations
+  - name: Channels
+    description: Channel management operations
   - name: Builds
     description: Build management operations
   - name: API Keys
     description: API key management for build uploads
-  - name: Channels
-    description: Channel management operations
   - name: Audit Logs
     description: Audit log and activity tracking operations
 
@@ -43,7 +39,7 @@ components:
     
     InvitationStatusEnum:
       type: string
-      enum: [pending, accepted, rejected, expired]
+      enum: [pending, accepted, expired, canceled]
       description: Invitation status
 
     # Request DTOs
@@ -98,6 +94,17 @@ components:
           type: string
           description: Refresh token
 
+    ResetPasswordRequest:
+      type: object
+      description: Request to reset password
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+
     CreateOrganizationRequest:
       type: object
       description: Request to create a new organization
@@ -135,24 +142,16 @@ components:
       type: object
       description: Request to create an invitation
       required:
-        - firstName
-        - lastName
         - email
-        - roleId
+        - role
       properties:
-        firstName:
-          type: string
-          description: First name of the invited user
-        lastName:
-          type: string
-          description: Last name of the invited user
         email:
           type: string
           format: email
           description: Email of the invited user
-        roleId:
+        role:
           type: string
-          description: Role ID
+          description: Role name (e.g., developer, admin, analyst, support)
 
     AddOrganizationMemberRequest:
       type: object
@@ -918,6 +917,13 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
     UnauthorizedError:
       description: Unauthorized access
       content:
@@ -946,10 +952,11 @@ components:
       bearerFormat: JWT
 
 paths:
-  /auth/register:
+  /auth/signup:
     post:
-      operationId: register
-      summary: Register a new user
+      operationId: signup
+      summary: Create user and organization
+      description: Register a new user. Can optionally create an organization during signup.
       tags:
         - Authentication
       requestBody:
@@ -970,10 +977,11 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /auth/login:
+  /auth/signin:
     post:
-      operationId: login
-      summary: Login user
+      operationId: signin
+      summary: Sign in (context-aware based on subdomain)
+      description: Sign in user. Context-aware based on subdomain for organization-scoped sessions.
       tags:
         - Authentication
       requestBody:
@@ -992,12 +1000,32 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
-  /auth/refresh:
-    post:
-      operationId: refreshToken
-      summary: Refresh access token
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      summary: Get current user info
       tags:
         - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/refresh-token:
+    post:
+      operationId: refreshToken
+      summary: Refresh JWT token
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1014,10 +1042,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
-  /auth/logout:
+  /auth/reset-password:
     post:
-      operationId: logout
-      summary: Logout user
+      operationId: resetPassword
+      summary: Reset password
+      description: Request a password reset. Sends reset link to email.
       tags:
         - Authentication
       requestBody:
@@ -1025,71 +1054,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
+              $ref: '#/components/schemas/ResetPasswordRequest'
       responses:
         '200':
-          description: Logout successful
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-
-  /users/me:
-    get:
-      operationId: getCurrentUser
-      summary: Get current user information
-      tags:
-        - Users
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: User information retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-
-  /users/{id}:
-    put:
-      operationId: updateUser
-      summary: Update user
-      tags:
-        - Users
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: Password reset email sent
         '404':
           $ref: '#/components/responses/NotFoundError'
 
   /organizations:
     get:
-      operationId: getCurrentUserOrganizations
-      summary: Get current user's organizations
+      operationId: listOrganizations
+      summary: List user's organizations
       description: Returns all organizations that the authenticated user is a member of
       tags:
         - Organizations
@@ -1110,6 +1085,7 @@ paths:
     post:
       operationId: createOrganization
       summary: Create a new organization
+      description: Users can create up to 3 organizations
       tags:
         - Organizations
       security:
@@ -1131,14 +1107,52 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-    
-    put:
-      operationId: updateCurrentOrganization
-      summary: Update current organization
+
+  /organizations/{orgId}:
+    get:
+      operationId: getOrganization
+      summary: Get organization details
+      description: Get organization details. User must be a member of the organization.
       tags:
         - Organizations
       security:
         - BearerAuth: []
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Organization ID
+      responses:
+        '200':
+          description: Organization retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateOrganization
+      summary: Update organization (name only)
+      description: Update organization. Only name can be updated (slug is immutable). Requires Owner/Admin role.
+      tags:
+        - Organizations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Organization ID
       requestBody:
         required: true
         content:
@@ -1161,45 +1175,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /organizations/subdomain/{subdomain}:
-    get:
-      operationId: getOrganizationBySubdomain
-      summary: Get organization by subdomain
-      description: Get organization by subdomain. The authenticated user must be a member of the organization.
-      tags:
-        - Organizations
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: subdomain
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Organization subdomain
-      responses:
-        '200':
-          description: Organization retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-
   /roles:
     get:
-      operationId: getRoles
-      summary: Get all available roles
+      operationId: listRoles
+      summary: List available roles
       description: Returns all global roles that can be assigned to organization members
       tags:
-        - Roles
+        - Roles & Permissions
       security:
         - BearerAuth: []
       responses:
@@ -1213,21 +1195,26 @@ paths:
                   $ref: '#/components/schemas/RoleResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
 
-  /permissions:
+  /roles/{roleId}/permissions:
     get:
-      operationId: getPermissions
-      summary: Get all available permissions
-      description: Returns all permissions that can be assigned to roles
+      operationId: getRolePermissions
+      summary: Get role permissions
+      description: Returns all permissions for a specific role
       tags:
-        - Permissions
+        - Roles & Permissions
       security:
         - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Role ID
       responses:
         '200':
-          description: Permissions retrieved successfully
+          description: Role permissions retrieved successfully
           content:
             application/json:
               schema:
@@ -1236,18 +1223,25 @@ paths:
                   $ref: '#/components/schemas/PermissionResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-  /invitations:
+  /organizations/{orgId}/invite:
     post:
-      operationId: createInvitation
-      summary: Create a new invitation
-      description: Create an invitation to add a new member to the organization - requires invitation.create permission
+      operationId: sendInvitation
+      summary: Send invitation
+      description: Send an invitation to add a new member to the organization. Requires Owner/Admin role.
       tags:
         - Invitations
       security:
         - BearerAuth: []
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Organization ID
       requestBody:
         required: true
         content:
@@ -1256,7 +1250,7 @@ paths:
               $ref: '#/components/schemas/CreateInvitationRequest'
       responses:
         '201':
-          description: Invitation created successfully
+          description: Invitation sent successfully
           content:
             application/json:
               schema:
@@ -1270,42 +1264,76 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /invitations/token/{token}:
+  /organizations/{orgId}/invitations:
     get:
-      operationId: getInvitationByToken
-      summary: Get invitation by token (public endpoint)
-      description: Public endpoint to retrieve invitation details by token
+      operationId: listPendingInvitations
+      summary: List pending invitations
+      description: List all pending invitations for the organization. Requires Owner/Admin role.
       tags:
         - Invitations
+      security:
+        - BearerAuth: []
       parameters:
-        - name: token
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
+          description: Organization ID
       responses:
         '200':
-          description: Invitation retrieved successfully
+          description: Invitations retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvitationResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvitationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /invitations/{invitationId}/revoke:
+    delete:
+      operationId: revokeInvitation
+      summary: Revoke invitation (deletes user too)
+      description: Revoke an invitation. Also deletes the associated user if created. Requires Owner/Admin role.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation ID
+      responses:
+        '204':
+          description: Invitation revoked successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /invitations/token/{token}/accept:
+  /invitations/{invitationId}/accept:
     post:
       operationId: acceptInvitation
-      summary: Accept invitation (public endpoint)
+      summary: Accept invitation
       description: Public endpoint to accept an invitation
       tags:
         - Invitations
       parameters:
-        - name: token
+        - name: invitationId
           in: path
           required: true
           schema:
             type: string
+          description: Invitation ID
       responses:
         '200':
           description: Invitation accepted successfully
@@ -1318,22 +1346,23 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /invitations/token/{token}/reject:
-    post:
-      operationId: rejectInvitation
-      summary: Reject invitation (public endpoint)
-      description: Public endpoint to reject an invitation
+  /invitations/{invitationId}/cancel:
+    get:
+      operationId: cancelInvitation
+      summary: Cancel/validate invitation (keeps user)
+      description: Public endpoint to cancel an invitation. The user account is kept.
       tags:
         - Invitations
       parameters:
-        - name: token
+        - name: invitationId
           in: path
           required: true
           schema:
             type: string
+          description: Invitation ID
       responses:
         '200':
-          description: Invitation rejected successfully
+          description: Invitation canceled successfully
           content:
             application/json:
               schema:
@@ -1343,44 +1372,22 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /invitations/users/{userId}/resend:
-    post:
-      operationId: resendInvitation
-      summary: Resend invitation (private endpoint)
-      description: Resend an invitation by user ID - requires invitation.create permission
+  /organizations/{orgId}/users:
+    get:
+      operationId: listOrganizationMembers
+      summary: List organization members
+      description: List all members of the organization. Any member can view.
       tags:
-        - Invitations
+        - Users/Members
       security:
         - BearerAuth: []
       parameters:
-        - name: userId
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
-      responses:
-        '200':
-          description: Invitation resent successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InvitationResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-
-  /members:
-    get:
-      operationId: getMembers
-      summary: Get all members in organization
-      tags:
-        - Organization Members
-      security:
-        - BearerAuth: []
-      parameters:
+          description: Organization ID
         - name: page
           in: query
           description: Page number (0-based)
@@ -1409,75 +1416,29 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-    
-    post:
-      operationId: addMember
-      summary: Add a member to organization
-      tags:
-        - Organization Members
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddOrganizationMemberRequest'
-      responses:
-        '201':
-          description: Member added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationMemberResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
 
-  /members/{memberId}:
-    get:
-      operationId: getMemberById
-      summary: Get member by ID
-      tags:
-        - Organization Members
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: memberId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Member retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationMemberResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-    
-    put:
+  /organizations/{orgId}/users/{membershipId}:
+    patch:
       operationId: updateMemberRole
       summary: Update member role
+      description: Update a member's role. Requires Owner/Admin role.
       tags:
-        - Organization Members
+        - Users/Members
       security:
         - BearerAuth: []
       parameters:
-        - name: memberId
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
+          description: Organization ID
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Membership ID
       requestBody:
         required: true
         content:
@@ -1502,19 +1463,27 @@ paths:
     
     delete:
       operationId: removeMember
-      summary: Remove member from organization
+      summary: Remove member
+      description: Remove a member from the organization. Requires Owner/Admin role. Owner cannot remove themselves.
       tags:
-        - Organization Members
+        - Users/Members
       security:
         - BearerAuth: []
       parameters:
-        - name: memberId
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
+          description: Organization ID
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Membership ID
       responses:
-        '200':
+        '204':
           description: Member removed successfully
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -1523,14 +1492,22 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /mobile-applications:
+  /organizations/{orgId}/apps:
     get:
-      operationId: getAllMobileApplications
-      summary: Get all mobile applications for the organization
+      operationId: listApplications
+      summary: List applications
+      description: List all mobile applications for the organization. Any member can view.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Organization ID
       responses:
         '200':
           description: Mobile applications retrieved successfully
@@ -1546,12 +1523,20 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
     
     post:
-      operationId: createMobileApplication
-      summary: Create a new mobile application
+      operationId: createApplication
+      summary: Create application
+      description: Create a new mobile application. Requires Developer+ role.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Organization ID
       requestBody:
         required: true
         content:
@@ -1574,49 +1559,28 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /mobile-applications/bundle/{bundleId}:
+  /organizations/{orgId}/apps/{appId}:
     get:
-      operationId: getMobileApplicationByBundleId
-      summary: Get mobile application by bundle ID
+      operationId: getApplication
+      summary: Get application details
+      description: Get mobile application details. Any member can view.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: bundleId
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
-          description: The bundle ID of the mobile application (e.g., com.example.app)
-      responses:
-        '200':
-          description: Mobile application retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MobileApplicationResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
-        '404':
-          $ref: '#/components/responses/NotFoundError'
-
-  /mobile-applications/{id}:
-    get:
-      operationId: getMobileApplicationById
-      summary: Get mobile application by ID
-      tags:
-        - Mobile Applications
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
+          description: Organization ID
+        - name: appId
           in: path
           required: true
           schema:
             type: string
+          description: Application ID
       responses:
         '200':
           description: Mobile application retrieved successfully
@@ -1631,19 +1595,27 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
     
-    put:
-      operationId: updateMobileApplication
-      summary: Update mobile application
+    patch:
+      operationId: updateApplication
+      summary: Update application
+      description: Update mobile application. Requires Developer+ role.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
+          description: Organization ID
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application ID
       requestBody:
         required: true
         content:
@@ -1667,18 +1639,26 @@ paths:
           $ref: '#/components/responses/NotFoundError'
     
     delete:
-      operationId: deleteMobileApplication
-      summary: Delete mobile application
+      operationId: deleteApplication
+      summary: Delete application
+      description: Delete mobile application. Requires Developer+ role.
       tags:
         - Mobile Applications
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: orgId
           in: path
           required: true
           schema:
             type: string
+          description: Organization ID
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application ID
       responses:
         '204':
           description: Mobile application deleted successfully
@@ -2036,10 +2016,11 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /{orgId}/channels:
+  /organizations/{orgId}/channels:
     get:
-      operationId: getChannels
-      summary: Get paginated list of channels
+      operationId: listChannels
+      summary: List channels
+      description: List all channels for the organization. Any member can view.
       tags:
         - Channels
       security:
@@ -2075,7 +2056,7 @@ paths:
           description: Sort direction by creation date
       responses:
         '200':
-          description: Paginated list of channels retrieved successfully
+          description: Channels retrieved successfully
           content:
             application/json:
               schema:
@@ -2093,7 +2074,8 @@ paths:
     
     post:
       operationId: createChannel
-      summary: Create a new channel
+      summary: Create channel
+      description: Create a new channel. Requires Developer+ role.
       tags:
         - Channels
       security:
@@ -2131,10 +2113,46 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /{orgId}/channels/{channelId}:
-    put:
+  /organizations/{orgId}/channels/{channelId}:
+    get:
+      operationId: getChannel
+      summary: Get channel details
+      description: Get channel details. Any member can view.
+      tags:
+        - Channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Organization ID
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Channel ID
+      responses:
+        '200':
+          description: Channel retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
       operationId: updateChannel
-      summary: Update a channel
+      summary: Update channel
+      description: Update channel. Requires Developer+ role.
       tags:
         - Channels
       security:
@@ -2182,7 +2200,8 @@ paths:
     
     delete:
       operationId: deleteChannel
-      summary: Delete a channel
+      summary: Delete channel
+      description: Delete channel. Requires Developer+ role.
       tags:
         - Channels
       security:
