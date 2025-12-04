@@ -28,7 +28,9 @@
       "have_account": "Already have an account?",
       "login_link": "Sign in",
       "error_email_exists": "Email already exists",
-      "error_generic": "An error occurred. Please try again."
+      "error_generic": "An error occurred. Please try again.",
+      "success_message": "Account created successfully!",
+      "invitation_note": "You're signing up to accept an invitation. After creating your account, you'll be able to review and accept the invitation."
     },
     "logout": "Logout"
   },
@@ -112,6 +114,7 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
+    "warning": "Warning",
     "error_generic": "An error occurred. Please try again."
   },
   "navigation": {
@@ -259,6 +262,7 @@
     "accept": {
       "title": "You've Been Invited!",
       "subtitle": "You have been invited to join an organization",
+      "logged_in_note": "Review the invitation details and accept to join the organization.",
       "organization": "Organization",
       "description": "Description",
       "role": "Role",
@@ -266,16 +270,16 @@
       "email": "Email",
       "expires_at": "Expires At",
       "accept_button": "Accept Invitation",
-      "reject_button": "Reject Invitation",
-      "success_message": "Invitation accepted successfully! Redirecting to login...",
-      "reject_success_message": "Invitation rejected successfully.",
+      "reject_button": "Decline Invitation",
+      "success_message": "Invitation accepted successfully! Redirecting to your dashboard...",
+      "reject_success_message": "Invitation declined successfully.",
+      "accept_error": "Failed to accept invitation. Please try again.",
       "error_title": "Invalid Invitation",
       "error_message": "This invitation link is invalid or has expired.",
-      "expired_message": "This invitation has expired and can no longer be accepted.",
-      "already_accepted_message": "This invitation has already been accepted.",
-      "already_rejected_message": "This invitation has already been rejected.",
-      "redirecting_message": "Redirecting to login page...",
-      "go_to_login": "Go to Login"
+      "go_to_home": "Go to Home",
+      "processed_title": "Invitation Processed",
+      "redirecting_message": "Redirecting...",
+      "invalid_invitation": "Invalid invitation link"
     }
   },
   "apps": {

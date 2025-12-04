@@ -174,6 +174,42 @@ Follow the Feature Slice Design pattern:
 - ✅ Follow the established color scheme and gradients
 - ✅ Use consistent spacing and sizing scales
 
+## Deployment
+
+This application can be deployed to AWS Amplify using AWS CDK and GitHub Actions for CI/CD.
+
+### Quick Start
+
+See the comprehensive [Deployment Guide](DEPLOYMENT.md) for detailed instructions.
+
+### Infrastructure
+
+The infrastructure is managed using AWS CDK with TypeScript:
+
+```bash
+cd infrastructure
+pnpm install
+pnpm run deploy
+```
+
+### Environments
+
+- **Development**: `dev` branch → https://dev.yourdomain.com
+- **Staging**: `staging` branch → https://staging.yourdomain.com  
+- **Production**: `main` branch → https://app.yourdomain.com
+
+### CI/CD
+
+Automated deployments via GitHub Actions:
+- Push to `dev`, `staging`, or `main` triggers automatic deployment
+- Pull requests run lint and build checks
+- See [GitHub Secrets Configuration](.github/GITHUB_SECRETS.md)
+
+For detailed deployment instructions, troubleshooting, and configuration, see:
+- [📖 Deployment Guide](DEPLOYMENT.md)
+- [🔐 GitHub Secrets Setup](.github/GITHUB_SECRETS.md)
+- [🏗️ Infrastructure README](infrastructure/README.md)
+
 ## Contributing
 
 1. Create a feature branch

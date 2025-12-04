@@ -1,19 +1,22 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { TextInput, PasswordInput, Button, Stack, Text, Anchor, Group, Divider } from '@mantine/core';
+import { TextInput, PasswordInput, Button, Stack, Text, Anchor, Group, Divider, Alert } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Info } from 'lucide-react';
 import { signupSchema, type SignupFormData } from '../model/schema';
 import { useSignupMutation } from '../../../../shared/api/queries/auth';
 import { useAuth } from '../../../../shared/lib/auth/AuthContext';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 export function SignupForm() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setIsAuthenticated } = useAuth();
   const signupMutation = useSignupMutation();
+
+  const invitationId = searchParams.get('invitationId');
 
   const {
     register,
@@ -27,11 +30,18 @@ export function SignupForm() {
     try {
       const response = await signupMutation.mutateAsync(data);
       setIsAuthenticated(true);
+
       notifications.show({
         title: t('common.success'),
-        message: t('auth.signup.title'),
+        message: t('auth.signup.success_message'),
         color: 'green',
       });
+
+      // If there's an invitation ID, redirect back to accept invitation page
+      if (invitationId) {
+        navigate(`/invitations/accept?id=${invitationId}`);
+        return;
+      }
       
       // Redirect to organization creation if user doesn't have one
       if (!response.user.organizations || response.user.organizations.length === 0) {
@@ -58,6 +68,14 @@ export function SignupForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack gap="md">
+        {invitationId && (
+          <Alert color="blue" icon={<Info size={16} />}>
+            <Text size="sm">
+              {t('auth.signup.invitation_note')}
+            </Text>
+          </Alert>
+        )}
+
         <Group grow>
           <TextInput
             label={t('auth.signup.first_name_label')}
