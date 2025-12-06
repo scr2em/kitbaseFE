@@ -27,6 +27,7 @@ jobs:
 
             - name: Verify deployment
               run: |
-                echo "Deployment completed successfully"
+                echo "Deployment completed successfully " 
                 ls -la /etc/nginx/html/
+
 
