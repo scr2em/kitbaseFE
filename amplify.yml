@@ -3,8 +3,6 @@ frontend:
     phases:
         preBuild:
             commands:
-                - '# Execute Amplify CLI with the helper script'
-                - envCache --set stackInfo ""
                 - 'pnpm install'
         build:
             commands:
@@ -13,6 +11,3 @@ frontend:
         baseDirectory: dist
         files:
             - '**/*'
-    cache:
-      paths:
-        - node_modules/**/*
