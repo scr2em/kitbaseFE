@@ -91,7 +91,7 @@ VITE_API_URL=http://localhost:8080/api
 
 ### Development
 
-Start the development server:
+Start the development server: 
 ```bash
 pnpm dev
 ```
