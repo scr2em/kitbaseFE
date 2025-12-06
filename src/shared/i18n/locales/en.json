@@ -64,7 +64,7 @@
       "name_placeholder": "Enter organization name",
       "subdomain_label": "Subdomain",
       "subdomain_placeholder": "Enter subdomain (e.g., mycompany)",
-      "subdomain_help": "This will be used for your organization's URL: mycompany.flyway.app",
+      "subdomain_help": "This will be used for your organization's URL: mycompany.kitbase.app",
       "description_label": "Description (Optional)",
       "description_placeholder": "Tell us about your organization",
       "submit_button": "Create Organization",
@@ -497,7 +497,7 @@
       }
     },
     "benefits": {
-      "title": "Why choose Flyway?",
+      "title": "Why choose Kitbase?",
       "faster_deployments": {
         "title": "Faster Deployments",
         "description": "Reduce deployment time from hours to minutes with our streamlined process."
@@ -517,7 +517,7 @@
     },
     "cta": {
       "title": "Ready to streamline your mobile app deployments?",
-      "subtitle": "Join thousands of developers who trust Flyway for their mobile app deployment needs.",
+      "subtitle": "Join thousands of developers who trust Kitbase for their mobile app deployment needs.",
       "button": "Start Free Trial"
     },
     "navigation": {

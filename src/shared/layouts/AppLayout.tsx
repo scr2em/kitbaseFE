@@ -138,7 +138,7 @@ export function AppLayout() {
                 <Building size={20} />
               </ThemeIcon>
               <Text size="lg" fw={700}>
-                Flyway
+                Kitbase
               </Text>
             </Group>
           </Group>

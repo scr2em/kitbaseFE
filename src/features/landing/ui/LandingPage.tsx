@@ -91,7 +91,7 @@ export function LandingPage() {
           <Group justify="space-between" h="100%">
             <Group>
               <Title order={3} c="brand.7">
-                Flyway
+                Kitbase
               </Title>
             </Group>
             
@@ -231,7 +231,7 @@ export function LandingPage() {
                     
                     <Stack gap="xs">
                       <Text size="sm" c="dimmed" ff="monospace">
-                        $ flyway deploy --channel production
+                        $ kitbase deploy --channel production
                       </Text>
                       <Text size="sm" c="green" ff="monospace">
                         ✓ Build uploaded successfully
@@ -398,7 +398,7 @@ export function LandingPage() {
           <Container size="xl" py="lg">
             <Group justify="space-between">
               <Text size="sm" c="dimmed">
-                © 2024 Flyway. All rights reserved.
+                © 2024 Kitbase. All rights reserved.
               </Text>
               
               <Group gap="md">

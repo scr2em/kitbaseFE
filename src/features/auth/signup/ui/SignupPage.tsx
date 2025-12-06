@@ -36,7 +36,7 @@ export function SignupPage() {
               c="white"
               mb="xs"
             >
-              Flyway
+              Kitbase
             </Title>
             <Text size="lg" c="white" style={{ opacity: 0.9 }}>
               Take your business to new heights
