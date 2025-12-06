@@ -1,0 +1,31 @@
+name: CI Workflow
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: [self-hosted, frontend]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Build project
+              run: pnpm run build
+
+            - name: Deploy to nginx
+              run: |
+                sudo cp -r dist/* /etc/nginx/html/
+                sudo chown -R nginx:nginx /etc/nginx/html
+                sudo nginx -t
+                sudo systemctl reload nginx
+
+            - name: Verify deployment
+              run: |
+                echo "Deployment completed successfully " 
+                ls -la /etc/nginx/html/
