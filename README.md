@@ -17,6 +17,7 @@ A modern React application built with TypeScript, Vite, Mantine UI, and React Qu
 
 ## Tech Stack
 
+
 - **React 19** - UI library
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
@@ -63,7 +64,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (recommended) or npm
 
 ### Installation
@@ -91,7 +92,7 @@ VITE_API_URL=http://localhost:8080/api
 
 ### Development
 
-Start the development server: 
+Start the development server:
 ```bash
 pnpm dev
 ```
@@ -195,7 +196,7 @@ pnpm run deploy
 ### Environments
 
 - **Development**: `dev` branch → https://dev.yourdomain.com
-- **Staging**: `staging` branch → https://staging.yourdomain.com  
+- **Staging**: `staging` branch → https://staging.yourdomain.com
 - **Production**: `main` branch → https://app.yourdomain.com
 
 ### CI/CD
