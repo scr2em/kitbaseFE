@@ -28,6 +28,9 @@ export type PermissionCode =
   | "analytics.view"
   | "support.operations";
 
+/** Organization membership status */
+export type MembershipStatusEnum = "active" | "inactive";
+
 /** Invitation status */
 export type InvitationStatusEnum =
   | "pending"
@@ -46,14 +49,21 @@ export interface UserRegistrationRequest {
    */
   email: string;
   /**
-   * User's password (minimum 8 characters)
+   * User's password (minimum 8 characters and max 12 characters)
    * @format password
    * @minLength 8
+   * @maxLength 12
    */
   password: string;
-  /** User's first name */
+  /**
+   * User's first name
+   * @minLength 2
+   */
   firstName: string;
-  /** User's last name */
+  /**
+   * User's last name
+   * @minLength 2
+   */
   lastName: string;
 }
 
@@ -77,13 +87,43 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
-/** Request to reset password */
-export interface ResetPasswordRequest {
+/** Request to initiate password reset */
+export interface ForgotPasswordRequest {
   /**
    * User's email address
    * @format email
    */
   email: string;
+}
+
+/** Response for forgot password request */
+export interface ForgotPasswordResponse {
+  /**
+   * Generic success message (never reveals if email exists)
+   * @example "If that email address is in our system, we've sent a password reset link to it."
+   */
+  message: string;
+}
+
+/** Request to reset password with token */
+export interface ResetPasswordRequest {
+  /** Password reset token from email */
+  token: string;
+  /**
+   * New password (min 8 chars, must contain uppercase, lowercase, number, and special character)
+   * @format password
+   * @minLength 8
+   */
+  newPassword: string;
+}
+
+/** Response for successful password reset */
+export interface ResetPasswordResponse {
+  /**
+   * Success message
+   * @example "Password successfully reset. You can now sign in with your new password."
+   */
+  message: string;
 }
 
 /** Request to create a new organization */
@@ -99,14 +139,26 @@ export interface CreateOrganizationRequest {
   subdomain: string;
   /** Organization description */
   description?: string;
+  /**
+   * URL to the organization logo image
+   * @format uri
+   */
+  logoUrl?: string;
 }
 
 /** Request to update an organization */
 export interface UpdateOrganizationRequest {
-  /** Organization name */
+  /**
+   * Organization name
+   * @minLength 1
+   * @maxLength 255
+   */
   name?: string;
-  /** Organization description */
-  description?: string;
+  /**
+   * URL to the organization logo image
+   * @format uri
+   */
+  logoUrl?: string;
 }
 
 /** Request to create an invitation */
@@ -273,6 +325,8 @@ export interface OrganizationResponse {
   subdomain: string;
   /** Organization description */
   description?: string;
+  /** URL to the organization logo image */
+  logoUrl?: string;
   /**
    * When the organization was created
    * @format date-time
@@ -315,16 +369,6 @@ export interface RoleWithPermissionsResponse {
   description?: string;
   /** List of permission codes associated with this role */
   permissions: PermissionCode[];
-  /**
-   * When the role was created
-   * @format date-time
-   */
-  createdAt: string;
-  /**
-   * When the role was last updated
-   * @format date-time
-   */
-  updatedAt?: string;
 }
 
 /** Invitation information */
@@ -638,19 +682,31 @@ export interface PaginatedAuditLogResponse {
   totalPages: number;
 }
 
-/** Error response */
+/** Standardized error response */
 export interface ErrorResponse {
-  /** Error type */
-  error: string;
-  /** Error message */
-  message: string;
-  /** Error details */
-  details?: string;
+  /** Error information */
+  error: {
+    /**
+     * Machine-readable error code (e.g., AUTH_001, ORG_002)
+     * @example "AUTH_001"
+     */
+    code: string;
+    /**
+     * Human-readable error message
+     * @example "Invalid credentials"
+     */
+    message: string;
+    /**
+     * Additional structured error details
+     * @example {"field":"email","value":"user@example.com"}
+     */
+    details?: Record<string, any>;
+  };
   /**
    * When the error occurred
    * @format date-time
    */
-  timestamp?: string;
+  timestamp: string;
 }
 
 import type {
@@ -845,36 +901,21 @@ export class HttpClient<SecurityDataType = unknown> {
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
-  auth = {
+  users = {
     /**
-     * @description Register a new user. Can optionally create an organization during signup.
+     * @description Register a new user.
      *
-     * @tags Authentication
-     * @name Signup
-     * @summary Create user and organization
-     * @request POST:/auth/signup
+     * @tags Users
+     * @name CreateUserAccount
+     * @summary Create user account
+     * @request POST:/users
      */
-    signup: (data: UserRegistrationRequest, params: RequestParams = {}) =>
+    createUserAccount: (
+      data: UserRegistrationRequest,
+      params: RequestParams = {},
+    ) =>
       this.request<AuthResponse, ErrorResponse>({
-        path: `/auth/signup`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Sign in user. Context-aware based on subdomain for organization-scoped sessions.
-     *
-     * @tags Authentication
-     * @name Signin
-     * @summary Sign in (context-aware based on subdomain)
-     * @request POST:/auth/signin
-     */
-    signin: (data: LoginRequest, params: RequestParams = {}) =>
-      this.request<AuthResponse, ErrorResponse>({
-        path: `/auth/signin`,
+        path: `/users`,
         method: "POST",
         body: data,
         type: ContentType.Json,
@@ -885,17 +926,36 @@ export class Api<
     /**
      * @description Returns the current user's information including their role and permissions for the current organization (determined by the subdomain in the Origin header). If not accessing via an organization subdomain, currentOrganizationRole will be null.
      *
-     * @tags Authentication
+     * @tags Users
      * @name GetCurrentUser
      * @summary Get current user info with role and permissions for current organization
-     * @request GET:/auth/me
+     * @request GET:/users/me
      * @secure
      */
     getCurrentUser: (params: RequestParams = {}) =>
       this.request<CurrentUserResponse, ErrorResponse>({
-        path: `/auth/me`,
+        path: `/users/me`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  auth = {
+    /**
+     * @description Sign in user. Context-aware based on subdomain for organization-scoped sessions.
+     *
+     * @tags Authentication
+     * @name Login
+     * @summary Sign in (context-aware based on subdomain)
+     * @request POST:/auth/login
+     */
+    login: (data: LoginRequest, params: RequestParams = {}) =>
+      this.request<AuthResponse, ErrorResponse>({
+        path: `/auth/login`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -921,19 +981,38 @@ export class Api<
       }),
 
     /**
-     * @description Request a password reset. Sends reset link to email.
+     * @description Request a password reset link. Always returns success message regardless of whether the email exists (security best practice to prevent email enumeration).
+     *
+     * @tags Authentication
+     * @name ForgotPassword
+     * @summary Request password reset
+     * @request POST:/auth/forgot-password
+     */
+    forgotPassword: (data: ForgotPasswordRequest, params: RequestParams = {}) =>
+      this.request<ForgotPasswordResponse, any>({
+        path: `/auth/forgot-password`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Reset password using the token received via email
      *
      * @tags Authentication
      * @name ResetPassword
-     * @summary Reset password
+     * @summary Reset password with token
      * @request POST:/auth/reset-password
      */
     resetPassword: (data: ResetPasswordRequest, params: RequestParams = {}) =>
-      this.request<void, ErrorResponse>({
+      this.request<ResetPasswordResponse, ErrorResponse>({
         path: `/auth/reset-password`,
         method: "POST",
         body: data,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };
@@ -998,11 +1077,11 @@ export class Api<
       }),
 
     /**
-     * @description Update organization. Only name can be updated (subdomain is immutable). Requires Owner/Admin role.
+     * @description Update organization fields. Supports partial updates (PATCH semantics) - only provided fields will be updated. Updatable fields: - name: Organization display name - logoUrl: URL to organization logo image Immutable fields (cannot be changed): - subdomain: Organization subdomain identifier - created_at, created_by_user_id: Creation metadata Note: At least one field must be provided in the request. Requires Owner/Admin role or organization.update permission.
      *
      * @tags Organizations
      * @name UpdateOrganization
-     * @summary Update organization (name only)
+     * @summary Update organization
      * @request PATCH:/organizations/current
      * @secure
      */
@@ -1065,7 +1144,7 @@ export class Api<
   };
   invitations = {
     /**
-     * @description List all pending invitations for the organization. Organization context determined by subdomain. Requires Owner/Admin role.
+     * @description List all pending, non-expired invitations addressed to the authenticated user's email. Returns invitations from all organizations where the user has been invited.
      *
      * @tags Invitations
      * @name ListPendingInvitations
@@ -1100,45 +1179,85 @@ export class Api<
       }),
 
     /**
-     * @description Public endpoint to accept an invitation
+     * @description Accept an invitation and join the organization. Requires authentication.
      *
      * @tags Invitations
      * @name AcceptInvitation
-     * @summary Accept invitation
+     * @summary Accept invitation and join organization
      * @request POST:/invitations/{invitationId}/accept
+     * @secure
      */
     acceptInvitation: (invitationId: string, params: RequestParams = {}) =>
       this.request<InvitationResponse, ErrorResponse>({
         path: `/invitations/${invitationId}/accept`,
         method: "POST",
+        secure: true,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Public endpoint to cancel an invitation. The user account is kept.
+     * @description Accept invitation using token from email link. Requires authentication.
+     *
+     * @tags Invitations
+     * @name AcceptInvitationByToken
+     * @summary Accept invitation by token
+     * @request POST:/invitations/accept/{token}
+     * @secure
+     */
+    acceptInvitationByToken: (token: string, params: RequestParams = {}) =>
+      this.request<InvitationResponse, void | ErrorResponse>({
+        path: `/invitations/accept/${token}`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Reject invitation using token from email link. Requires authentication. Updates status to canceled.
+     *
+     * @tags Invitations
+     * @name RejectInvitationByToken
+     * @summary Reject invitation by token
+     * @request POST:/invitations/reject/{token}
+     * @secure
+     */
+    rejectInvitationByToken: (token: string, params: RequestParams = {}) =>
+      this.request<InvitationResponse, void | ErrorResponse>({
+        path: `/invitations/reject/${token}`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cancel or reject an invitation. Requires authentication. Updates invitation status to 'canceled' but keeps the user account.
      *
      * @tags Invitations
      * @name CancelInvitation
-     * @summary Cancel/validate invitation (keeps user)
+     * @summary Cancel/reject invitation (keeps user)
      * @request GET:/invitations/{invitationId}/cancel
+     * @secure
      */
     cancelInvitation: (invitationId: string, params: RequestParams = {}) =>
       this.request<InvitationResponse, ErrorResponse>({
         path: `/invitations/${invitationId}/cancel`,
         method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),
   };
-  users = {
+  members = {
     /**
      * @description List all members of the organization. Organization context determined by subdomain. Any member can view.
      *
-     * @tags Users/Members
+     * @tags Members
      * @name ListOrganizationMembers
      * @summary List organization members
-     * @request GET:/users
+     * @request GET:/members
      * @secure
      */
     listOrganizationMembers: (
@@ -1160,7 +1279,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<PaginatedOrganizationMemberResponse, ErrorResponse>({
-        path: `/users`,
+        path: `/members`,
         method: "GET",
         query: query,
         secure: true,
@@ -1171,10 +1290,10 @@ export class Api<
     /**
      * @description Update a member's role. Organization context determined by subdomain. Requires Owner/Admin role.
      *
-     * @tags Users/Members
+     * @tags Members/member
      * @name UpdateMemberRole
      * @summary Update member role
-     * @request PATCH:/users/{membershipId}
+     * @request PATCH:/members/{membershipId}
      * @secure
      */
     updateMemberRole: (
@@ -1183,7 +1302,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<OrganizationMemberResponse, ErrorResponse>({
-        path: `/users/${membershipId}`,
+        path: `/members/${membershipId}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -1195,15 +1314,15 @@ export class Api<
     /**
      * @description Remove a member from the organization. Organization context determined by subdomain. Requires Owner/Admin role. Owner cannot remove themselves.
      *
-     * @tags Users/Members
+     * @tags Members
      * @name RemoveMember
      * @summary Remove member
-     * @request DELETE:/users/{membershipId}
+     * @request DELETE:/members/{membershipId}
      * @secure
      */
     removeMember: (membershipId: string, params: RequestParams = {}) =>
       this.request<void, ErrorResponse>({
-        path: `/users/${membershipId}`,
+        path: `/members/${membershipId}`,
         method: "DELETE",
         secure: true,
         ...params,

@@ -6,10 +6,10 @@ import { tokenStorage } from '../../lib/cookies';
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
-      const response = await apiClient.auth.signin(data);
+      const response = await apiClient.auth.login(data);
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {
@@ -23,10 +23,10 @@ export function useLoginMutation() {
 
 export function useSignupMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: UserRegistrationRequest) => {
-      const response = await apiClient.auth.signup(data);
+      const response = await apiClient.users.createUserAccount(data);
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {
