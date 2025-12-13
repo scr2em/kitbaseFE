@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build:dev": "tsc -b && vite build",
+    "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "api": "npx swagger-typescript-api generate -p ./openapi.yaml -o ./src -n generated-api.ts --axios --generate-union-enums"

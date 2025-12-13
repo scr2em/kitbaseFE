@@ -16,7 +16,7 @@ jobs:
               run: pnpm install
 
             - name: Build project
-              run: pnpm run build
+              run: pnpm run build:prod
 
             - name: Deploy to nginx
               run: |
