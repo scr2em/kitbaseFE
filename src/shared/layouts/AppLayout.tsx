@@ -1,4 +1,4 @@
-import { AppShell, Group, Avatar, Menu, ActionIcon, rem, Box, NavLink, ScrollArea, Text, ThemeIcon, Divider } from '@mantine/core';
+import { AppShell, Avatar, Menu, ActionIcon, rem, NavLink, ScrollArea, ThemeIcon, Divider } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -110,8 +110,8 @@ export function AppLayout() {
       bg="gray.0"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
+        <div className="h-full px-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
             <ActionIcon
               onClick={toggleMobile}
               hiddenFrom="sm"
@@ -128,7 +128,7 @@ export function AppLayout() {
             >
               <MenuIcon size={20} />
             </ActionIcon>
-            <Group gap="xs">
+            <div className="flex items-center gap-2">
               <ThemeIcon
                 size={36}
                 radius="md"
@@ -137,13 +137,13 @@ export function AppLayout() {
               >
                 <Building size={20} />
               </ThemeIcon>
-              <Text size="lg" fw={700}>
+              <span className="text-lg font-bold">
                 Kitbase
-              </Text>
-            </Group>
-          </Group>
+              </span>
+            </div>
+          </div>
 
-          <Group>
+          <div className="flex items-center gap-2">
             <ActionIcon variant="light" size="lg" radius="md">
               <Bell size={20} />
             </ActionIcon>
@@ -154,7 +154,7 @@ export function AppLayout() {
                   size={36}
                   radius="xl"
                   color="blue"
-                  style={{ cursor: 'pointer' }}
+                  className="cursor-pointer"
                 >
                   {user ? getInitials(user.firstName, user.lastName) : ''}
                 </Avatar>
@@ -188,13 +188,13 @@ export function AppLayout() {
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-          </Group>
-        </Group>
+          </div>
+        </div>
       </AppShell.Header>
 
       <AppShell.Navbar p="md">
         <AppShell.Section grow component={ScrollArea}>
-          <Box>
+          <div>
             {visibleNavigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -234,12 +234,12 @@ export function AppLayout() {
                 }}
               />
             )}
-          </Box>
+          </div>
         </AppShell.Section>
 
         <AppShell.Section>
-          <Box
-            p="md"
+          <div
+            className="p-4"
             style={{
               borderTop: '1px solid var(--mantine-color-gray-3)',
             }}
@@ -247,32 +247,30 @@ export function AppLayout() {
             {hasOrganizations ? (
               <Menu shadow="md" width={260} position="top">
                 <Menu.Target>
-                  <Box
+                  <div
+                    className="cursor-pointer p-3 rounded-md"
                     style={{
-                      cursor: 'pointer',
-                      padding: 'var(--mantine-spacing-sm)',
-                      borderRadius: 'var(--mantine-radius-md)',
                       backgroundColor: 'var(--mantine-color-gray-0)',
                       border: '1px solid var(--mantine-color-gray-3)',
                     }}
                   >
-                    <Group gap="sm" justify="space-between" wrap="nowrap">
-                      <Group gap="sm" style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex gap-3 justify-between items-center">
+                      <div className="flex gap-3 items-center flex-1 min-w-0">
                         <ThemeIcon color="violet" variant="light" size="lg" radius="md">
                           <Building size={18} />
                         </ThemeIcon>
-                        <Box style={{ flex: 1, minWidth: 0 }}>
-                          <Text size="sm" fw={600} truncate="end">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">
                             {currentOrganization?.organization.name || t('navigation.no_organizations')}
-                          </Text>
-                          <Text size="xs" c="dimmed">
+                          </p>
+                          <p className="text-xs text-gray-500">
                             {t('navigation.organization_info')}
-                          </Text>
-                        </Box>
-                      </Group>
+                          </p>
+                        </div>
+                      </div>
                       <ChevronDown size={16} />
-                    </Group>
-                  </Box>
+                    </div>
+                  </div>
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Label>{t('navigation.switch_organization')}</Menu.Label>
@@ -292,9 +290,9 @@ export function AppLayout() {
                           : undefined
                       }
                     >
-                      <Text size="sm" fw={500}>
+                      <span className="text-sm font-medium">
                         {membership.organization.name}
-                      </Text>
+                      </span>
                     </Menu.Item>
                   ))}
                   <Divider my="xs" />
@@ -308,27 +306,25 @@ export function AppLayout() {
                 </Menu.Dropdown>
               </Menu>
             ) : (
-              <Box
+              <div
+                className="cursor-pointer p-3 rounded-md"
                 style={{
-                  cursor: 'pointer',
-                  padding: 'var(--mantine-spacing-sm)',
-                  borderRadius: 'var(--mantine-radius-md)',
                   backgroundColor: 'var(--mantine-color-blue-0)',
                   border: '1px dashed var(--mantine-color-blue-3)',
                 }}
                 onClick={openCreateOrgModal}
               >
-                <Group gap="sm">
+                <div className="flex gap-3 items-center">
                   <ThemeIcon color="blue" variant="light" size="lg" radius="md">
                     <Plus size={18} />
                   </ThemeIcon>
-                  <Text size="sm" fw={500} c="blue">
+                  <span className="text-sm font-medium text-blue-600">
                     {t('navigation.create_new_organization')}
-                  </Text>
-                </Group>
-              </Box>
+                  </span>
+                </div>
+              </div>
             )}
-          </Box>
+          </div>
         </AppShell.Section>
       </AppShell.Navbar>
 
@@ -343,4 +339,3 @@ export function AppLayout() {
     </AppShell>
   );
 }
-

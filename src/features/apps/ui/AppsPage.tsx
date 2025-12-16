@@ -1,15 +1,8 @@
 import {
-  Box,
-  Title,
-  Text,
-  Stack,
   Card,
-  Center,
   Loader,
   Button,
   Alert,
-  SimpleGrid,
-  Group,
   Badge,
   Menu,
   ActionIcon,
@@ -41,9 +34,9 @@ export function AppsPage() {
     modals.openConfirmModal({
       title: t('apps.delete.title'),
       children: (
-        <Text size="sm">
+        <p className="text-sm">
           {t('apps.delete.confirmation', { name: appName })}
-        </Text>
+        </p>
       ),
       labels: { confirm: t('apps.delete.confirm'), cancel: t('apps.delete.cancel') },
       confirmProps: { color: 'red' },
@@ -64,16 +57,16 @@ export function AppsPage() {
 
   if (isLoadingUser || isLoading) {
     return (
-      <Center h="calc(100vh - 120px)">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
   if (!hasOrganizations) {
     return (
-      <Box>
-        <Stack gap="md">
+      <div>
+        <div className="flex flex-col gap-4">
           <Alert
             icon={<AlertCircle size={16} />}
             title={t('apps.no_organization_title')}
@@ -86,18 +79,18 @@ export function AppsPage() {
             variant="light"
             size="md"
             onClick={() => navigate('/create-organization')}
-            style={{ alignSelf: 'flex-start' }}
+            className="self-start"
           >
             {t('dashboard.create_organization')}
           </Button>
-        </Stack>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Box>
+      <div>
         <Alert
           icon={<AlertCircle size={16} />}
           title={t('common.error')}
@@ -105,25 +98,25 @@ export function AppsPage() {
         >
           {t('apps.error_loading')}
         </Alert>
-      </Box>
+      </div>
     );
   }
 
   const appsList = apps || [];
 
   return (
-    <Box>
-      <Stack gap="xl">
+    <div>
+      <div className="flex flex-col gap-8">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Box>
-            <Title order={1} mb="xs">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
               {t('apps.title')}
-            </Title>
-            <Text c="dimmed" size="lg">
+            </h1>
+            <p className="text-lg text-gray-500">
               {t('apps.subtitle', { count: appsList.length })}
-            </Text>
-          </Box>
+            </p>
+          </div>
           {canCreateApp && (
             <Button
               leftSection={<Plus size={18} />}
@@ -134,17 +127,17 @@ export function AppsPage() {
               {t('apps.create_button')}
             </Button>
           )}
-        </Group>
+        </div>
 
         {/* Apps Grid */}
         {appsList.length === 0 ? (
           <Card withBorder p="xl" radius="md">
-            <Center>
-              <Stack align="center" gap="md">
-                <Package size={48} strokeWidth={1.5} color="var(--mantine-color-dimmed)" />
-                <Text c="dimmed" size="lg">
+            <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <Package size={48} strokeWidth={1.5} className="text-gray-400" />
+                <p className="text-lg text-gray-500">
                   {t('apps.no_apps')}
-                </Text>
+                </p>
                 {canCreateApp && (
                   <Button
                     leftSection={<Plus size={18} />}
@@ -153,37 +146,34 @@ export function AppsPage() {
                     {t('apps.create_first_app')}
                   </Button>
                 )}
-              </Stack>
-            </Center>
+              </div>
+            </div>
           </Card>
         ) : (
-          <SimpleGrid
-            cols={{ base: 1, sm: 2, lg: 3 }}
-            spacing="lg"
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {appsList.map((app) => (
               <Card
                 key={app.id}
                 withBorder
                 radius="md"
                 padding="lg"
-                style={{ position: 'relative', cursor: 'pointer' }}
+                className="relative cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => navigate(`/apps/${app.bundleId}`)}
               >
-                <Stack gap="md">
+                <div className="flex flex-col gap-4">
                   {/* Card Header */}
-                  <Group justify="space-between" align="flex-start">
-                    <Box style={{ flex: 1 }}>
-                      <Group gap="xs" mb={4}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex gap-2 items-center mb-1">
                         <Package size={20} strokeWidth={2} />
-                        <Text fw={600} size="lg" style={{ lineHeight: 1.2 }}>
+                        <p className="font-semibold text-lg leading-tight">
                           {app.name}
-                        </Text>
-                      </Group>
+                        </p>
+                      </div>
                       <Badge variant="light" color="blue" size="sm">
                         {app.bundleId}
                       </Badge>
-                    </Box>
+                    </div>
                     
                     {canDeleteApp && (
                       <Menu shadow="md" width={200} position="bottom-end">
@@ -210,18 +200,18 @@ export function AppsPage() {
                         </Menu.Dropdown>
                       </Menu>
                     )}
-                  </Group>
+                  </div>
 
                   {/* Description */}
                   {app.description && (
-                    <Text size="sm" c="dimmed" style={{ minHeight: '40px' }}>
+                    <p className="text-sm text-gray-500 min-h-[40px]">
                       {app.description}
-                    </Text>
+                    </p>
                   )}
 
                   {/* Metadata */}
-                  <Box pt="xs" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
-                    <Text size="xs" c="dimmed">
+                  <div className="pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">
                       {t('apps.created_at', {
                         date: new Date(app.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -229,20 +219,19 @@ export function AppsPage() {
                           day: 'numeric',
                         }),
                       })}
-                    </Text>
-                  </Box>
-                </Stack>
+                    </p>
+                  </div>
+                </div>
               </Card>
             ))}
-          </SimpleGrid>
+          </div>
         )}
-      </Stack>
+      </div>
 
       <CreateAppModal
         opened={createModalOpened}
         onClose={() => setCreateModalOpened(false)}
       />
-    </Box>
+    </div>
   );
 }
-

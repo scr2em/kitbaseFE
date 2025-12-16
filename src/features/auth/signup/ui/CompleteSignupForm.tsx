@@ -5,11 +5,8 @@ import {
   TextInput, 
   PasswordInput, 
   Button, 
-  Stack, 
-  Text, 
   Anchor, 
   Divider,
-  Group,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { User, Lock } from 'lucide-react';
@@ -75,8 +72,8 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack gap="md">
-        <Group grow>
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <TextInput
             label={t('auth.signup.first_name_label')}
             placeholder={t('auth.signup.first_name_placeholder')}
@@ -94,7 +91,7 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
             {...register('lastName')}
             error={errors.lastName?.message ? t(errors.lastName.message) : undefined}
           />
-        </Group>
+        </div>
 
         <PasswordInput
           label={t('auth.signup.password_label')}
@@ -125,19 +122,18 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
 
         <Divider />
 
-        <Text ta="center" size="sm">
+        <p className="text-center text-sm">
           {t('auth.signup.have_account')}{' '}
           <Anchor
             onClick={() => navigate('/login')}
             fw={700}
             c="brand"
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           >
             {t('auth.signup.login_link')}
           </Anchor>
-        </Text>
-      </Stack>
+        </p>
+      </div>
     </form>
   );
 }
-

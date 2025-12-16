@@ -1,16 +1,9 @@
 import {
   Paper,
-  Title,
-  Text,
-  Stack,
-  Group,
   Button,
   Badge,
-  Grid,
   Card,
   ThemeIcon,
-  Box,
-  Center,
   Loader,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
@@ -34,9 +27,9 @@ export function DashboardPage() {
 
   if (isLoading) {
     return (
-      <Center h="calc(100vh - 120px)">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
@@ -45,118 +38,110 @@ export function DashboardPage() {
   }
 
   return (
-    <Box>
-      <Stack gap="xl">
+    <div>
+      <div className="flex flex-col gap-8">
         {/* Welcome Section */}
-        <Box>
-          <Title order={1} mb="xs">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">
             {t('dashboard.welcome', { name: user.firstName })}
-          </Title>
-          <Text c="dimmed" size="lg">
+          </h1>
+          <p className="text-lg text-gray-500">
             {t('dashboard.welcome_subtitle')}
-          </Text>
-        </Box>
+          </p>
+        </div>
 
         {/* Stats Cards */}
-        <Grid gutter="md">
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card withBorder padding="lg" radius="md"  >
-              <Group justify="space-between">
-                <div>
-                  <Text c="dimmed" size="xs" tt="uppercase" fw={700}>
-                    {t('dashboard.stats.active_projects')}
-                  </Text>
-                  <Text fw={700} size="xl">
-                    12
-                  </Text>
-                </div>
-                <ThemeIcon
-                  color="blue"
-                  variant="light"
-                  size={50}
-                  radius="md"
-                >
-                  <Folder size={28} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card withBorder padding="lg" radius="md">
+            <div className="flex justify-between">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-bold">
+                  {t('dashboard.stats.active_projects')}
+                </p>
+                <p className="text-xl font-bold">
+                  12
+                </p>
+              </div>
+              <ThemeIcon
+                color="blue"
+                variant="light"
+                size={50}
+                radius="md"
+              >
+                <Folder size={28} />
+              </ThemeIcon>
+            </div>
+          </Card>
 
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card withBorder padding="lg" radius="md"  >
-              <Group justify="space-between">
-                <div>
-                  <Text c="dimmed" size="xs" tt="uppercase" fw={700}>
-                    {t('dashboard.stats.team_members')}
-                  </Text>
-                  <Text fw={700} size="xl">
-                    {hasOrganizations ? '8' : '1'}
-                  </Text>
-                </div>
-                <ThemeIcon
-                  color="teal"
-                  variant="light"
-                  size={50}
-                  radius="md"
-                >
-                  <Users size={28} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
+          <Card withBorder padding="lg" radius="md">
+            <div className="flex justify-between">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-bold">
+                  {t('dashboard.stats.team_members')}
+                </p>
+                <p className="text-xl font-bold">
+                  {hasOrganizations ? '8' : '1'}
+                </p>
+              </div>
+              <ThemeIcon
+                color="teal"
+                variant="light"
+                size={50}
+                radius="md"
+              >
+                <Users size={28} />
+              </ThemeIcon>
+            </div>
+          </Card>
 
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card withBorder padding="lg" radius="md"  >
-              <Group justify="space-between">
-                <div>
-                  <Text c="dimmed" size="xs" tt="uppercase" fw={700}>
-                    {t('dashboard.stats.revenue')}
-                  </Text>
-                  <Text fw={700} size="xl">
-                    $24.5k
-                  </Text>
-                </div>
-                <ThemeIcon
-                  color="violet"
-                  variant="light"
-                  size={50}
-                  radius="md"
-                >
-                  <BarChart size={28} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
+          <Card withBorder padding="lg" radius="md">
+            <div className="flex justify-between">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-bold">
+                  {t('dashboard.stats.revenue')}
+                </p>
+                <p className="text-xl font-bold">
+                  $24.5k
+                </p>
+              </div>
+              <ThemeIcon
+                color="violet"
+                variant="light"
+                size={50}
+                radius="md"
+              >
+                <BarChart size={28} />
+              </ThemeIcon>
+            </div>
+          </Card>
 
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card withBorder padding="lg" radius="md"  >
-              <Group justify="space-between">
-                <div>
-                  <Text c="dimmed" size="xs" tt="uppercase" fw={700}>
-                    {t('dashboard.stats.organizations')}
-                  </Text>
-                  <Text fw={700} size="xl">
-                    {hasOrganizations ? '1' : '0'}
-                  </Text>
-                </div>
-                <ThemeIcon
-                  color="orange"
-                  variant="light"
-                  size={50}
-                  radius="md"
-                >
-                  <Building size={28} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </Grid.Col>
-        </Grid>
+          <Card withBorder padding="lg" radius="md">
+            <div className="flex justify-between">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-bold">
+                  {t('dashboard.stats.organizations')}
+                </p>
+                <p className="text-xl font-bold">
+                  {hasOrganizations ? '1' : '0'}
+                </p>
+              </div>
+              <ThemeIcon
+                color="orange"
+                variant="light"
+                size={50}
+                radius="md"
+              >
+                <Building size={28} />
+              </ThemeIcon>
+            </div>
+          </Card>
+        </div>
 
         {/* User Info Card */}
-        <Paper withBorder   p="xl" radius="md">
-          <Stack gap="lg">
-            <Group justify="space-between">
-              <Title order={3}>{t('dashboard.user_info')}</Title>
+        <Paper withBorder p="xl" radius="md">
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-semibold">{t('dashboard.user_info')}</h3>
               <Badge
                 size="lg"
                 variant="gradient"
@@ -164,91 +149,83 @@ export function DashboardPage() {
               >
                 {user.status.status}
               </Badge>
-            </Group>
+            </div>
 
-            <Grid gutter="md">
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder p="md" radius="md" bg="gray.0">
-                  <Group>
-                    <ThemeIcon color="blue" variant="light" size="lg" radius="md">
-                      <User size={20} />
-                    </ThemeIcon>
-                    <div style={{ flex: 1 }}>
-                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                        {t('dashboard.full_name')}
-                      </Text>
-                      <Text fw={500}>
-                        {user.firstName} {user.lastName}
-                      </Text>
-                    </div>
-                  </Group>
-                </Card>
-              </Grid.Col>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card withBorder p="md" radius="md" bg="gray.0">
+                <div className="flex items-center gap-3">
+                  <ThemeIcon color="blue" variant="light" size="lg" radius="md">
+                    <User size={20} />
+                  </ThemeIcon>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-bold uppercase">
+                      {t('dashboard.full_name')}
+                    </p>
+                    <p className="font-medium">
+                      {user.firstName} {user.lastName}
+                    </p>
+                  </div>
+                </div>
+              </Card>
 
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder p="md" radius="md" bg="gray.0">
-                  <Group>
-                    <ThemeIcon color="cyan" variant="light" size="lg" radius="md">
-                      <User size={20} />
-                    </ThemeIcon>
-                    <div style={{ flex: 1 }}>
-                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                        {t('dashboard.email')}
-                      </Text>
-                      <Text fw={500}>{user.email}</Text>
-                    </div>
-                  </Group>
-                </Card>
-              </Grid.Col>
+              <Card withBorder p="md" radius="md" bg="gray.0">
+                <div className="flex items-center gap-3">
+                  <ThemeIcon color="cyan" variant="light" size="lg" radius="md">
+                    <User size={20} />
+                  </ThemeIcon>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-bold uppercase">
+                      {t('dashboard.email')}
+                    </p>
+                    <p className="font-medium">{user.email}</p>
+                  </div>
+                </div>
+              </Card>
 
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder p="md" radius="md" bg="gray.0">
-                  <Group>
-                    <ThemeIcon color="violet" variant="light" size="lg" radius="md">
-                      <Building size={20} />
-                    </ThemeIcon>
-                    <div style={{ flex: 1 }}>
-                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                        {t('dashboard.organization')}
-                      </Text>
-                      <Text fw={500}>
-                        {currentOrganization?.organization?.name || t('dashboard.no_organization')}
-                      </Text>
-                    </div>
-                  </Group>
-                </Card>
-              </Grid.Col>
+              <Card withBorder p="md" radius="md" bg="gray.0">
+                <div className="flex items-center gap-3">
+                  <ThemeIcon color="violet" variant="light" size="lg" radius="md">
+                    <Building size={20} />
+                  </ThemeIcon>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-bold uppercase">
+                      {t('dashboard.organization')}
+                    </p>
+                    <p className="font-medium">
+                      {currentOrganization?.organization?.name || t('dashboard.no_organization')}
+                    </p>
+                  </div>
+                </div>
+              </Card>
 
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Card withBorder p="md" radius="md" bg="gray.0">
-                  <Group>
-                    <ThemeIcon color="teal" variant="light" size="lg" radius="md">
-                      <User size={20} />
-                    </ThemeIcon>
-                    <div style={{ flex: 1 }}>
-                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                        {t('dashboard.created_at')}
-                      </Text>
-                      <Text fw={500}>
-                        {new Date(user.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </Text>
-                    </div>
-                  </Group>
-                </Card>
-              </Grid.Col>
-            </Grid>
-          </Stack>
+              <Card withBorder p="md" radius="md" bg="gray.0">
+                <div className="flex items-center gap-3">
+                  <ThemeIcon color="teal" variant="light" size="lg" radius="md">
+                    <User size={20} />
+                  </ThemeIcon>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-bold uppercase">
+                      {t('dashboard.created_at')}
+                    </p>
+                    <p className="font-medium">
+                      {new Date(user.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
         </Paper>
 
         {/* Quick Actions */}
-        <Paper withBorder   p="xl" radius="md">
-          <Stack gap="md">
-            <Title order={3}>{t('dashboard.quick_actions')}</Title>
-            <Group>
+        <Paper withBorder p="xl" radius="md">
+          <div className="flex flex-col gap-4">
+            <h3 className="text-xl font-semibold">{t('dashboard.quick_actions')}</h3>
+            <div className="flex flex-wrap gap-3">
               <Button
                 leftSection={<User size={18} />}
                 variant="gradient"
@@ -276,10 +253,10 @@ export function DashboardPage() {
               >
                 {t('navigation.settings')}
               </Button>
-            </Group>
-          </Stack>
+            </div>
+          </div>
         </Paper>
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 }

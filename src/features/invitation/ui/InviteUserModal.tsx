@@ -1,4 +1,4 @@
-import { Modal, Stack, Button, Group } from '@mantine/core';
+import { Modal, Button } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -69,7 +69,7 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
       centered
     >
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           <ControlledTextInput
             name="email"
             control={control}
@@ -89,7 +89,7 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
             required
           />
 
-          <Group justify="flex-end" mt="md">
+          <div className="flex justify-end gap-3 mt-4">
             <Button
               variant="subtle"
               onClick={handleClose}
@@ -105,10 +105,9 @@ export function InviteUserModal({ opened, onClose }: InviteUserModalProps) {
             >
               {t('invitation.submit_button')}
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </form>
     </Modal>
   );
 }
-

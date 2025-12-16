@@ -1,4 +1,4 @@
-import { Box, Title, Text, Card, Center } from '@mantine/core';
+import { Card } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Lock } from 'lucide-react';
 
@@ -6,21 +6,20 @@ export function AccessPage() {
   const { t } = useTranslation();
 
   return (
-    <Box>
-      <Title order={2} mb="lg">
+    <div>
+      <h2 className="text-2xl font-semibold mb-6">
         {t('apps.detail.access.title')}
-      </Title>
-      <Card withBorder  padding="xl" radius="md">
-        <Center p="xl">
-          <Box ta="center">
-            <Lock size={48} strokeWidth={1.5} style={{ margin: '0 auto', opacity: 0.5 }} />
-            <Text c="dimmed" mt="md">
+      </h2>
+      <Card withBorder padding="xl" radius="md">
+        <div className="flex justify-center p-6">
+          <div className="text-center">
+            <Lock size={48} strokeWidth={1.5} className="mx-auto opacity-50" />
+            <p className="text-gray-500 mt-4">
               {t('apps.detail.access.coming_soon')}
-            </Text>
-          </Box>
-        </Center>
+            </p>
+          </div>
+        </div>
       </Card>
-    </Box>
+    </div>
   );
 }
-

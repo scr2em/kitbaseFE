@@ -1,16 +1,10 @@
-import { BrowserRouter } from 'react-router';
-import { AppProviders } from './app/providers/AppProviders';
-import { AppRoutes } from './app/routes';
+import { RouterProvider } from 'react-router';
+import { router } from './app/routes';
 import './shared/i18n/config';
+import './App.css';
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AppProviders>
-        <AppRoutes />
-      </AppProviders>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Outlet } from 'react-router';
 import { AuthProvider } from '../../shared/lib/auth/AuthContext';
 import { theme } from '../../shared/theme';
 import '@mantine/core/styles.css';
@@ -17,17 +17,15 @@ const queryClient = new QueryClient({
   },
 });
 
-interface AppProvidersProps {
-  children: ReactNode;
-}
-
-export function AppProviders({ children }: AppProvidersProps) {
+export function AppProviders() {
   return (
     <QueryClientProvider client={queryClient}>
       <MantineProvider theme={theme} >
         <ModalsProvider>
           <Notifications position="top-right" />
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <Outlet />
+          </AuthProvider>
         </ModalsProvider>
       </MantineProvider>
     </QueryClientProvider>

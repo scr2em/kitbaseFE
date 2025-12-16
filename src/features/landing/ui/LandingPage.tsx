@@ -1,19 +1,10 @@
 import { 
-  Container, 
-  Title, 
-  Text, 
   Button, 
-  Group, 
-  Stack, 
-  Grid, 
-  Card, 
-  Box,
+  Card,
   Anchor,
-  AppShell,
   Burger,
   useMantineColorScheme,
   ActionIcon,
-  rem
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -82,20 +73,16 @@ export function LandingPage() {
   ];
 
   return (
-    <AppShell
-      header={{ height: 60 }}
-      padding={0}
-    >
-      <AppShell.Header>
-        <Container size="xl" h="100%">
-          <Group justify="space-between" h="100%">
-            <Group>
-              <Title order={3} c="brand.7">
-                Kitbase
-              </Title>
-            </Group>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="h-[60px] border-b border-gray-200 bg-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto h-full px-4">
+          <div className="flex justify-between items-center h-full">
+            <h3 className="text-xl font-semibold text-[var(--mantine-color-brand-7)]">
+              Kitbase
+            </h3>
             
-            <Group visibleFrom="sm">
+            <div className="hidden sm:flex items-center gap-4">
               <Anchor component={Link} to="#features" c="dimmed">
                 {t('landing.navigation.features')}
               </Anchor>
@@ -105,9 +92,9 @@ export function LandingPage() {
               <Anchor component={Link} to="#docs" c="dimmed">
                 {t('landing.navigation.docs')}
               </Anchor>
-            </Group>
+            </div>
 
-            <Group>
+            <div className="flex items-center gap-2">
               <ActionIcon
                 variant="subtle"
                 color="gray"
@@ -118,14 +105,14 @@ export function LandingPage() {
                 {colorScheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
               </ActionIcon>
               
-              <Group gap="xs">
+              <div className="flex items-center gap-2">
                 <Button variant="subtle" component={Link} to="/login">
                   {t('landing.navigation.login')}
                 </Button>
                 <Button component={Link} to="/signup">
                   {t('landing.navigation.signup')}
                 </Button>
-              </Group>
+              </div>
 
               <Burger
                 opened={opened}
@@ -133,289 +120,237 @@ export function LandingPage() {
                 hiddenFrom="sm"
                 size="sm"
               />
-            </Group>
-          </Group>
-        </Container>
-      </AppShell.Header>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <AppShell.Main>
+      {/* Main Content */}
+      <main className="flex-1">
         {/* Hero Section */}
-        <Box
+        <section
+          className="min-h-[80vh] flex items-center py-16"
           style={{
             background: 'linear-gradient(135deg, var(--mantine-color-brand-0) 0%, var(--mantine-color-accent-0) 100%)',
-            minHeight: '80vh',
-            display: 'flex',
-            alignItems: 'center',
           }}
         >
-          <Container size="xl">
-            <Grid align="center" gutter="xl">
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Stack gap="lg">
-                  <Title
-                    order={1}
-                    size="h1"
-                    fw={700}
-                    style={{
-                      background: 'linear-gradient(135deg, var(--mantine-color-brand-7) 0%, var(--mantine-color-accent-7) 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    {t('landing.hero.title')}
-                  </Title>
-                  
-                  <Text size="xl" c="dimmed" maw={500}>
-                    {t('landing.hero.subtitle')}
-                  </Text>
-                  
-                  <Group gap="md">
-                    <Button
-                      size="lg"
-                      component={Link}
-                      to="/signup"
-                      leftSection={<Rocket size={20} />}
-                    >
-                      {t('landing.hero.cta_primary')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      component={Link}
-                      to="#features"
-                    >
-                      {t('landing.hero.cta_secondary')}
-                    </Button>
-                  </Group>
-                </Stack>
-              </Grid.Col>
-              
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Box
+          <div className="max-w-7xl mx-auto px-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div className="flex flex-col gap-6">
+                <h1
+                  className="text-4xl md:text-5xl font-bold"
                   style={{
-                    background: 'linear-gradient(135deg, var(--mantine-color-brand-1) 0%, var(--mantine-color-accent-1) 100%)',
-                    borderRadius: 'var(--mantine-radius-xl)',
-                    padding: 'var(--mantine-spacing-xl)',
-                    border: '1px solid var(--mantine-color-brand-2)',
-                    boxShadow: 'var(--mantine-shadow-lg)',
+                    background: 'linear-gradient(135deg, var(--mantine-color-brand-7) 0%, var(--mantine-color-accent-7) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
                   }}
                 >
-                  <Stack gap="md">
-                    <Group>
-                      <Box
-                        style={{
-                          width: rem(12),
-                          height: rem(12),
-                          borderRadius: '50%',
-                          backgroundColor: 'var(--mantine-color-red-5)',
-                        }}
-                      />
-                      <Box
-                        style={{
-                          width: rem(12),
-                          height: rem(12),
-                          borderRadius: '50%',
-                          backgroundColor: 'var(--mantine-color-yellow-5)',
-                        }}
-                      />
-                      <Box
-                        style={{
-                          width: rem(12),
-                          height: rem(12),
-                          borderRadius: '50%',
-                          backgroundColor: 'var(--mantine-color-green-5)',
-                        }}
-                      />
-                    </Group>
-                    
-                    <Stack gap="xs">
-                      <Text size="sm" c="dimmed" ff="monospace">
-                        $ kitbase deploy --channel production
-                      </Text>
-                      <Text size="sm" c="green" ff="monospace">
-                        ✓ Build uploaded successfully
-                      </Text>
-                      <Text size="sm" c="green" ff="monospace">
-                        ✓ Channel updated
-                      </Text>
-                      <Text size="sm" c="green" ff="monospace">
-                        ✓ Team notified
-                      </Text>
-                    </Stack>
-                  </Stack>
-                </Box>
-              </Grid.Col>
-            </Grid>
-          </Container>
-        </Box>
+                  {t('landing.hero.title')}
+                </h1>
+                
+                <p className="text-xl text-gray-500 max-w-[500px]">
+                  {t('landing.hero.subtitle')}
+                </p>
+                
+                <div className="flex gap-4">
+                  <Button
+                    size="lg"
+                    component={Link}
+                    to="/signup"
+                    leftSection={<Rocket size={20} />}
+                  >
+                    {t('landing.hero.cta_primary')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    component={Link}
+                    to="#features"
+                  >
+                    {t('landing.hero.cta_secondary')}
+                  </Button>
+                </div>
+              </div>
+              
+              <div
+                className="p-6 rounded-xl"
+                style={{
+                  background: 'linear-gradient(135deg, var(--mantine-color-brand-1) 0%, var(--mantine-color-accent-1) 100%)',
+                  border: '1px solid var(--mantine-color-brand-2)',
+                  boxShadow: 'var(--mantine-shadow-lg)',
+                }}
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-gray-500 font-mono">
+                      $ kitbase deploy --channel production
+                    </p>
+                    <p className="text-sm text-green-600 font-mono">
+                      ✓ Build uploaded successfully
+                    </p>
+                    <p className="text-sm text-green-600 font-mono">
+                      ✓ Channel updated
+                    </p>
+                    <p className="text-sm text-green-600 font-mono">
+                      ✓ Team notified
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Features Section */}
-        <Container size="xl" py="xl">
-          <Stack gap="xl" align="center">
-            <Stack gap="md" align="center" maw={600}>
-              <Title order={2} ta="center">
-                {t('landing.features.title')}
-              </Title>
-              <Text size="lg" c="dimmed" ta="center">
-                {t('landing.features.subtitle')}
-              </Text>
-            </Stack>
-            
-            <Grid gutter="xl">
-              {features.map((feature, index) => (
-                <Grid.Col key={index} span={{ base: 12, sm: 6, md: 3 }}>
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col gap-8 items-center">
+              <div className="flex flex-col gap-4 items-center max-w-[600px]">
+                <h2 className="text-3xl font-semibold text-center">
+                  {t('landing.features.title')}
+                </h2>
+                <p className="text-lg text-gray-500 text-center">
+                  {t('landing.features.subtitle')}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                {features.map((feature, index) => (
                   <Card
+                    key={index}
                     shadow="sm"
                     padding="lg"
                     radius="md"
-                    h="100%"
+                    className="h-full hover:shadow-md transition-shadow"
                     style={{
                       border: '1px solid var(--mantine-color-gray-2)',
-                      transition: 'all 0.2s ease',
                     }}
-                    className="hover:shadow-md"
                   >
-                    <Stack gap="md" h="100%">
-                      <Box
+                    <div className="flex flex-col gap-4 h-full">
+                      <div
+                        className="w-12 h-12 rounded-lg flex items-center justify-center"
                         style={{
-                          width: rem(48),
-                          height: rem(48),
-                          borderRadius: 'var(--mantine-radius-md)',
                           backgroundColor: 'var(--mantine-color-brand-1)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
                         }}
                       >
                         <feature.icon size={24} color="var(--mantine-color-brand-7)" />
-                      </Box>
+                      </div>
                       
-                      <Stack gap="xs" style={{ flex: 1 }}>
-                        <Title order={4}>
+                      <div className="flex flex-col gap-2 flex-1">
+                        <h4 className="text-lg font-semibold">
                           {feature.title}
-                        </Title>
-                        <Text size="sm" c="dimmed">
+                        </h4>
+                        <p className="text-sm text-gray-500">
                           {feature.description}
-                        </Text>
-                      </Stack>
-                    </Stack>
+                        </p>
+                      </div>
+                    </div>
                   </Card>
-                </Grid.Col>
-              ))}
-            </Grid>
-          </Stack>
-        </Container>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Benefits Section */}
-        <Box
-          style={{
-            backgroundColor: 'var(--mantine-color-gray-0)',
-          }}
-        >
-          <Container size="xl" py="xl">
-            <Stack gap="xl" align="center">
-              <Stack gap="md" align="center" maw={600}>
-                <Title order={2} ta="center">
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col gap-8 items-center">
+              <div className="flex flex-col gap-4 items-center max-w-[600px]">
+                <h2 className="text-3xl font-semibold text-center">
                   {t('landing.benefits.title')}
-                </Title>
-              </Stack>
+                </h2>
+              </div>
               
-              <Grid gutter="xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
                 {benefits.map((benefit, index) => (
-                  <Grid.Col key={index} span={{ base: 12, sm: 6 }}>
-                    <Group gap="md" align="flex-start">
-                      <Box
-                        style={{
-                          width: rem(40),
-                          height: rem(40),
-                          borderRadius: 'var(--mantine-radius-md)',
-                          backgroundColor: 'var(--mantine-color-brand-1)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <benefit.icon size={20} color="var(--mantine-color-brand-7)" />
-                      </Box>
-                      
-                      <Stack gap="xs" style={{ flex: 1 }}>
-                        <Title order={4}>
-                          {benefit.title}
-                        </Title>
-                        <Text c="dimmed">
-                          {benefit.description}
-                        </Text>
-                      </Stack>
-                    </Group>
-                  </Grid.Col>
+                  <div key={index} className="flex gap-4 items-start">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                      style={{
+                        backgroundColor: 'var(--mantine-color-brand-1)',
+                      }}
+                    >
+                      <benefit.icon size={20} color="var(--mantine-color-brand-7)" />
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 flex-1">
+                      <h4 className="text-lg font-semibold">
+                        {benefit.title}
+                      </h4>
+                      <p className="text-gray-500">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-              </Grid>
-            </Stack>
-          </Container>
-        </Box>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* CTA Section */}
-        <Container size="xl" py="xl">
-          <Box
-            style={{
-              background: 'linear-gradient(135deg, var(--mantine-color-brand-1) 0%, var(--mantine-color-accent-1) 100%)',
-              borderRadius: 'var(--mantine-radius-xl)',
-              padding: 'var(--mantine-spacing-xl)',
-              border: '1px solid var(--mantine-color-brand-2)',
-              textAlign: 'center',
-            }}
-          >
-            <Stack gap="lg" align="center" maw={600} mx="auto">
-              <Title order={2} ta="center">
-                {t('landing.cta.title')}
-              </Title>
-              
-              <Text size="lg" c="dimmed" ta="center">
-                {t('landing.cta.subtitle')}
-              </Text>
-              
-              <Button
-                size="lg"
-                component={Link}
-                to="/signup"
-                leftSection={<Rocket size={20} />}
-              >
-                {t('landing.cta.button')}
-              </Button>
-            </Stack>
-          </Box>
-        </Container>
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4">
+            <div
+              className="p-8 rounded-xl text-center"
+              style={{
+                background: 'linear-gradient(135deg, var(--mantine-color-brand-1) 0%, var(--mantine-color-accent-1) 100%)',
+                border: '1px solid var(--mantine-color-brand-2)',
+              }}
+            >
+              <div className="flex flex-col gap-6 items-center max-w-[600px] mx-auto">
+                <h2 className="text-3xl font-semibold text-center">
+                  {t('landing.cta.title')}
+                </h2>
+                
+                <p className="text-lg text-gray-500 text-center">
+                  {t('landing.cta.subtitle')}
+                </p>
+                
+                <Button
+                  size="lg"
+                  component={Link}
+                  to="/signup"
+                  leftSection={<Rocket size={20} />}
+                >
+                  {t('landing.cta.button')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
-        {/* Footer */}
-        <Box
-          style={{
-            backgroundColor: 'var(--mantine-color-gray-1)',
-            borderTop: '1px solid var(--mantine-color-gray-2)',
-          }}
-        >
-          <Container size="xl" py="lg">
-            <Group justify="space-between">
-              <Text size="sm" c="dimmed">
-                © 2024 Kitbase. All rights reserved.
-              </Text>
-              
-              <Group gap="md">
-                <Anchor size="sm" c="dimmed">
-                  Privacy Policy
-                </Anchor>
-                <Anchor size="sm" c="dimmed">
-                  Terms of Service
-                </Anchor>
-                <Anchor size="sm" c="dimmed">
-                  Support
-                </Anchor>
-              </Group>
-            </Group>
-          </Container>
-        </Box>
-      </AppShell.Main>
-    </AppShell>
+      {/* Footer */}
+      <footer className="bg-gray-100 border-t border-gray-200 py-6">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-500">
+              © 2024 Kitbase. All rights reserved.
+            </p>
+            
+            <div className="flex gap-4">
+              <Anchor size="sm" c="dimmed">
+                Privacy Policy
+              </Anchor>
+              <Anchor size="sm" c="dimmed">
+                Terms of Service
+              </Anchor>
+              <Anchor size="sm" c="dimmed">
+                Support
+              </Anchor>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

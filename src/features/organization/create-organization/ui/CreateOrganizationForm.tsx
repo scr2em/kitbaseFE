@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import {  Button, Stack, Text } from '@mantine/core';
+import { Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { Building2, Globe } from 'lucide-react';
 import { createOrganizationSchema, type CreateOrganizationFormData } from '../model/schema';
@@ -44,28 +44,28 @@ export function CreateOrganizationForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack gap="md">
-      <ControlledTextInput
-        control={control}
-        name="name"
-        label={t('organization.create.name_label')}
-        placeholder={t('organization.create.name_placeholder')}
-        leftSection={<Building2 size={18} />}
-        size="md"
-      />
+      <div className="flex flex-col gap-4">
+        <ControlledTextInput
+          control={control}
+          name="name"
+          label={t('organization.create.name_label')}
+          placeholder={t('organization.create.name_placeholder')}
+          leftSection={<Building2 size={18} />}
+          size="md"
+        />
 
-      <ControlledTextInput
-        control={control}
-        name="subdomain"
-        label={t('organization.create.subdomain_label')}
-        placeholder={t('organization.create.subdomain_placeholder')}
-        leftSection={<Globe size={18} />}
-        size="md"
-      />
-      
-      <Text size="sm" c="dimmed">
-        {t('organization.create.subdomain_help')}
-      </Text>
+        <ControlledTextInput
+          control={control}
+          name="subdomain"
+          label={t('organization.create.subdomain_label')}
+          placeholder={t('organization.create.subdomain_placeholder')}
+          leftSection={<Globe size={18} />}
+          size="md"
+        />
+        
+        <p className="text-sm text-gray-500">
+          {t('organization.create.subdomain_help')}
+        </p>
 
         <Button
           type="submit"
@@ -77,8 +77,7 @@ export function CreateOrganizationForm() {
         >
           {t('organization.create.submit_button')}
         </Button>
-      </Stack>
+      </div>
     </form>
   );
 }
-

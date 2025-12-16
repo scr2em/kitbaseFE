@@ -1,15 +1,9 @@
 import {
-  Box,
-  Title,
-  Stack,
-  Center,
   Loader,
   Alert,
-  Group,
   Badge,
   Button,
   NavLink,
-  Grid,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation, Outlet } from 'react-router';
@@ -48,15 +42,15 @@ export function AppDetailPage() {
 
   if (isLoading) {
     return (
-      <Center h="calc(100vh - 120px)">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
   if (isError || !app) {
     return (
-      <Box>
+      <div>
         <Alert
           icon={<AlertCircle size={16} />}
           title={t('common.error')}
@@ -64,26 +58,26 @@ export function AppDetailPage() {
         >
           {t('apps.detail.error_loading')}
         </Alert>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Stack gap="md">
+    <div>
+      <div className="flex flex-col gap-4">
         {/* Header with Back Button */}
-        <Group justify="space-between" align="center">
-          <Group gap="sm" align="center">
+        <div className="flex justify-between items-center">
+          <div className="flex gap-3 items-center">
             <Package size={24} strokeWidth={2} />
-            <Box>
-              <Group gap="sm" align="center">
-                <Title order={2}>{app.name}</Title>
+            <div>
+              <div className="flex gap-3 items-center">
+                <h2 className="text-2xl font-semibold">{app.name}</h2>
                 <Badge variant="light" color="blue" size="sm">
                   {app.bundleId}
                 </Badge>
-              </Group>
-            </Box>
-          </Group>
+              </div>
+            </div>
+          </div>
           <Button
             variant="subtle"
             size="sm"
@@ -92,12 +86,12 @@ export function AppDetailPage() {
           >
             {t('apps.detail.back_to_apps')}
           </Button>
-        </Group>
+        </div>
 
         {/* Main Content with Side Navigation */}
-        <Grid gutter="md">
-          <Grid.Col span={{ base: 12, md: 2.5 }}>
-            <Stack gap="xs">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="md:col-span-3 lg:col-span-2">
+            <div className="flex flex-col gap-2">
               {navigationItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -112,15 +106,14 @@ export function AppDetailPage() {
                   }}
                 />
               ))}
-            </Stack>
-          </Grid.Col>
+            </div>
+          </div>
           
-          <Grid.Col span={{ base: 12, md: 9.5 }}>
+          <div className="md:col-span-9 lg:col-span-10">
             <Outlet />
-          </Grid.Col>
-        </Grid>
-      </Stack>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
-

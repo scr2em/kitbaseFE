@@ -1,4 +1,4 @@
-import { Modal, Button, Stack } from '@mantine/core';
+import { Modal, Button } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +39,7 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading }: Crea
       size="md"
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           <ControlledTextInput
             control={form.control}
             name="name"
@@ -56,9 +56,8 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading }: Crea
           >
             {t('apps.detail.api_keys.create.submit_button')}
           </Button>
-        </Stack>
+        </div>
       </form>
     </Modal>
   );
 }
-

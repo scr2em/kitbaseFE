@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { LoginPage } from '../../features/auth/login';
 import { SignupPage } from '../../features/auth/signup';
 import { ForgotPasswordPage, ResetPasswordPage } from '../../features/auth/reset-password';
@@ -18,92 +18,85 @@ import { AcceptInvitationPage } from '../../features/invitation';
 import { ChannelsPage } from '../../features/channels';
 import { LandingPage } from '../../features/landing';
 import { ProtectedRoute, PublicRoute } from '../../shared/lib/router';
-import { AppLayout } from '../../shared/layouts';
+import { AppLayout, AuthLayout } from '../../shared/layouts';
+import { AppProviders } from '../providers/AppProviders';
 
-export function AppRoutes() {
-  return (
-    <Routes>
-      <Route
-        path="/"
-        index
-        element={
+function RootLayout() {
+  return <AppProviders />;
+}
+
+const routes: RouteObject[] = [
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: '/',
+        element: (
           <PublicRoute>
             <LandingPage />
           </PublicRoute>
-        }
-      />
-      <Route
-        path="/login"
-        element={
+        ),
+      },
+      {
+        element: (
           <PublicRoute>
-            <LoginPage />
+            <AuthLayout />
           </PublicRoute>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <PublicRoute>
-            <SignupPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <PublicRoute>
-            <ForgotPasswordPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={
-          <PublicRoute>
-            <ResetPasswordPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/invitations/accept"
-        element={<AcceptInvitationPage />}
-      />
-      <Route
-        path="/create-organization"
-        element={
+        ),
+        children: [
+          { path: '/login', element: <LoginPage /> },
+          { path: '/signup', element: <SignupPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/reset-password', element: <ResetPasswordPage /> },
+        ],
+      },
+      {
+        path: '/invitations/accept',
+        element: <AcceptInvitationPage />,
+      },
+      {
+        path: '/create-organization',
+        element: (
           <ProtectedRoute requireOrganization={false}>
             <CreateOrganizationPage />
           </ProtectedRoute>
-        }
-      />
-      
-      {/* Protected routes with AppShell layout */}
-      <Route
-        element={
+        ),
+      },
+      {
+        element: (
           <ProtectedRoute requireOrganization={true}>
             <AppLayout />
           </ProtectedRoute>
-        }
-      >
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/apps" element={<AppsPage />} />
-        <Route path="/apps/:bundleId" element={<AppDetailPage />}>
-          <Route index element={<Navigate to="bundles" replace />} />
-          <Route path="bundles" element={<BundlesPage />} />
-          <Route path="builds" element={<AppBuildsPage />} />
-          <Route path="access" element={<AccessPage />} />
-          <Route path="api-keys" element={<ApiKeysPage />} />
-        </Route>
-        <Route path="/team" element={<TeamPage />} />
-        <Route path="/channels" element={<ChannelsPage />} />
-        <Route path="/analytics" element={<div>Analytics Page (Coming Soon)</div>} />
-        <Route path="/organization" element={<OrganizationPage />} />
-        <Route path="/settings" element={<div>Settings Page (Coming Soon)</div>} />
-        <Route path="/profile" element={<div>Profile Page (Coming Soon)</div>} />
-      </Route>
+        ),
+        children: [
+          { path: '/dashboard', element: <DashboardPage /> },
+          { path: '/apps', element: <AppsPage /> },
+          {
+            path: '/apps/:bundleId',
+            element: <AppDetailPage />,
+            children: [
+              { index: true, element: <Navigate to="bundles" replace /> },
+              { path: 'bundles', element: <BundlesPage /> },
+              { path: 'builds', element: <AppBuildsPage /> },
+              { path: 'access', element: <AccessPage /> },
+              { path: 'api-keys', element: <ApiKeysPage /> },
+            ],
+          },
+          { path: '/team', element: <TeamPage /> },
+          { path: '/channels', element: <ChannelsPage /> },
+          { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },
+          { path: '/organization', element: <OrganizationPage /> },
+          { path: '/settings', element: <div>Settings Page (Coming Soon)</div> },
+          { path: '/profile', element: <div>Profile Page (Coming Soon)</div> },
+        ],
+      },
+      {
+        path: '*',
+        element: <Navigate to="/" replace />,
+      },
+    ],
+  },
+];
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
+export const router = createBrowserRouter(routes);
 

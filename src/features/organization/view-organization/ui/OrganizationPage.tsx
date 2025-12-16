@@ -1,13 +1,7 @@
 import {
-  Box,
-  Title,
-  Text,
-  Stack,
   Card,
-  Center,
   Loader,
   Alert,
-  Group,
   Button,
   Paper,
 } from '@mantine/core';
@@ -65,16 +59,16 @@ export function OrganizationPage() {
 
   if (isLoadingUser || isLoading) {
     return (
-      <Center h="calc(100vh - 120px)">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
   if (!currentOrganization) {
     return (
-      <Box>
-        <Stack gap="md">
+      <div>
+        <div className="flex flex-col gap-4">
           <Alert
             icon={<AlertCircle size={16} />}
             title={t('organization.no_organization_title')}
@@ -87,18 +81,18 @@ export function OrganizationPage() {
             variant="light"
             size="md"
             onClick={() => navigate('/create-organization')}
-            style={{ alignSelf: 'flex-start' }}
+            className="self-start"
           >
             {t('dashboard.create_organization')}
           </Button>
-        </Stack>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Box>
+      <div>
         <Alert
           icon={<AlertCircle size={16} />}
           title={t('common.error')}
@@ -106,23 +100,23 @@ export function OrganizationPage() {
         >
           {t('organization.error_loading')}
         </Alert>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Stack gap="xl">
+    <div>
+      <div className="flex flex-col gap-8">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Box>
-            <Title order={1} mb="xs">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
               {t('organization.view.title')}
-            </Title>
-            <Text c="dimmed" size="lg">
+            </h1>
+            <p className="text-lg text-gray-500">
               {t('organization.view.subtitle')}
-            </Text>
-          </Box>
+            </p>
+          </div>
           {!isEditing && canUpdateOrganization && (
             <Button
               leftSection={<Edit size={18} />}
@@ -133,12 +127,12 @@ export function OrganizationPage() {
               {t('organization.edit.edit_button')}
             </Button>
           )}
-        </Group>
+        </div>
 
-        <Card withBorder   p="xl" radius="md">
+        <Card withBorder p="xl" radius="md">
           {isEditing && canUpdateOrganization ? (
             <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <Stack gap="lg">
+              <div className="flex flex-col gap-6">
                 <ControlledTextInput
                   control={form.control}
                   name="name"
@@ -156,7 +150,7 @@ export function OrganizationPage() {
                   autosize
                 />
 
-                <Group justify="flex-end" gap="md">
+                <div className="flex justify-end gap-4">
                   <Button
                     variant="subtle"
                     onClick={handleCancel}
@@ -172,79 +166,78 @@ export function OrganizationPage() {
                   >
                     {t('organization.edit.submit_button')}
                   </Button>
-                </Group>
-              </Stack>
+                </div>
+              </div>
             </form>
           ) : (
-            <Stack gap="xl">
+            <div className="flex flex-col gap-8">
               <Paper withBorder p="lg" radius="md">
-                <Stack gap="md">
-                  <Group gap="sm">
+                <div className="flex flex-col gap-4">
+                  <div className="flex gap-3 items-center">
                     <Building size={24} strokeWidth={2} color="var(--mantine-color-blue-6)" />
-                    <Box style={{ flex: 1 }}>
-                      <Text size="sm" c="dimmed" mb={4}>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 mb-1">
                         {t('organization.view.name_label')}
-                      </Text>
-                      <Text size="xl" fw={600}>
+                      </p>
+                      <p className="text-xl font-semibold">
                         {organization?.name}
-                      </Text>
-                    </Box>
-                  </Group>
-                </Stack>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </Paper>
 
               {organization?.description && (
                 <Paper withBorder p="lg" radius="md">
-                  <Text size="sm" c="dimmed" mb="sm">
+                  <p className="text-sm text-gray-500 mb-3">
                     {t('organization.view.description_label')}
-                  </Text>
-                  <Text size="md">
+                  </p>
+                  <p>
                     {organization.description}
-                  </Text>
+                  </p>
                 </Paper>
               )}
 
               <Paper withBorder p="lg" radius="md">
-                <Group gap="lg">
-                  <Box>
-                    <Group gap="xs" mb={4}>
-                      <Calendar size={16} color="var(--mantine-color-dimmed)" />
-                      <Text size="sm" c="dimmed">
+                <div className="flex gap-8">
+                  <div>
+                    <div className="flex gap-2 items-center mb-1">
+                      <Calendar size={16} className="text-gray-400" />
+                      <p className="text-sm text-gray-500">
                         {t('organization.view.created_at')}
-                      </Text>
-                    </Group>
-                    <Text size="md" fw={500}>
+                      </p>
+                    </div>
+                    <p className="font-medium">
                       {new Date(organization?.createdAt || '').toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                       })}
-                    </Text>
-                  </Box>
+                    </p>
+                  </div>
                   {organization?.updatedAt && (
-                    <Box>
-                      <Group gap="xs" mb={4}>
-                        <Calendar size={16} color="var(--mantine-color-dimmed)" />
-                        <Text size="sm" c="dimmed">
+                    <div>
+                      <div className="flex gap-2 items-center mb-1">
+                        <Calendar size={16} className="text-gray-400" />
+                        <p className="text-sm text-gray-500">
                           {t('organization.view.updated_at')}
-                        </Text>
-                      </Group>
-                      <Text size="md" fw={500}>
+                        </p>
+                      </div>
+                      <p className="font-medium">
                         {new Date(organization.updatedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
                         })}
-                      </Text>
-                    </Box>
+                      </p>
+                    </div>
                   )}
-                </Group>
+                </div>
               </Paper>
-            </Stack>
+            </div>
           )}
         </Card>
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 }
-

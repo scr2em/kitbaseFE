@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { Paper, Title, Text, Stack, Box, Group, ThemeIcon, TextInput, Button, Anchor } from '@mantine/core';
+import { 
+  Paper, 
+  ThemeIcon, 
+  TextInput, 
+  Button, 
+  Anchor
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { Plane, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '../model/schema';
 import { useForgotPasswordMutation } from '../../../../shared/api/queries/auth';
@@ -39,123 +45,73 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <Box
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      p="md"
-    >
-      <Box w="100%" maw="460px">
-        <Stack gap="xl">
-          {/* Logo/Brand */}
-          <Group justify="center">
-            <ThemeIcon
-              size={60}
-              radius="xl"
-              variant="gradient"
-            >
-              <Plane size={36} />
-            </ThemeIcon>
-          </Group>
-
-          <Box ta="center">
-            <Title
-              order={1}
-              c="white"
-              mb="xs"
-            >
-              Flyway
-            </Title>
-            <Text size="lg" c="white" style={{ opacity: 0.9 }}>
-              {t('auth.reset_password.forgot.tagline')}
-            </Text>
-          </Box>
-
-          <Paper
-            withBorder
-            shadow="xl"
-            p="xl"
-            radius="lg"
-            bg="white"
+    <Paper withBorder shadow="xl" p="xl" radius="lg">
+      {emailSent ? (
+        <div className="flex flex-col gap-4 items-center">
+          <ThemeIcon size={60} radius="xl" color="green" variant="light">
+            <CheckCircle size={32} />
+          </ThemeIcon>
+          <h2 className="text-2xl font-semibold text-center">
+            {t('auth.reset_password.forgot.success_title')}
+          </h2>
+          <p className="text-sm text-gray-500 text-center">
+            {t('auth.reset_password.forgot.success_message', { email: submittedEmail })}
+          </p>
+          <Button
+            variant="subtle"
+            leftSection={<ArrowLeft size={16} />}
+            onClick={() => navigate('/login')}
           >
-            {emailSent ? (
-              <Stack gap="md" align="center">
-                <ThemeIcon
-                  size={60}
-                  radius="xl"
-                  color="green"
-                  variant="light"
-                >
-                  <CheckCircle size={32} />
-                </ThemeIcon>
-                <Title order={2} ta="center">
-                  {t('auth.reset_password.forgot.success_title')}
-                </Title>
-                <Text c="dimmed" size="sm" ta="center">
-                  {t('auth.reset_password.forgot.success_message', { email: submittedEmail })}
-                </Text>
-                <Button
-                  variant="subtle"
-                  leftSection={<ArrowLeft size={16} />}
+            {t('auth.reset_password.forgot.back_to_login')}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-center mb-2">
+              {t('auth.reset_password.forgot.title')}
+            </h2>
+            <p className="text-sm text-gray-500 text-center">
+              {t('auth.reset_password.forgot.subtitle')}
+            </p>
+          </div>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-4">
+              <TextInput
+                label={t('auth.reset_password.forgot.email_label')}
+                placeholder={t('auth.reset_password.forgot.email_placeholder')}
+                leftSection={<Mail size={18} />}
+                size="md"
+                {...register('email')}
+                error={errors.email?.message ? t(errors.email.message) : undefined}
+              />
+
+              <Button
+                type="submit"
+                fullWidth
+                size="md"
+                loading={forgotPasswordMutation.isPending}
+                variant="gradient"
+              >
+                {t('auth.reset_password.forgot.submit_button')}
+              </Button>
+
+              <div className="flex justify-center">
+                <Anchor
                   onClick={() => navigate('/login')}
+                  c="dimmed"
+                  size="sm"
+                  className="cursor-pointer flex items-center gap-1"
                 >
+                  <ArrowLeft size={14} />
                   {t('auth.reset_password.forgot.back_to_login')}
-                </Button>
-              </Stack>
-            ) : (
-              <Stack gap="md">
-                <div>
-                  <Title ta="center" order={2} mb="xs">
-                    {t('auth.reset_password.forgot.title')}
-                  </Title>
-                  <Text c="dimmed" size="sm" ta="center">
-                    {t('auth.reset_password.forgot.subtitle')}
-                  </Text>
-                </div>
-                
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <Stack gap="md">
-                    <TextInput
-                      label={t('auth.reset_password.forgot.email_label')}
-                      placeholder={t('auth.reset_password.forgot.email_placeholder')}
-                      leftSection={<Mail size={18} />}
-                      size="md"
-                      {...register('email')}
-                      error={errors.email?.message ? t(errors.email.message) : undefined}
-                    />
-
-                    <Button
-                      type="submit"
-                      fullWidth
-                      size="md"
-                      loading={forgotPasswordMutation.isPending}
-                      variant="gradient"
-                    >
-                      {t('auth.reset_password.forgot.submit_button')}
-                    </Button>
-
-                    <Group justify="center">
-                      <Anchor
-                        onClick={() => navigate('/login')}
-                        c="dimmed"
-                        size="sm"
-                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        <ArrowLeft size={14} />
-                        {t('auth.reset_password.forgot.back_to_login')}
-                      </Anchor>
-                    </Group>
-                  </Stack>
-                </form>
-              </Stack>
-            )}
-          </Paper>
-        </Stack>
-      </Box>
-    </Box>
+                </Anchor>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+    </Paper>
   );
 }
-

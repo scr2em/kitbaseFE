@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { Paper, Title, Text, Stack, Box, Group, ThemeIcon, PasswordInput, Button, Anchor, Alert } from '@mantine/core';
+import { 
+  Paper, 
+  ThemeIcon, 
+  PasswordInput, 
+  Button, 
+  Anchor, 
+  Alert
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { Plane, Lock, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Lock, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { resetPasswordSchema, type ResetPasswordFormData } from '../model/schema';
 import { useResetPasswordMutation } from '../../../../shared/api/queries/auth';
@@ -54,202 +61,112 @@ export function ResetPasswordPage() {
     }
   };
 
-  // No token provided
   if (!token) {
     return (
-      <Box
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        p="md"
-      >
-        <Box w="100%" maw="460px">
-          <Stack gap="xl">
-            <Group justify="center">
-              <ThemeIcon
-                size={60}
-                radius="xl"
-                variant="gradient"
-              >
-                <Plane size={36} />
-              </ThemeIcon>
-            </Group>
-
-            <Paper
-              withBorder
-              shadow="xl"
-              p="xl"
-              radius="lg"
-              bg="white"
-            >
-              <Stack gap="md" align="center">
-                <ThemeIcon
-                  size={60}
-                  radius="xl"
-                  color="red"
-                  variant="light"
-                >
-                  <AlertTriangle size={32} />
-                </ThemeIcon>
-                <Title order={2} ta="center">
-                  {t('auth.reset_password.errors.title')}
-                </Title>
-                <Text c="dimmed" size="sm" ta="center">
-                  {t('auth.reset_password.errors.invalid_link')}
-                </Text>
-                <Button
-                  variant="subtle"
-                  leftSection={<ArrowLeft size={16} />}
-                  onClick={() => navigate('/forgot-password')}
-                >
-                  {t('auth.reset_password.reset.request_new_link')}
-                </Button>
-              </Stack>
-            </Paper>
-          </Stack>
-        </Box>
-      </Box>
+      <Paper withBorder shadow="xl" p="xl" radius="lg">
+        <div className="flex flex-col gap-4 items-center">
+          <ThemeIcon size={60} radius="xl" color="red" variant="light">
+            <AlertTriangle size={32} />
+          </ThemeIcon>
+          <h2 className="text-2xl font-semibold text-center">
+            {t('auth.reset_password.errors.title')}
+          </h2>
+          <p className="text-sm text-gray-500 text-center">
+            {t('auth.reset_password.errors.invalid_link')}
+          </p>
+          <Button
+            variant="subtle"
+            leftSection={<ArrowLeft size={16} />}
+            onClick={() => navigate('/forgot-password')}
+          >
+            {t('auth.reset_password.reset.request_new_link')}
+          </Button>
+        </div>
+      </Paper>
     );
   }
 
   return (
-    <Box
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      p="md"
-    >
-      <Box w="100%" maw="460px">
-        <Stack gap="xl">
-          {/* Logo/Brand */}
-          <Group justify="center">
-            <ThemeIcon
-              size={60}
-              radius="xl"
-              variant="gradient"
-            >
-              <Plane size={36} />
-            </ThemeIcon>
-          </Group>
+    <Paper withBorder shadow="xl" p="xl" radius="lg">
+      {resetSuccess ? (
+        <div className="flex flex-col gap-4 items-center">
+          <ThemeIcon size={60} radius="xl" color="green" variant="light">
+            <CheckCircle size={32} />
+          </ThemeIcon>
+          <h2 className="text-2xl font-semibold text-center">
+            {t('auth.reset_password.reset.success_title')}
+          </h2>
+          <p className="text-sm text-gray-500 text-center">
+            {t('auth.reset_password.reset.success_message')}
+          </p>
+          <Button fullWidth variant="gradient" onClick={() => navigate('/login')}>
+            {t('auth.reset_password.reset.go_to_login')}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-center mb-2">
+              {t('auth.reset_password.reset.title')}
+            </h2>
+            <p className="text-sm text-gray-500 text-center">
+              {t('auth.reset_password.reset.subtitle')}
+            </p>
+          </div>
 
-          <Box ta="center">
-            <Title
-              order={1}
-              c="white"
-              mb="xs"
-            >
-              Flyway
-            </Title>
-            <Text size="lg" c="white" style={{ opacity: 0.9 }}>
-              {t('auth.reset_password.reset.tagline')}
-            </Text>
-          </Box>
-
-          <Paper
-            withBorder
-            shadow="xl"
-            p="xl"
-            radius="lg"
-            bg="white"
+          <Alert 
+            color="blue" 
+            variant="light"
+            styles={{ message: { fontSize: 'var(--mantine-font-size-xs)' } }}
           >
-            {resetSuccess ? (
-              <Stack gap="md" align="center">
-                <ThemeIcon
-                  size={60}
-                  radius="xl"
-                  color="green"
-                  variant="light"
-                >
-                  <CheckCircle size={32} />
-                </ThemeIcon>
-                <Title order={2} ta="center">
-                  {t('auth.reset_password.reset.success_title')}
-                </Title>
-                <Text c="dimmed" size="sm" ta="center">
-                  {t('auth.reset_password.reset.success_message')}
-                </Text>
-                <Button
-                  fullWidth
-                  variant="gradient"
+            {t('auth.reset_password.reset.password_requirements')}
+          </Alert>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-4">
+              <PasswordInput
+                label={t('auth.reset_password.reset.new_password_label')}
+                placeholder={t('auth.reset_password.reset.new_password_placeholder')}
+                leftSection={<Lock size={18} />}
+                size="md"
+                {...register('newPassword')}
+                error={errors.newPassword?.message ? t(errors.newPassword.message) : undefined}
+              />
+
+              <PasswordInput
+                label={t('auth.reset_password.reset.confirm_password_label')}
+                placeholder={t('auth.reset_password.reset.confirm_password_placeholder')}
+                leftSection={<Lock size={18} />}
+                size="md"
+                {...register('confirmPassword')}
+                error={errors.confirmPassword?.message ? t(errors.confirmPassword.message) : undefined}
+              />
+
+              <Button
+                type="submit"
+                fullWidth
+                size="md"
+                loading={resetPasswordMutation.isPending}
+                variant="gradient"
+              >
+                {t('auth.reset_password.reset.submit_button')}
+              </Button>
+
+              <div className="flex justify-center">
+                <Anchor
                   onClick={() => navigate('/login')}
+                  c="dimmed"
+                  size="sm"
+                  className="cursor-pointer flex items-center gap-1"
                 >
-                  {t('auth.reset_password.reset.go_to_login')}
-                </Button>
-              </Stack>
-            ) : (
-              <Stack gap="md">
-                <div>
-                  <Title ta="center" order={2} mb="xs">
-                    {t('auth.reset_password.reset.title')}
-                  </Title>
-                  <Text c="dimmed" size="sm" ta="center">
-                    {t('auth.reset_password.reset.subtitle')}
-                  </Text>
-                </div>
-
-                <Alert 
-                  color="blue" 
-                  variant="light"
-                  styles={{ message: { fontSize: 'var(--mantine-font-size-xs)' } }}
-                >
-                  {t('auth.reset_password.reset.password_requirements')}
-                </Alert>
-                
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <Stack gap="md">
-                    <PasswordInput
-                      label={t('auth.reset_password.reset.new_password_label')}
-                      placeholder={t('auth.reset_password.reset.new_password_placeholder')}
-                      leftSection={<Lock size={18} />}
-                      size="md"
-                      {...register('newPassword')}
-                      error={errors.newPassword?.message ? t(errors.newPassword.message) : undefined}
-                    />
-
-                    <PasswordInput
-                      label={t('auth.reset_password.reset.confirm_password_label')}
-                      placeholder={t('auth.reset_password.reset.confirm_password_placeholder')}
-                      leftSection={<Lock size={18} />}
-                      size="md"
-                      {...register('confirmPassword')}
-                      error={errors.confirmPassword?.message ? t(errors.confirmPassword.message) : undefined}
-                    />
-
-                    <Button
-                      type="submit"
-                      fullWidth
-                      size="md"
-                      loading={resetPasswordMutation.isPending}
-                      variant="gradient"
-                    >
-                      {t('auth.reset_password.reset.submit_button')}
-                    </Button>
-
-                    <Group justify="center">
-                      <Anchor
-                        onClick={() => navigate('/login')}
-                        c="dimmed"
-                        size="sm"
-                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        <ArrowLeft size={14} />
-                        {t('auth.reset_password.reset.back_to_login')}
-                      </Anchor>
-                    </Group>
-                  </Stack>
-                </form>
-              </Stack>
-            )}
-          </Paper>
-        </Stack>
-      </Box>
-    </Box>
+                  <ArrowLeft size={14} />
+                  {t('auth.reset_password.reset.back_to_login')}
+                </Anchor>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+    </Paper>
   );
 }
-

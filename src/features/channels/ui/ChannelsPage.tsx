@@ -1,14 +1,8 @@
 import {
-  Box,
-  Title,
-  Text,
-  Stack,
   Card,
-  Center,
   Loader,
   Button,
   Alert,
-  Group,
   Menu,
   ActionIcon,
   Table,
@@ -57,9 +51,9 @@ export function ChannelsPage() {
     modals.openConfirmModal({
       title: t('channels.delete.title'),
       children: (
-        <Text size="sm">
+        <p className="text-sm">
           {t('channels.delete.confirmation', { name: channelName })}
-        </Text>
+        </p>
       ),
       labels: { confirm: t('channels.delete.confirm'), cancel: t('channels.delete.cancel') },
       confirmProps: { color: 'red' },
@@ -84,16 +78,16 @@ export function ChannelsPage() {
 
   if (isLoadingUser || isLoading) {
     return (
-      <Center h="calc(100vh - 120px)">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
   if (!currentOrganization) {
     return (
-      <Box>
-        <Stack gap="md">
+      <div>
+        <div className="flex flex-col gap-4">
           <Alert
             icon={<AlertCircle size={16} />}
             title={t('channels.no_organization_title')}
@@ -106,18 +100,18 @@ export function ChannelsPage() {
             variant="light"
             size="md"
             onClick={() => navigate('/create-organization')}
-            style={{ alignSelf: 'flex-start' }}
+            className="self-start"
           >
             {t('dashboard.create_organization')}
           </Button>
-        </Stack>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Box>
+      <div>
         <Alert
           icon={<AlertCircle size={16} />}
           title={t('common.error')}
@@ -125,7 +119,7 @@ export function ChannelsPage() {
         >
           {t('channels.error_loading')}
         </Alert>
-      </Box>
+      </div>
     );
   }
 
@@ -133,18 +127,18 @@ export function ChannelsPage() {
   const totalElements = data?.pages[0]?.totalElements || 0;
 
   return (
-    <Box>
-      <Stack gap="xl">
+    <div>
+      <div className="flex flex-col gap-8">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Box>
-            <Title order={1} mb="xs">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
               {t('channels.title')}
-            </Title>
-            <Text c="dimmed" size="lg">
+            </h1>
+            <p className="text-lg text-gray-500">
               {t('channels.subtitle', { count: totalElements })}
-            </Text>
-          </Box>
+            </p>
+          </div>
           <Button
             leftSection={<Plus size={18} />}
             variant="gradient"
@@ -153,29 +147,29 @@ export function ChannelsPage() {
           >
             {t('channels.create_button')}
           </Button>
-        </Group>
+        </div>
 
         {/* Channels Table */}
         {channels.length === 0 ? (
-          <Card withBorder   p="xl" radius="md">
-            <Center>
-              <Stack align="center" gap="md">
-                <Radio size={48} strokeWidth={1.5} color="var(--mantine-color-dimmed)" />
-                <Text c="dimmed" size="lg">
+          <Card withBorder p="xl" radius="md">
+            <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <Radio size={48} strokeWidth={1.5} className="text-gray-400" />
+                <p className="text-lg text-gray-500">
                   {t('channels.no_channels')}
-                </Text>
+                </p>
                 <Button
                   leftSection={<Plus size={18} />}
                   onClick={() => setCreateModalOpened(true)}
                 >
                   {t('channels.create_first_channel')}
                 </Button>
-              </Stack>
-            </Center>
+              </div>
+            </div>
           </Card>
         ) : (
           <>
-            <Card withBorder  padding={0} radius="md">
+            <Card withBorder padding={0} radius="md">
               <ScrollArea>
                 <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                   <Table.Thead>
@@ -191,40 +185,40 @@ export function ChannelsPage() {
                     {channels.map((channel) => (
                       <Table.Tr key={channel.id}>
                         <Table.Td>
-                          <Group gap="sm">
+                          <div className="flex gap-3 items-center">
                             <Radio size={20} strokeWidth={2} />
                             <div>
-                              <Text fw={500} size="sm">
+                              <p className="font-medium text-sm">
                                 {channel.name}
-                              </Text>
+                              </p>
                               <Badge variant="light" color="blue" size="xs" mt={2}>
                                 {t('channels.badge')}
                               </Badge>
                             </div>
-                          </Group>
+                          </div>
                         </Table.Td>
                         <Table.Td>
-                          <Text size="sm" c={channel.description ? undefined : 'dimmed'}>
+                          <p className={`text-sm ${channel.description ? '' : 'text-gray-500'}`}>
                             {channel.description || t('channels.no_description')}
-                          </Text>
+                          </p>
                         </Table.Td>
                         <Table.Td>
-                          <Text size="sm">
+                          <p className="text-sm">
                             {new Date(channel.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
                             })}
-                          </Text>
+                          </p>
                         </Table.Td>
                         <Table.Td>
-                          <Text size="sm">
+                          <p className="text-sm">
                             {new Date(channel.updatedAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
                             })}
-                          </Text>
+                          </p>
                         </Table.Td>
                         <Table.Td>
                           <Menu shadow="md" width={200} position="bottom-end">
@@ -259,7 +253,7 @@ export function ChannelsPage() {
 
             {/* Load More Button */}
             {hasNextPage && (
-              <Center mt="xl">
+              <div className="flex justify-center mt-8">
                 <Button
                   onClick={() => fetchNextPage()}
                   loading={isFetchingNextPage}
@@ -267,11 +261,11 @@ export function ChannelsPage() {
                 >
                   {isFetchingNextPage ? t('channels.loading_more') : t('channels.load_more')}
                 </Button>
-              </Center>
+              </div>
             )}
           </>
         )}
-      </Stack>
+      </div>
 
       <CreateChannelModal
         opened={createModalOpened}
@@ -285,6 +279,6 @@ export function ChannelsPage() {
           channel={updateModalData.channel}
         />
       )}
-    </Box>
+    </div>
   );
 }

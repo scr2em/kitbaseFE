@@ -1,13 +1,7 @@
 import {
-  Box,
-  Title,
-  Text,
-  Stack,
-  Group,
   Avatar,
   Badge,
   Card,
-  Center,
   Loader,
   Button,
   Table,
@@ -51,9 +45,9 @@ export function TeamPage() {
     modals.openConfirmModal({
       title: t('team.delete.title'),
       children: (
-        <Text size="sm">
+        <p className="text-sm">
           {t('team.delete.confirmation', { name: memberName })}
-        </Text>
+        </p>
       ),
       labels: { confirm: t('team.delete.confirm'), cancel: t('team.delete.cancel') },
       confirmProps: { color: 'red' },
@@ -107,16 +101,16 @@ export function TeamPage() {
 
   if (isLoadingUser || isLoading) {
     return (
-      <Center h="calc(100vh - 120px)">
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
   if (!currentOrganization) {
     return (
-      <Box>
-        <Stack gap="md">
+      <div>
+        <div className="flex flex-col gap-4">
           <Alert
             icon={<AlertCircle size={16} />}
             title={t('team.no_organization_title')}
@@ -129,18 +123,18 @@ export function TeamPage() {
             variant="light"
             size="md"
             onClick={() => navigate('/create-organization')}
-            style={{ alignSelf: 'flex-start' }}
+            className="self-start"
           >
             {t('dashboard.create_organization')}
           </Button>
-        </Stack>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Box>
+      <div>
         <Alert
           icon={<AlertCircle size={16} />}
           title={t('common.error')}
@@ -148,7 +142,7 @@ export function TeamPage() {
         >
           {t('team.error_loading')}
         </Alert>
-      </Box>
+      </div>
     );
   }
 
@@ -156,18 +150,18 @@ export function TeamPage() {
   const totalMembers = data?.pages[0]?.total || 0;
 
   return (
-    <Box>
-      <Stack gap="xl">
+    <div>
+      <div className="flex flex-col gap-8">
         {/* Header */}
-        <Group justify="space-between" align="flex-start">
-          <Box>
-            <Title order={1} mb="xs">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
               {t('team.title')}
-            </Title>
-            <Text c="dimmed" size="lg">
+            </h1>
+            <p className="text-lg text-gray-500">
               {t('team.subtitle', { count: totalMembers })}
-            </Text>
-          </Box>
+            </p>
+          </div>
           {canInviteMember && (
             <Button
               leftSection={<UserPlus size={18} />}
@@ -178,10 +172,10 @@ export function TeamPage() {
               {t('team.invite_member')}
             </Button>
           )}
-        </Group>
+        </div>
 
         {/* Members Table */}
-        <Card withBorder   padding={0} radius="md">
+        <Card withBorder padding={0} radius="md">
           <ScrollArea>
             <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
               <Table.Thead>
@@ -199,7 +193,7 @@ export function TeamPage() {
                 {allMembers.map((member) => (
                   <Table.Tr key={member.id}>
                     <Table.Td>
-                      <Group gap="sm">
+                      <div className="flex gap-3 items-center">
                         <Avatar
                           size={40}
                           radius="xl"
@@ -208,19 +202,19 @@ export function TeamPage() {
                           {getInitials(member.user.firstName, member.user.lastName)}
                         </Avatar>
                         <div>
-                          <Text fw={500} size="sm">
+                          <p className="font-medium text-sm">
                             {member.user.firstName} {member.user.lastName}
-                          </Text>
+                          </p>
                           {member.user.id === currentUser?.id && (
-                            <Text size="xs" c="dimmed">
+                            <p className="text-xs text-gray-500">
                               {t('team.you')}
-                            </Text>
+                            </p>
                           )}
                         </div>
-                      </Group>
+                      </div>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm">{member.user.email}</Text>
+                      <p className="text-sm">{member.user.email}</p>
                     </Table.Td>
                     <Table.Td>
                       <Badge
@@ -239,18 +233,18 @@ export function TeamPage() {
                       </Badge>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm" c="dimmed">
+                      <p className="text-sm text-gray-500">
                         {t('team.active_member')}
-                      </Text>
+                      </p>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm">
+                      <p className="text-sm">
                         {new Date(member.joinedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
                         })}
-                      </Text>
+                      </p>
                     </Table.Td>
                     <Table.Td>
                       {canRemoveMember && (
@@ -281,8 +275,8 @@ export function TeamPage() {
 
           {/* Load More Button */}
           {hasNextPage && (
-            <Box p="md" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
-              <Center>
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex justify-center">
                 <Button
                   onClick={() => fetchNextPage()}
                   loading={isFetchingNextPage}
@@ -292,18 +286,17 @@ export function TeamPage() {
                     ? t('team.loading_more')
                     : t('team.load_more')}
                 </Button>
-              </Center>
-            </Box>
+              </div>
+            </div>
           )}
         </Card>
 
-      </Stack>
+      </div>
 
       <InviteUserModal
         opened={inviteModalOpened}
         onClose={() => setInviteModalOpened(false)}
       />
-    </Box>
+    </div>
   );
 }
-

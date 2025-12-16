@@ -1,4 +1,4 @@
-import { Modal, Button, Stack, Alert, Text, Code, Group, CopyButton } from '@mantine/core';
+import { Modal, Button, Alert, Code, CopyButton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
       closeOnClickOutside={false}
       closeOnEscape={false}
     >
-      <Stack gap="md">
+      <div className="flex flex-col gap-4">
         <Alert
           icon={<AlertTriangle size={20} />}
           color="yellow"
@@ -30,20 +30,20 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
           {t('apps.detail.api_keys.created.warning_message')}
         </Alert>
 
-        <Stack gap="xs">
-          <Text size="sm" fw={500}>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium">
             {t('apps.detail.api_keys.created.key_name')}
-          </Text>
-          <Text size="sm" c="dimmed">
+          </p>
+          <p className="text-sm text-gray-500">
             {keyName}
-          </Text>
-        </Stack>
+          </p>
+        </div>
 
-        <Stack gap="xs">
-          <Group justify="space-between" align="center">
-            <Text size="sm" fw={500}>
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between items-center">
+            <p className="text-sm font-medium">
               {t('apps.detail.api_keys.created.key_label')}
-            </Text>
+            </p>
             <CopyButton value={apiKey}>
               {({ copied, copy }) => (
                 <Button
@@ -56,19 +56,18 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
                 </Button>
               )}
             </CopyButton>
-          </Group>
+          </div>
           <Code block p="md" style={{ wordBreak: 'break-all' }}>
             {apiKey}
           </Code>
-        </Stack>
+        </div>
 
-        <Group justify="flex-end">
+        <div className="flex justify-end">
           <Button onClick={onClose}>
             {t('apps.detail.api_keys.created.confirm_button')}
           </Button>
-        </Group>
-      </Stack>
+        </div>
+      </div>
     </Modal>
   );
 }
-

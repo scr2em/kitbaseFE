@@ -1,4 +1,4 @@
-import { Modal, Stack, Button, Group } from '@mantine/core';
+import { Modal, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -55,7 +55,7 @@ export function UpdateChannelModal({ opened, onClose, channel }: UpdateChannelMo
       size="md"
     >
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           <ControlledTextInput
             control={control}
             name="name"
@@ -72,17 +72,16 @@ export function UpdateChannelModal({ opened, onClose, channel }: UpdateChannelMo
             minRows={3}
           />
 
-          <Group justify="flex-end" mt="md">
+          <div className="flex justify-end gap-3 mt-4">
             <Button variant="subtle" onClick={handleClose}>
               {t('channels.update.cancel_button')}
             </Button>
             <Button type="submit" loading={updateMutation.isPending}>
               {t('channels.update.submit_button')}
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </form>
     </Modal>
   );
 }
-

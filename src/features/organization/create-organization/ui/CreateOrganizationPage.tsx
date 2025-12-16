@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Paper, Title, Text, Stack, Center, Box, ThemeIcon, Flex } from '@mantine/core';
+import { Paper, ThemeIcon } from '@mantine/core';
 import { Building2 } from 'lucide-react';
 import { CreateOrganizationForm } from './CreateOrganizationForm';
 
@@ -7,14 +7,8 @@ export function CreateOrganizationPage() {
   const { t } = useTranslation();
 
   return (
-    <Flex
-    h="100vh" 
-    align="center"
-    justify="center"
-   
-      p="xl"
-    >
-      <Box w="100%" maw="540px">
+    <div className="h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-[540px]">
         <Paper
           radius="lg"
           p="xl"
@@ -24,8 +18,8 @@ export function CreateOrganizationPage() {
             backdropFilter: 'blur(10px)',
           }}
         >
-          <Stack gap="lg">
-            <Center>
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-center">
               <ThemeIcon
                 size={64}
                 radius="xl"
@@ -34,22 +28,21 @@ export function CreateOrganizationPage() {
               >
                 <Building2 size={32} />
               </ThemeIcon>
-            </Center>
+            </div>
 
-            <Stack gap="xs" align="center">
-              <Title order={2} ta="center">
+            <div className="flex flex-col gap-2 items-center">
+              <h2 className="text-2xl font-semibold text-center">
                 {t('organization.create.title')}
-              </Title>
-              <Text c="dimmed" size="sm" ta="center">
+              </h2>
+              <p className="text-sm text-gray-500 text-center">
                 {t('organization.create.subtitle')}
-              </Text>
-            </Stack>
+              </p>
+            </div>
 
             <CreateOrganizationForm />
-          </Stack>
+          </div>
         </Paper>
-      </Box>
-    </Flex>
+      </div>
+    </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import { Container, Paper, Title, Text, Stack, Button, Group, Alert } from '@mantine/core';
+import { Paper, Button, Alert } from '@mantine/core';
 import { useSearchParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Mail, AlertCircle, XCircle, CheckCircle } from 'lucide-react';
@@ -86,36 +86,36 @@ export function AcceptInvitationPage() {
 
   if (!invitationId) {
     return (
-      <Container size="sm" pt={80}>
+      <div className="max-w-md mx-auto pt-20 px-4">
         <Paper shadow="md" p="xl" radius="md" withBorder>
-          <Stack gap="lg" align="center">
+          <div className="flex flex-col gap-6 items-center">
             <AlertCircle size={48} color="var(--mantine-color-red-6)" />
-            <Title order={2}>{t('invitation.accept.error_title')}</Title>
-            <Text c="dimmed" ta="center">
+            <h2 className="text-2xl font-semibold">{t('invitation.accept.error_title')}</h2>
+            <p className="text-gray-500 text-center">
               {t('invitation.accept.error_message')}
-            </Text>
+            </p>
             <Button onClick={() => navigate('/')} variant="light">
               {t('invitation.accept.go_to_home')}
             </Button>
-          </Stack>
+          </div>
         </Paper>
-      </Container>
+      </div>
     );
   }
 
   if (isProcessed) {
     return (
-      <Container size="sm" pt={80}>
+      <div className="max-w-md mx-auto pt-20 px-4">
         <Paper shadow="md" p="xl" radius="md" withBorder>
-          <Stack gap="lg" align="center">
+          <div className="flex flex-col gap-6 items-center">
             <CheckCircle size={48} color="var(--mantine-color-green-6)" />
-            <Title order={2}>{t('invitation.accept.processed_title')}</Title>
-            <Text c="dimmed" ta="center">
+            <h2 className="text-2xl font-semibold">{t('invitation.accept.processed_title')}</h2>
+            <p className="text-gray-500 text-center">
               {t('invitation.accept.redirecting_message')}
-            </Text>
-          </Stack>
+            </p>
+          </div>
         </Paper>
-      </Container>
+      </div>
     );
   }
 
@@ -125,24 +125,24 @@ export function AcceptInvitationPage() {
   }
 
   return (
-    <Container size="sm" pt={80}>
+    <div className="max-w-md mx-auto pt-20 px-4">
       <Paper shadow="md" p="xl" radius="md" withBorder>
-        <Stack gap="lg">
-          <Stack gap="xs" align="center">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 items-center">
             <Mail size={48} color="var(--mantine-color-blue-6)" />
-            <Title order={2}>{t('invitation.accept.title')}</Title>
-            <Text c="dimmed" ta="center">
+            <h2 className="text-2xl font-semibold">{t('invitation.accept.title')}</h2>
+            <p className="text-gray-500 text-center">
               {t('invitation.accept.subtitle')}
-            </Text>
-          </Stack>
+            </p>
+          </div>
 
           <Alert color="blue" icon={<AlertCircle size={16} />}>
-            <Text size="sm">
+            <p className="text-sm">
               {t('invitation.accept.logged_in_note')}
-            </Text>
+            </p>
           </Alert>
 
-          <Group justify="center" mt="md">
+          <div className="flex justify-center gap-3 mt-4">
             <Button
               variant="subtle"
               onClick={handleReject}
@@ -162,10 +162,9 @@ export function AcceptInvitationPage() {
             >
               {t('invitation.accept.accept_button')}
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Paper>
-    </Container>
+    </div>
   );
 }
-

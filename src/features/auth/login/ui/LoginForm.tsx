@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { TextInput, PasswordInput, Button, Stack, Text, Anchor, Divider } from '@mantine/core';
+import { TextInput, PasswordInput, Button, Anchor, Divider } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { Mail, Lock } from 'lucide-react';
 import { loginSchema, type LoginFormData } from '../model/schema';
@@ -57,7 +57,7 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack gap="md">
+      <div className="flex flex-col gap-4">
         <TextInput
           label={t('auth.login.email_label')}
           placeholder={t('auth.login.email_placeholder')}
@@ -80,7 +80,7 @@ export function LoginForm() {
           onClick={() => navigate('/forgot-password')}
           size="sm"
           c="brand"
-          style={{ cursor: 'pointer', alignSelf: 'flex-end' }}
+          className="cursor-pointer self-end"
         >
           {t('auth.login.forgot_password_link')}
         </Anchor>
@@ -97,18 +97,18 @@ export function LoginForm() {
 
         <Divider />
 
-        <Text ta="center" size="sm">
+        <p className="text-center text-sm">
           {t('auth.login.no_account')}{' '}
           <Anchor
             onClick={() => navigate('/signup')}
             fw={700}
             c="brand"
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           >
             {t('auth.login.signup_link')}
           </Anchor>
-        </Text>
-      </Stack>
+        </p>
+      </div>
     </form>
   );
 }

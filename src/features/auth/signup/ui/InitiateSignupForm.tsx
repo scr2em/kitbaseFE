@@ -4,11 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { 
   TextInput, 
   Button, 
-  Stack, 
-  Text, 
   Anchor, 
   Divider,
-  Title
 } from '@mantine/core';
 import { Mail, CheckCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
@@ -54,14 +51,14 @@ export function InitiateSignupForm() {
 
   if (emailSent) {
     return (
-      <Stack gap="lg" align="center">
+      <div className="flex flex-col gap-6 items-center">
         <CheckCircle size={64} color="var(--mantine-color-green-6)" />
-        <Title order={3} ta="center">
+        <h3 className="text-xl font-semibold text-center">
           {t('auth.signup.initiate.success_title')}
-        </Title>
-        <Text c="dimmed" ta="center">
+        </h3>
+        <p className="text-gray-500 text-center">
           {t('auth.signup.initiate.success_message', { email: submittedEmail })}
-        </Text>
+        </p>
         <Button
           variant="subtle"
           leftSection={<RefreshCw size={16} />}
@@ -70,25 +67,25 @@ export function InitiateSignupForm() {
         >
           {t('auth.signup.initiate.resend_button')}
         </Button>
-        <Divider w="100%" />
-        <Text ta="center" size="sm">
+        <Divider className="w-full" />
+        <p className="text-center text-sm">
           {t('auth.signup.have_account')}{' '}
           <Anchor
             onClick={() => navigate('/login')}
             fw={700}
             c="brand"
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           >
             {t('auth.signup.login_link')}
           </Anchor>
-        </Text>
-      </Stack>
+        </p>
+      </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack gap="md">
+      <div className="flex flex-col gap-4">
         <TextInput
           label={t('auth.signup.email_label')}
           placeholder={t('auth.signup.email_placeholder')}
@@ -109,19 +106,18 @@ export function InitiateSignupForm() {
 
         <Divider />
 
-        <Text ta="center" size="sm">
+        <p className="text-center text-sm">
           {t('auth.signup.have_account')}{' '}
           <Anchor
             onClick={() => navigate('/login')}
             fw={700}
             c="brand"
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           >
             {t('auth.signup.login_link')}
           </Anchor>
-        </Text>
-      </Stack>
+        </p>
+      </div>
     </form>
   );
 }
-

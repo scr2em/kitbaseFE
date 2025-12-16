@@ -1,14 +1,8 @@
 import {
-  Box,
-  Title,
-  Text,
-  Stack,
   Table,
   ActionIcon,
   Menu,
-  Group,
   Alert,
-  Center,
   Loader,
   Paper,
   Pagination,
@@ -47,9 +41,9 @@ export function AppBuildsPage() {
     modals.openConfirmModal({
       title: t('apps.detail.builds.delete.title'),
       children: (
-        <Text size="sm">
+        <p className="text-sm">
           {t('apps.detail.builds.delete.confirmation')}
-        </Text>
+        </p>
       ),
       labels: {
         confirm: t('apps.detail.builds.delete.confirm'),
@@ -103,9 +97,9 @@ export function AppBuildsPage() {
 
   if (isLoading) {
     return (
-      <Center h={200}>
+      <div className="h-[200px] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
@@ -124,37 +118,37 @@ export function AppBuildsPage() {
   const hasBuilds = builds.length > 0;
 
   return (
-    <Box>
-      <Stack gap="md">
-        <Box>
-          <Title order={3}>{t('apps.detail.builds.title')}</Title>
-          <Text size="sm" c="dimmed">
+    <div>
+      <div className="flex flex-col gap-4">
+        <div>
+          <h3 className="text-xl font-semibold">{t('apps.detail.builds.title')}</h3>
+          <p className="text-sm text-gray-500">
             {t('apps.detail.builds.subtitle')}
-          </Text>
+          </p>
           {totalElements > 0 && (
-            <Text size="xs" c="dimmed" mt="xs">
+            <p className="text-xs text-gray-500 mt-2">
               {t('apps.detail.builds.showing_count', {
                 from: (currentPage - 1) * pageSize + 1,
                 to: Math.min(currentPage * pageSize, totalElements),
                 total: totalElements,
               })}
-            </Text>
+            </p>
           )}
-        </Box>
+        </div>
 
         {!hasBuilds ? (
-          <Paper p="xl" withBorder style={{ textAlign: 'center' }}>
-            <Stack gap="md" align="center">
-              <Package size={48} strokeWidth={1.5} style={{ opacity: 0.5 }} />
-              <Box>
-                <Text size="lg" fw={500}>
+          <Paper p="xl" withBorder className="text-center">
+            <div className="flex flex-col gap-4 items-center">
+              <Package size={48} strokeWidth={1.5} className="opacity-50" />
+              <div>
+                <p className="text-lg font-medium">
                   {t('apps.detail.builds.no_builds')}
-                </Text>
-                <Text size="sm" c="dimmed">
+                </p>
+                <p className="text-sm text-gray-500">
                   {t('apps.detail.builds.create_first_build')}
-                </Text>
-              </Box>
-            </Stack>
+                </p>
+              </div>
+            </div>
           </Paper>
         ) : (
           <Paper withBorder>
@@ -175,16 +169,16 @@ export function AppBuildsPage() {
                     <Table.Tr key={build.id}>
                       <Table.Td>
                         <Tooltip label={build.commitHash} withArrow>
-                          <Box>
-                            <Text ff="monospace" size="sm" fw={500}>
+                          <div>
+                            <p className="font-mono text-sm font-medium">
                               {truncateHash(build.commitHash)}
-                            </Text>
+                            </p>
                             {build.commitMessage && (
-                              <Text size="xs" c="dimmed" lineClamp={1}>
+                              <p className="text-xs text-gray-500 line-clamp-1">
                                 {build.commitMessage}
-                              </Text>
+                              </p>
                             )}
-                          </Box>
+                          </div>
                         </Tooltip>
                       </Table.Td>
                       <Table.Td>
@@ -193,13 +187,13 @@ export function AppBuildsPage() {
                         </Badge>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">{build.nativeVersion}</Text>
+                        <p className="text-sm">{build.nativeVersion}</p>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">{formatSize(build.buildSize)}</Text>
+                        <p className="text-sm">{formatSize(build.buildSize)}</p>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">{formatDate(build.createdAt)}</Text>
+                        <p className="text-sm">{formatDate(build.createdAt)}</p>
                       </Table.Td>
                       <Table.Td>
                         <Menu shadow="md" width={200}>
@@ -229,16 +223,16 @@ export function AppBuildsPage() {
         )}
 
         {totalPages > 1 && (
-          <Group justify="center">
+          <div className="flex justify-center">
             <Pagination
               total={totalPages}
               value={currentPage}
               onChange={setCurrentPage}
               withEdges
             />
-          </Group>
+          </div>
         )}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 }

@@ -1,15 +1,9 @@
 import {
-  Box,
-  Title,
-  Text,
-  Stack,
   Button,
   Table,
   ActionIcon,
   Menu,
-  Group,
   Alert,
-  Center,
   Loader,
   Paper,
   Pagination,
@@ -69,9 +63,9 @@ export function ApiKeysPage() {
     modals.openConfirmModal({
       title: t('apps.detail.api_keys.delete.title'),
       children: (
-        <Text size="sm">
+        <p className="text-sm">
           {t('apps.detail.api_keys.delete.confirmation', { name: keyName })}
-        </Text>
+        </p>
       ),
       labels: {
         confirm: t('apps.detail.api_keys.delete.confirm'),
@@ -113,9 +107,9 @@ export function ApiKeysPage() {
 
   if (isLoading) {
     return (
-      <Center h={200}>
+      <div className="h-[200px] flex items-center justify-center">
         <Loader size="lg" />
-      </Center>
+      </div>
     );
   }
 
@@ -134,45 +128,45 @@ export function ApiKeysPage() {
   const hasKeys = apiKeys.length > 0;
 
   return (
-    <Box>
-      <Stack gap="md">
-        <Group justify="space-between" align="center">
-          <Box>
-            <Title order={3}>{t('apps.detail.api_keys.title')}</Title>
-            <Text size="sm" c="dimmed">
+    <div>
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-xl font-semibold">{t('apps.detail.api_keys.title')}</h3>
+            <p className="text-sm text-gray-500">
               {t('apps.detail.api_keys.subtitle')}
-            </Text>
+            </p>
             {totalElements > 0 && (
-              <Text size="xs" c="dimmed" mt="xs">
+              <p className="text-xs text-gray-500 mt-2">
                 {t('apps.detail.api_keys.showing_count', {
                   from: (currentPage - 1) * pageSize + 1,
                   to: Math.min(currentPage * pageSize, totalElements),
                   total: totalElements,
                 })}
-              </Text>
+              </p>
             )}
-          </Box>
+          </div>
           <Button
             leftSection={<Key size={16} />}
             onClick={() => setCreateModalOpened(true)}
           >
             {t('apps.detail.api_keys.create_button')}
           </Button>
-        </Group>
+        </div>
 
         {!hasKeys ? (
-          <Paper p="xl" withBorder style={{ textAlign: 'center' }}>
-            <Stack gap="md" align="center">
-              <Key size={48} strokeWidth={1.5} style={{ opacity: 0.5 }} />
-              <Box>
-                <Text size="lg" fw={500}>
+          <Paper p="xl" withBorder className="text-center">
+            <div className="flex flex-col gap-4 items-center">
+              <Key size={48} strokeWidth={1.5} className="opacity-50" />
+              <div>
+                <p className="text-lg font-medium">
                   {t('apps.detail.api_keys.no_keys')}
-                </Text>
-                <Text size="sm" c="dimmed">
+                </p>
+                <p className="text-sm text-gray-500">
                   {t('apps.detail.api_keys.create_first_key')}
-                </Text>
-              </Box>
-            </Stack>
+                </p>
+              </div>
+            </div>
           </Paper>
         ) : (
           <Paper withBorder>
@@ -191,25 +185,24 @@ export function ApiKeysPage() {
                   {apiKeys?.map((key) => (
                     <Table.Tr key={key.id}>
                       <Table.Td>
-                        <Text fw={500}>{key.name}</Text>
+                        <p className="font-medium">{key.name}</p>
                       </Table.Td>
                       <Table.Td>
-                        <Group gap="xs">
-                          <Text ff="monospace" size="sm">
+                        <div className="flex gap-2 items-center">
+                          <p className="font-mono text-sm">
                             {key.keyPrefix}
-                          </Text>
-                        
-                        </Group>
+                          </p>
+                        </div>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">{formatDate(key.createdAt)}</Text>
+                        <p className="text-sm">{formatDate(key.createdAt)}</p>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm" c={key.lastUsedAt ? undefined : 'dimmed'}>
+                        <p className={`text-sm ${key.lastUsedAt ? '' : 'text-gray-500'}`}>
                           {key.lastUsedAt
                             ? formatDate(key.lastUsedAt)
                             : t('apps.detail.api_keys.table.never_used')}
-                        </Text>
+                        </p>
                       </Table.Td>
                       <Table.Td>
                         <Menu shadow="md" width={200}>
@@ -239,34 +232,33 @@ export function ApiKeysPage() {
         )}
 
         {totalPages > 1 && (
-          <Group justify="center">
+          <div className="flex justify-center">
             <Pagination
               total={totalPages}
               value={currentPage}
               onChange={setCurrentPage}
               withEdges
             />
-          </Group>
+          </div>
         )}
-      </Stack>
+      </div>
 
-{createModalOpened && (
-      <CreateApiKeyModal
-        opened={true}
-        onClose={() => setCreateModalOpened(false)}
-        onSubmit={handleCreateKey}
-        isLoading={createApiKeyMutation.isPending}
-      />
+      {createModalOpened && (
+        <CreateApiKeyModal
+          opened={true}
+          onClose={() => setCreateModalOpened(false)}
+          onSubmit={handleCreateKey}
+          isLoading={createApiKeyMutation.isPending}
+        />
       )}
-{createdKeyData && (
-      <ApiKeyCreatedModal
-        opened={true}
-        onClose={() => setCreatedKeyData(null)}
-        apiKey={createdKeyData?.key || ''}
-        keyName={createdKeyData?.name || ''}
-      />
+      {createdKeyData && (
+        <ApiKeyCreatedModal
+          opened={true}
+          onClose={() => setCreatedKeyData(null)}
+          apiKey={createdKeyData?.key || ''}
+          keyName={createdKeyData?.name || ''}
+        />
       )}
-    </Box>
+    </div>
   );
 }
-
