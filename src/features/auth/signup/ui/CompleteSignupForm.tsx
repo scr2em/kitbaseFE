@@ -1,34 +1,53 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { TextInput, PasswordInput, Button, Stack, Text, Anchor, Group, Divider, Alert } from '@mantine/core';
+import { 
+  TextInput, 
+  PasswordInput, 
+  Button, 
+  Stack, 
+  Text, 
+  Anchor, 
+  Divider,
+  Group,
+  Alert
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { Mail, Lock, User, Info } from 'lucide-react';
-import { signupSchema, type SignupFormData } from '../model/schema';
-import { useSignupMutation } from '../../../../shared/api/queries/auth';
+import { User, Lock, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { completeSignupSchema, type CompleteSignupFormData } from '../model/schema';
+import { useCompleteSignupMutation } from '../../../../shared/api/queries/auth';
 import { useAuth } from '../../../../shared/lib/auth/AuthContext';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useShowBackendError } from '../../../../shared/hooks';
 
-export function SignupForm() {
+interface CompleteSignupFormProps {
+  token: string;
+}
+
+export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { setIsAuthenticated } = useAuth();
-  const signupMutation = useSignupMutation();
-
-  const invitationId = searchParams.get('invitationId');
+  const completeSignupMutation = useCompleteSignupMutation();
+  const { showError } = useShowBackendError();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<CompleteSignupFormData>({
+    resolver: zodResolver(completeSignupSchema),
   });
 
-  const onSubmit = async (data: SignupFormData) => {
+  const onSubmit = async (data: CompleteSignupFormData) => {
     try {
-      const response = await signupMutation.mutateAsync(data);
+      const response = await completeSignupMutation.mutateAsync({
+        token,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+      
       setIsAuthenticated(true);
 
       notifications.show({
@@ -37,12 +56,6 @@ export function SignupForm() {
         color: 'green',
       });
 
-      // If there's an invitation ID, redirect back to accept invitation page
-      if (invitationId) {
-        navigate(`/invitations/accept?id=${invitationId}`);
-        return;
-      }
-      
       // Redirect to organization creation if user doesn't have one
       if (!response.user.organizations || response.user.organizations.length === 0) {
         navigate('/create-organization');
@@ -56,26 +69,14 @@ export function SignupForm() {
           navigate('/dashboard');
         }
       }
-    } catch (error: any) {
-      notifications.show({
-        title: t('common.error'),
-        message: error.response?.data?.message || t('auth.signup.error_generic'),
-        color: 'red',
-      });
+    } catch (error) {
+      showError(error);
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack gap="md">
-        {invitationId && (
-          <Alert color="blue" icon={<Info size={16} />}>
-            <Text size="sm">
-              {t('auth.signup.invitation_note')}
-            </Text>
-          </Alert>
-        )}
-
         <Group grow>
           <TextInput
             label={t('auth.signup.first_name_label')}
@@ -96,15 +97,6 @@ export function SignupForm() {
           />
         </Group>
 
-        <TextInput
-          label={t('auth.signup.email_label')}
-          placeholder={t('auth.signup.email_placeholder')}
-          leftSection={<Mail size={18} />}
-          size="md"
-          {...register('email')}
-          error={errors.email?.message ? t(errors.email.message) : undefined}
-        />
-
         <PasswordInput
           label={t('auth.signup.password_label')}
           placeholder={t('auth.signup.password_placeholder')}
@@ -114,15 +106,22 @@ export function SignupForm() {
           error={errors.password?.message ? t(errors.password.message) : undefined}
         />
 
+        <PasswordInput
+          label={t('auth.signup.complete.confirm_password_label')}
+          placeholder={t('auth.signup.complete.confirm_password_placeholder')}
+          leftSection={<Lock size={18} />}
+          size="md"
+          {...register('confirmPassword')}
+          error={errors.confirmPassword?.message ? t(errors.confirmPassword.message) : undefined}
+        />
+
         <Button
           type="submit"
           fullWidth
           size="md"
-          loading={signupMutation.isPending}
-          variant="gradient"
-          gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
+          loading={completeSignupMutation.isPending}
         >
-          {t('auth.signup.submit_button')}
+          {t('auth.signup.complete.submit_button')}
         </Button>
 
         <Divider />
@@ -142,3 +141,4 @@ export function SignupForm() {
     </form>
   );
 }
+

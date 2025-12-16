@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../client';
-import type { LoginRequest, UserRegistrationRequest, AuthResponse } from '../../../generated-api';
+import type { 
+  LoginRequest, 
+  AuthResponse,
+  SignupInitiateRequest,
+  SignupCompleteRequest
+} from '../../../generated-api';
 import { USER_QUERY_KEY } from './user';
 import { tokenStorage } from '../../lib/cookies';
 
@@ -21,12 +26,21 @@ export function useLoginMutation() {
   });
 }
 
-export function useSignupMutation() {
+export function useInitiateSignupMutation() {
+  return useMutation({
+    mutationFn: async (data: SignupInitiateRequest) => {
+      const response = await apiClient.auth.initiateSignup(data);
+      return response.data;
+    },
+  });
+}
+
+export function useCompleteSignupMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: UserRegistrationRequest) => {
-      const response = await apiClient.users.createUserAccount(data);
+    mutationFn: async (data: SignupCompleteRequest) => {
+      const response = await apiClient.auth.completeSignup(data);
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {

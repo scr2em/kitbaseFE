@@ -1,2468 +1,2680 @@
 openapi: 3.0.0
 info:
-    title: Flyway API
-    description: |
-        API for Flyway application.
-
-        ## Subdomain-based Organization Context
-
-        Most endpoints require organization context, which is determined by the subdomain of the request.
-        For example, requests to `myorg.flyway.com/api/...` will operate in the context of the "myorg" organization.
-
-        For local development, use the `X-Subdomain` header to specify the organization subdomain.
-    version: 1.0.0
+  title: Flyway API
+  description: |
+    API for Flyway application.
+    
+    ## Subdomain-based Organization Context
+    
+    Most endpoints require organization context, which is determined by the subdomain of the request.
+    For example, requests to `myorg.flyway.com/api/...` will operate in the context of the "myorg" organization.
+    
+    For local development, use the `X-Subdomain` header to specify the organization subdomain.
+  version: 1.0.0
 servers:
-    - url: http://localhost:8080/api
-      description: Local development server
-    - url: https://{subdomain}.flyway.com/api
-      description: Production server with subdomain
-      variables:
-          subdomain:
-              default: app
-              description: Organization subdomain
+  - url: http://localhost:8080/api
+    description: Local development server
+  - url: https://{subdomain}.flyway.com/api
+    description: Production server with subdomain
+    variables:
+      subdomain:
+        default: app
+        description: Organization subdomain
 
 tags:
-    - name: Authentication
-      description: User authentication and authorization operations
-    - name: Organizations
-      description: Organization management operations
-    - name: Invitations
-      description: Invitation management operations
-    - name: Members
-      description: Organization members management operations
-    - name: Users
-      description: User management operation
-    - name: Roles & Permissions
-      description: Role and permission management operations
-    - name: Mobile Applications
-      description: Mobile application management operations
-    - name: Channels
-      description: Channel management operations
-    - name: Builds
-      description: Build management operations
-    - name: API Keys
-      description: API key management for build uploads
-    - name: Audit Logs
-      description: Audit log and activity tracking operations
+  - name: Authentication
+    description: User authentication and authorization operations
+  - name: Organizations
+    description: Organization management operations
+  - name: Invitations
+    description: Invitation management operations
+  - name: Members
+    description: Organization members management operations
+  - name: Users
+    description: User management operation
+  - name: Roles & Permissions
+    description: Role and permission management operations
+  - name: Mobile Applications
+    description: Mobile application management operations
+  - name: Channels
+    description: Channel management operations
+  - name: Builds
+    description: Build management operations
+  - name: API Keys
+    description: API key management for build uploads
+  - name: Audit Logs
+    description: Audit log and activity tracking operations
 
 components:
-    schemas:
-        # Enums - Define all enums first
-        UserStatusEnum:
-            type: string
-            enum: [active, inactive, pending, suspended]
-            description: User account status
+  schemas:
+    # Enums - Define all enums first
+    UserStatusEnum:
+      type: string
+      enum: [active, inactive, pending, suspended]
+      description: User account status
+    
+    InvitationStatusEnum:
+      type: string
+      enum: [pending, accepted, expired, canceled]
+      description: Invitation status
 
-        InvitationStatusEnum:
-            type: string
-            enum: [pending, accepted, expired, canceled]
-            description: Invitation status
+    MembershipStatusEnum:
+      type: string
+      enum: [active, inactive]
+      description: Organization membership status
 
-        MembershipStatusEnum:
-            type: string
-            enum: [active, inactive]
-            description: Organization membership status
+    # Request DTOs
+    UserRegistrationRequest:
+      type: object
+      description: Request to register a new user
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 50
+          description: User's password (minimum 8 characters and max 50 characters)
+        firstName:
+          type: string
+          minLength: 2
+          description: User's first name
+        lastName:
+          type: string
+          minLength: 2
+          description: User's last name
 
-        # Request DTOs
-        UserRegistrationRequest:
-            type: object
-            description: Request to register a new user
-            required:
-                - email
-                - password
-                - firstName
-                - lastName
-            properties:
-                email:
-                    type: string
-                    format: email
-                    description: User's email address
-                password:
-                    type: string
-                    format: password
-                    minLength: 8
-                    maxLength: 12
-                    description: User's password (minimum 8 characters and max 12 characters)
-                firstName:
-                    type: string
-                    minLength: 2
-                    description: User's first name
-                lastName:
-                    type: string
-                    minLength: 2
-                    description: User's last name
+    LoginRequest:
+      type: object
+      description: Request to login
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          format: password
+          description: User's password
 
-        LoginRequest:
-            type: object
-            description: Request to login
-            required:
-                - email
-                - password
-            properties:
-                email:
-                    type: string
-                    format: email
-                    description: User's email address
-                password:
-                    type: string
-                    format: password
-                    description: User's password
+    RefreshTokenRequest:
+      type: object
+      description: Request to refresh access token
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Refresh token
 
-        RefreshTokenRequest:
-            type: object
-            description: Request to refresh access token
-            required:
-                - refreshToken
-            properties:
-                refreshToken:
-                    type: string
-                    description: Refresh token
+    ForgotPasswordRequest:
+      type: object
+      description: Request to initiate password reset
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
 
-        ForgotPasswordRequest:
-            type: object
-            description: Request to initiate password reset
-            required:
-                - email
-            properties:
-                email:
-                    type: string
-                    format: email
-                    description: User's email address
+    ForgotPasswordResponse:
+      type: object
+      description: Response for forgot password request
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Generic success message (never reveals if email exists)
+          example: "If that email address is in our system, we've sent a password reset link to it."
 
-        ForgotPasswordResponse:
-            type: object
-            description: Response for forgot password request
-            required:
-                - message
-            properties:
-                message:
-                    type: string
-                    description: Generic success message (never reveals if email exists)
-                    example: "If that email address is in our system, we've sent a password reset link to it."
+    ResetPasswordRequest:
+      type: object
+      description: Request to reset password with token
+      required:
+        - token
+        - newPassword
+      properties:
+        token:
+          type: string
+          description: Password reset token from email
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          description: New password (min 8 chars, must contain uppercase, lowercase, number, and special character)
 
-        ResetPasswordRequest:
-            type: object
-            description: Request to reset password with token
-            required:
-                - token
-                - newPassword
-            properties:
-                token:
-                    type: string
-                    description: Password reset token from email
-                newPassword:
-                    type: string
-                    format: password
-                    minLength: 8
-                    description: New password (min 8 chars, must contain uppercase, lowercase, number, and special character)
+    ResetPasswordResponse:
+      type: object
+      description: Response for successful password reset
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Password successfully reset. You can now sign in with your new password."
 
-        ResetPasswordResponse:
-            type: object
-            description: Response for successful password reset
-            required:
-                - message
-            properties:
-                message:
-                    type: string
-                    description: Success message
-                    example: "Password successfully reset. You can now sign in with your new password."
+    SignupInitiateRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
 
-        CreateOrganizationRequest:
-            type: object
-            description: Request to create a new organization
-            required:
-                - name
-                - subdomain
-            properties:
-                name:
-                    type: string
-                    description: Organization name
-                subdomain:
-                    type: string
-                    pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
-                    minLength: 3
-                    maxLength: 63
-                    description: Organization subdomain (lowercase alphanumeric with hyphens, 3-63 characters). Must be unique.
-                description:
-                    type: string
-                    description: Organization description
-                logoUrl:
-                    type: string
-                    format: uri
-                    description: URL to the organization logo image
+    SignupInitiateResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: "Verification email sent"
 
-        UpdateOrganizationRequest:
-            type: object
-            description: Request to update an organization
-            properties:
-                name:
-                    type: string
-                    minLength: 1
-                    maxLength: 255
-                    description: Organization name
-                logoUrl:
-                    type: string
-                    format: uri
-                    description: URL to the organization logo image
+    SignupResendRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+
+    SignupResendResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: "Verification email sent"
+
+    SignupCompleteRequest:
+      type: object
+      required:
+        - token
+        - password
+        - firstName
+        - lastName
+      properties:
+        token:
+          type: string
+          description: Verification token from email (64 hex chars)
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 50
+        firstName:
+          type: string
+          minLength: 2
+        lastName:
+          type: string
+          minLength: 2
+
+    CreateOrganizationRequest:
+      type: object
+      description: Request to create a new organization
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Organization name
+        description:
+          type: string
+          description: Organization description
+        logoUrl:
+          type: string
+          format: uri
+          description: URL to the organization logo image
+
+    UpdateOrganizationRequest:
+      type: object
+      description: Request to update an organization
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Organization name
+        logoUrl:
+          type: string
+          format: uri
+          description: URL to the organization logo image
 
 
 
-        CreateInvitationRequest:
-            type: object
-            description: Request to create an invitation
-            required:
-                - email
-                - role
-            properties:
-                email:
-                    type: string
-                    format: email
-                    description: Email of the invited user
-                role:
-                    type: string
-                    description: Role name (e.g., developer, admin, analyst, support)
+    CreateInvitationRequest:
+      type: object
+      description: Request to create an invitation
+      required:
+        - email
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email of the invited user
+        role:
+          type: string
+          description: Role name (e.g., developer, admin, analyst, support)
 
-        AddOrganizationMemberRequest:
-            type: object
-            description: Request to add a member to an organization
-            required:
-                - userId
-                - roleId
-            properties:
-                userId:
-                    type: string
-                    description: User ID
-                roleId:
-                    type: string
-                    description: Role ID
+    AddOrganizationMemberRequest:
+      type: object
+      description: Request to add a member to an organization
+      required:
+        - userId
+        - roleId
+      properties:
+        userId:
+          type: string
+          description: User ID
+        roleId:
+          type: string
+          description: Role ID
 
-        UpdateMemberRoleRequest:
-            type: object
-            description: Request to update a member's role
-            required:
-                - roleId
-            properties:
-                roleId:
-                    type: string
-                    description: New role ID
+    UpdateMemberRoleRequest:
+      type: object
+      description: Request to update a member's role
+      required:
+        - roleId
+      properties:
+        roleId:
+          type: string
+          description: New role ID
 
-        CreateMobileApplicationRequest:
-            type: object
-            description: Request to create a new mobile application
-            required:
-                - bundleId
-                - name
-            properties:
-                bundleId:
-                    type: string
-                    description: Unique bundle identifier for the mobile application (e.g., com.example.app)
-                name:
-                    type: string
-                    description: Mobile application name
-                description:
-                    type: string
-                    description: Mobile application description
+    CreateMobileApplicationRequest:
+      type: object
+      description: Request to create a new mobile application
+      required:
+        - bundleId
+        - name
+      properties:
+        bundleId:
+          type: string
+          description: Unique bundle identifier for the mobile application (e.g., com.example.app)
+        name:
+          type: string
+          description: Mobile application name
+        description:
+          type: string
+          description: Mobile application description
 
-        UpdateMobileApplicationRequest:
-            type: object
-            description: Request to update a mobile application
-            required:
-                - name
-            properties:
-                name:
-                    type: string
-                    description: Mobile application name
-                description:
-                    type: string
-                    description: Mobile application description
+    UpdateMobileApplicationRequest:
+      type: object
+      description: Request to update a mobile application
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Mobile application name
+        description:
+          type: string
+          description: Mobile application description
 
-        UpdateUserRequest:
-            type: object
-            description: Request to update user information
-            properties:
-                firstName:
-                    type: string
-                    description: User's first name
-                lastName:
-                    type: string
-                    description: User's last name
-                email:
-                    type: string
-                    format: email
-                    description: User's email address
+    UpdateUserRequest:
+      type: object
+      description: Request to update user information
+      properties:
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        email:
+          type: string
+          format: email
+          description: User's email address
 
-        # Response DTOs
-        UserResponse:
-            type: object
-            description: User information
-            required:
-                - id
-                - email
-                - firstName
-                - lastName
-                - status
-                - organizations
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: User ID
-                email:
-                    type: string
-                    format: email
-                    description: User's email address
-                firstName:
-                    type: string
-                    description: User's first name
-                lastName:
-                    type: string
-                    description: User's last name
-                status:
-                    $ref: '#/components/schemas/UserStatusResponse'
-                organizations:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserOrganizationMembership'
-                    description: List of organizations the user is a member of
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the user was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the user was last updated
+    # Response DTOs
+    UserResponse:
+      type: object
+      description: User information
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - status
+        - organizations
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: User ID
+        email:
+          type: string
+          format: email
+          description: User's email address
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        status:
+          $ref: '#/components/schemas/UserStatusResponse'
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserOrganizationMembership'
+          description: List of organizations the user is a member of
+        createdAt:
+          type: string
+          format: date-time
+          description: When the user was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the user was last updated
 
-        CurrentUserResponse:
-            type: object
-            description: Current user information with role and permissions for the current organization (determined by subdomain)
-            required:
-                - id
-                - email
-                - firstName
-                - lastName
-                - status
-                - organizations
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: User ID
-                email:
-                    type: string
-                    format: email
-                    description: User's email address
-                firstName:
-                    type: string
-                    description: User's first name
-                lastName:
-                    type: string
-                    description: User's last name
-                status:
-                    $ref: '#/components/schemas/UserStatusResponse'
-                organizations:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserOrganizationMembership'
-                    description: List of organizations the user is a member of
-                currentOrganizationRole:
-                    $ref: '#/components/schemas/RoleWithPermissionsResponse'
-                    description: The user's role with permissions in the current organization (determined by subdomain). Null if not accessing via organization subdomain.
-                    nullable: true
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the user was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the user was last updated
+    CurrentUserResponse:
+      type: object
+      description: Current user information with role and permissions for the current organization (determined by subdomain)
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - status
+        - organizations
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: User ID
+        email:
+          type: string
+          format: email
+          description: User's email address
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        status:
+          $ref: '#/components/schemas/UserStatusResponse'
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserOrganizationMembership'
+          description: List of organizations the user is a member of
+        currentOrganizationRole:
+          $ref: '#/components/schemas/RoleWithPermissionsResponse'
+          description: The user's role with permissions in the current organization (determined by subdomain). Null if not accessing via organization subdomain.
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: When the user was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the user was last updated
+    
+    UserOrganizationMembership:
+      type: object
+      description: User's membership in an organization
+      required:
+        - organization
+        - role
+      properties:
+        organization:
+          $ref: '#/components/schemas/UserOrganizationResponse'
+        role:
+          $ref: '#/components/schemas/RoleResponse'
+        invitationStatus:
+          $ref: '#/components/schemas/InvitationStatusResponse'
+          nullable: true
+          description: Invitation status (null for organization owners who were not invited)
 
-        UserOrganizationMembership:
-            type: object
-            description: User's membership in an organization
-            required:
-                - organization
-                - role
-            properties:
-                organization:
-                    $ref: '#/components/schemas/UserOrganizationResponse'
-                role:
-                    $ref: '#/components/schemas/RoleResponse'
-                invitationStatus:
-                    $ref: '#/components/schemas/InvitationStatusResponse'
-                    nullable: true
-                    description: Invitation status (null for organization owners who were not invited)
+    UserOrganizationResponse:
+      type: object
+      description: Minimal organization information for user response
+      required:
+        - id
+        - name
+        - subdomain
+      properties:
+        id:
+          type: string
+          description: Organization ID
+        name:
+          type: string
+          description: Organization name
+        subdomain:
+          type: string
+          description: Organization subdomain
 
-        UserOrganizationResponse:
-            type: object
-            description: Minimal organization information for user response
-            required:
-                - id
-                - name
-                - subdomain
-            properties:
-                id:
-                    type: string
-                    description: Organization ID
-                name:
-                    type: string
-                    description: Organization name
-                subdomain:
-                    type: string
-                    description: Organization subdomain
+    UserStatusResponse:
+      type: object
+      description: User status information
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Status ID
+        status:
+          $ref: '#/components/schemas/UserStatusEnum'
 
-        UserStatusResponse:
-            type: object
-            description: User status information
-            required:
-                - id
-                - status
-            properties:
-                id:
-                    type: string
-                    description: Status ID
-                status:
-                    $ref: '#/components/schemas/UserStatusEnum'
+    AuthResponse:
+      type: object
+      description: Authentication response
+      required:
+        - accessToken
+        - refreshToken
+        - user
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+          description: Refresh token
+        user:
+          $ref: '#/components/schemas/UserResponse'
 
-        AuthResponse:
-            type: object
-            description: Authentication response
-            required:
-                - accessToken
-                - refreshToken
-                - user
-            properties:
-                accessToken:
-                    type: string
-                    description: JWT access token
-                refreshToken:
-                    type: string
-                    description: Refresh token
-                user:
-                    $ref: '#/components/schemas/UserResponse'
+    OrganizationResponse:
+      type: object
+      description: Organization information
+      required:
+        - id
+        - name
+        - subdomain
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Organization ID
+        name:
+          type: string
+          description: Organization name
+        subdomain:
+          type: string
+          description: Organization subdomain (unique identifier used in URLs)
+        description:
+          type: string
+          description: Organization description
+        logoUrl:
+          type: string
+          description: URL to the organization logo image
+        createdAt:
+          type: string
+          format: date-time
+          description: When the organization was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the organization was last updated
 
-        OrganizationResponse:
-            type: object
-            description: Organization information
-            required:
-                - id
-                - name
-                - subdomain
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Organization ID
-                name:
-                    type: string
-                    description: Organization name
-                subdomain:
-                    type: string
-                    description: Organization subdomain (unique identifier used in URLs)
-                description:
-                    type: string
-                    description: Organization description
-                logoUrl:
-                    type: string
-                    description: URL to the organization logo image
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the organization was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the organization was last updated
+    RoleResponse:
+      type: object
+      description: Role information (roles are now global across all organizations)
+      required:
+        - id
+        - name
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Role ID
+        name:
+          type: string
+          description: Role name
+        description:
+          type: string
+          description: Role description
+        createdAt:
+          type: string
+          format: date-time
+          description: When the role was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the role was last updated
 
-        RoleResponse:
-            type: object
-            description: Role information (roles are now global across all organizations)
-            required:
-                - id
-                - name
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Role ID
-                name:
-                    type: string
-                    description: Role name
-                description:
-                    type: string
-                    description: Role description
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the role was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the role was last updated
+    PermissionCode:
+      type: string
+      description: Permission code enum representing all available permissions in the system
+      enum:
+        - organization.update
+        - member.view
+        - member.invite
+        - member.remove
+        - member.update_role
+        - app.read
+        - app.create
+        - app.update
+        - app.delete
+        - channel.read
+        - channel.create
+        - channel.update
+        - channel.delete
+        - analytics.view
+        - support.operations
 
-        PermissionCode:
-            type: string
-            description: Permission code enum representing all available permissions in the system
-            enum:
-                - organization.update
-                - member.view
-                - member.invite
-                - member.remove
-                - member.update_role
-                - app.read
-                - app.create
-                - app.update
-                - app.delete
-                - channel.read
-                - channel.create
-                - channel.update
-                - channel.delete
-                - analytics.view
-                - support.operations
+    RoleWithPermissionsResponse:
+      type: object
+      description: Role information with associated permissions
+      required:
+        - id
+        - name
+        - permissions
+      properties:
+        id:
+          type: string
+          description: Role ID
+        name:
+          type: string
+          description: Role name
+        description:
+          type: string
+          description: Role description
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionCode'
+          description: List of permission codes associated with this role
 
-        RoleWithPermissionsResponse:
-            type: object
-            description: Role information with associated permissions
-            required:
-                - id
-                - name
-                - permissions
-            properties:
-                id:
-                    type: string
-                    description: Role ID
-                name:
-                    type: string
-                    description: Role name
-                description:
-                    type: string
-                    description: Role description
-                permissions:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/PermissionCode'
-                    description: List of permission codes associated with this role
+    InvitationResponse:
+      type: object
+      description: Invitation information
+      required:
+        - id
+        - email
+        - organization
+        - role
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Invitation ID
+        email:
+          type: string
+          format: email
+          description: Email of the invited user
+        organization:
+          $ref: '#/components/schemas/OrganizationResponse'
+        role:
+          $ref: '#/components/schemas/RoleResponse'
+        status:
+          $ref: '#/components/schemas/InvitationStatusResponse'
+        invitedBy:
+          $ref: '#/components/schemas/UserResponse'
+        createdAt:
+          type: string
+          format: date-time
+          description: When the invitation was created
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the invitation expires
 
-        InvitationResponse:
-            type: object
-            description: Invitation information
-            required:
-                - id
-                - email
-                - organization
-                - role
-                - status
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Invitation ID
-                email:
-                    type: string
-                    format: email
-                    description: Email of the invited user
-                organization:
-                    $ref: '#/components/schemas/OrganizationResponse'
-                role:
-                    $ref: '#/components/schemas/RoleResponse'
-                status:
-                    $ref: '#/components/schemas/InvitationStatusResponse'
-                invitedBy:
-                    $ref: '#/components/schemas/UserResponse'
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the invitation was created
-                expiresAt:
-                    type: string
-                    format: date-time
-                    description: When the invitation expires
+    InvitationStatusResponse:
+      type: object
+      description: Invitation status information
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Status ID
+        status:
+          $ref: '#/components/schemas/InvitationStatusEnum'
 
-        InvitationStatusResponse:
-            type: object
-            description: Invitation status information
-            required:
-                - id
-                - status
-            properties:
-                id:
-                    type: string
-                    description: Status ID
-                status:
-                    $ref: '#/components/schemas/InvitationStatusEnum'
+    OrganizationMemberResponse:
+      type: object
+      description: Organization member information
+      required:
+        - id
+        - user
+        - role
+        - joinedAt
+      properties:
+        id:
+          type: string
+          description: Member ID
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        role:
+          $ref: '#/components/schemas/RoleResponse'
+        joinedAt:
+          type: string
+          format: date-time
+          description: When the member joined
 
-        OrganizationMemberResponse:
-            type: object
-            description: Organization member information
-            required:
-                - id
-                - user
-                - role
-                - joinedAt
-            properties:
-                id:
-                    type: string
-                    description: Member ID
-                user:
-                    $ref: '#/components/schemas/UserResponse'
-                role:
-                    $ref: '#/components/schemas/RoleResponse'
-                joinedAt:
-                    type: string
-                    format: date-time
-                    description: When the member joined
+    PaginatedOrganizationMemberResponse:
+      type: object
+      description: Paginated organization member response
+      required:
+        - data
+        - total
+        - count
+        - itemsPerPage
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationMemberResponse'
+          description: Array of members for this page
+        total:
+          type: integer
+          description: Total number of items across all pages
+        count:
+          type: integer
+          description: Number of items in this page
+        itemsPerPage:
+          type: integer
+          description: Maximum items per page
 
-        PaginatedOrganizationMemberResponse:
-            type: object
-            description: Paginated organization member response
-            required:
-                - data
-                - total
-                - count
-                - itemsPerPage
-            properties:
-                data:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/OrganizationMemberResponse'
-                    description: Array of members for this page
-                total:
-                    type: integer
-                    description: Total number of items across all pages
-                count:
-                    type: integer
-                    description: Number of items in this page
-                itemsPerPage:
-                    type: integer
-                    description: Maximum items per page
+    MobileApplicationResponse:
+      type: object
+      description: Mobile application information
+      required:
+        - id
+        - bundleId
+        - organizationId
+        - name
+        - createdBy
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Mobile application ID
+        bundleId:
+          type: string
+          description: Bundle identifier for the mobile application
+        organizationId:
+          type: string
+          description: Organization ID that owns this application
+        name:
+          type: string
+          description: Mobile application name
+        description:
+          type: string
+          description: Mobile application description
+        createdBy:
+          type: string
+          description: User ID who created the application
+        createdAt:
+          type: string
+          format: date-time
+          description: When the application was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the application was last updated
 
-        MobileApplicationResponse:
-            type: object
-            description: Mobile application information
-            required:
-                - id
-                - bundleId
-                - organizationId
-                - name
-                - createdBy
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Mobile application ID
-                bundleId:
-                    type: string
-                    description: Bundle identifier for the mobile application
-                organizationId:
-                    type: string
-                    description: Organization ID that owns this application
-                name:
-                    type: string
-                    description: Mobile application name
-                description:
-                    type: string
-                    description: Mobile application description
-                createdBy:
-                    type: string
-                    description: User ID who created the application
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the application was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the application was last updated
+    BuildResponse:
+      type: object
+      description: Build information
+      required:
+        - id
+        - organizationId
+        - bundleId
+        - commitHash
+        - branchName
+        - buildSize
+        - buildUrl
+        - nativeVersion
+        - uploadedBy
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique UUID identifier for the build
+        organizationId:
+          type: string
+          description: Organization ID
+        bundleId:
+          type: string
+          description: Bundle identifier for the mobile application
+        commitHash:
+          type: string
+          description: Git commit hash (unique identifier)
+        branchName:
+          type: string
+          description: Git branch name
+        commitMessage:
+          type: string
+          description: Git commit message
+        buildSize:
+          type: integer
+          format: int64
+          description: Build file size in bytes
+        buildUrl:
+          type: string
+          description: URL to download the build file
+        nativeVersion:
+          type: string
+          description: Native app version (e.g., "1.0.0")
+        uploadedBy:
+          type: string
+          description: User ID who uploaded the build
+        createdAt:
+          type: string
+          format: date-time
+          description: When the build was uploaded
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the build was last updated
 
-        BuildResponse:
-            type: object
-            description: Build information
-            required:
-                - id
-                - organizationId
-                - bundleId
-                - commitHash
-                - branchName
-                - buildSize
-                - buildUrl
-                - nativeVersion
-                - uploadedBy
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Unique UUID identifier for the build
-                organizationId:
-                    type: string
-                    description: Organization ID
-                bundleId:
-                    type: string
-                    description: Bundle identifier for the mobile application
-                commitHash:
-                    type: string
-                    description: Git commit hash (unique identifier)
-                branchName:
-                    type: string
-                    description: Git branch name
-                commitMessage:
-                    type: string
-                    description: Git commit message
-                buildSize:
-                    type: integer
-                    format: int64
-                    description: Build file size in bytes
-                buildUrl:
-                    type: string
-                    description: URL to download the build file
-                nativeVersion:
-                    type: string
-                    description: Native app version (e.g., "1.0.0")
-                uploadedBy:
-                    type: string
-                    description: User ID who uploaded the build
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the build was uploaded
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the build was last updated
+    PaginatedBuildResponse:
+      type: object
+      description: Paginated build response
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BuildResponse'
+          description: Array of builds for this page
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Items per page
+        totalElements:
+          type: integer
+          description: Total number of builds
+        totalPages:
+          type: integer
+          description: Total number of pages
 
-        PaginatedBuildResponse:
-            type: object
-            description: Paginated build response
-            required:
-                - data
-                - page
-                - size
-                - totalElements
-                - totalPages
-            properties:
-                data:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/BuildResponse'
-                    description: Array of builds for this page
-                page:
-                    type: integer
-                    description: Current page number
-                size:
-                    type: integer
-                    description: Items per page
-                totalElements:
-                    type: integer
-                    description: Total number of builds
-                totalPages:
-                    type: integer
-                    description: Total number of pages
+    PaginatedApiKeyResponse:
+      type: object
+      description: Paginated API key response
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiKeyResponse'
+          description: Array of API keys for this page
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Items per page
+        totalElements:
+          type: integer
+          description: Total number of API keys
+        totalPages:
+          type: integer
+          description: Total number of pages
 
-        PaginatedApiKeyResponse:
-            type: object
-            description: Paginated API key response
-            required:
-                - data
-                - page
-                - size
-                - totalElements
-                - totalPages
-            properties:
-                data:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/ApiKeyResponse'
-                    description: Array of API keys for this page
-                page:
-                    type: integer
-                    description: Current page number
-                size:
-                    type: integer
-                    description: Items per page
-                totalElements:
-                    type: integer
-                    description: Total number of API keys
-                totalPages:
-                    type: integer
-                    description: Total number of pages
+    CreateApiKeyRequest:
+      type: object
+      description: Request to create an API key
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name/description for the API key
 
-        CreateApiKeyRequest:
-            type: object
-            description: Request to create an API key
-            required:
-                - name
-            properties:
-                name:
-                    type: string
-                    description: Name/description for the API key
+    CreateChannelRequest:
+      type: object
+      description: Request to create a new channel
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Channel name
+        description:
+          type: string
+          description: Channel description
 
-        CreateChannelRequest:
-            type: object
-            description: Request to create a new channel
-            required:
-                - name
-            properties:
-                name:
-                    type: string
-                    description: Channel name
-                description:
-                    type: string
-                    description: Channel description
+    UpdateChannelRequest:
+      type: object
+      description: Request to update a channel
+      properties:
+        name:
+          type: string
+          description: Channel name
+        description:
+          type: string
+          description: Channel description
 
-        UpdateChannelRequest:
-            type: object
-            description: Request to update a channel
-            properties:
-                name:
-                    type: string
-                    description: Channel name
-                description:
-                    type: string
-                    description: Channel description
+    ApiKeyResponse:
+      type: object
+      description: API key information
+      required:
+        - id
+        - name
+        - keyPrefix
+        - bundleId
+        - organizationId
+        - createdBy
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the API key
+        name:
+          type: string
+          description: Name/description of the API key
+        key:
+          type: string
+          description: The actual API key (only returned on creation)
+        keyPrefix:
+          type: string
+          description: Masked key display (e.g., "flyw...xyz")
+        bundleId:
+          type: string
+          description: Bundle ID this key is for
+        organizationId:
+          type: string
+          description: Organization ID
+        createdBy:
+          type: string
+          description: User ID who created the key
+        lastUsedAt:
+          type: string
+          format: date-time
+          description: When the key was last used
+        createdAt:
+          type: string
+          format: date-time
+          description: When the key was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the key was last updated
 
-        ApiKeyResponse:
-            type: object
-            description: API key information
-            required:
-                - id
-                - name
-                - keyPrefix
-                - bundleId
-                - organizationId
-                - createdBy
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Unique identifier for the API key
-                name:
-                    type: string
-                    description: Name/description of the API key
-                key:
-                    type: string
-                    description: The actual API key (only returned on creation)
-                keyPrefix:
-                    type: string
-                    description: Masked key display (e.g., "flyw...xyz")
-                bundleId:
-                    type: string
-                    description: Bundle ID this key is for
-                organizationId:
-                    type: string
-                    description: Organization ID
-                createdBy:
-                    type: string
-                    description: User ID who created the key
-                lastUsedAt:
-                    type: string
-                    format: date-time
-                    description: When the key was last used
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the key was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the key was last updated
+    PermissionResponse:
+      type: object
+      description: Permission information
+      required:
+        - code
+        - label
+        - description
+        - category
+      properties:
+        code:
+          type: string
+          description: Permission code (e.g., "organization.update")
+        label:
+          type: string
+          description: Human-readable permission label
+        description:
+          type: string
+          description: Permission description
+        category:
+          type: string
+          description: Permission category (e.g., "organization", "member", "role")
 
-        PermissionResponse:
-            type: object
-            description: Permission information
-            required:
-                - code
-                - label
-                - description
-                - category
-            properties:
-                code:
-                    type: string
-                    description: Permission code (e.g., "organization.update")
-                label:
-                    type: string
-                    description: Human-readable permission label
-                description:
-                    type: string
-                    description: Permission description
-                category:
-                    type: string
-                    description: Permission category (e.g., "organization", "member", "role")
+    ChannelResponse:
+      type: object
+      description: Channel information
+      required:
+        - id
+        - name
+        - organizationId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Channel ID
+        name:
+          type: string
+          description: Channel name
+        description:
+          type: string
+          description: Channel description
+        organizationId:
+          type: string
+          description: Organization ID
+        createdAt:
+          type: string
+          format: date-time
+          description: When the channel was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the channel was last updated
 
-        ChannelResponse:
-            type: object
-            description: Channel information
-            required:
-                - id
-                - name
-                - organizationId
-                - createdAt
-                - updatedAt
-            properties:
-                id:
-                    type: string
-                    description: Channel ID
-                name:
-                    type: string
-                    description: Channel name
-                description:
-                    type: string
-                    description: Channel description
-                organizationId:
-                    type: string
-                    description: Organization ID
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the channel was created
-                updatedAt:
-                    type: string
-                    format: date-time
-                    description: When the channel was last updated
+    PaginatedChannelResponse:
+      type: object
+      description: Paginated channel response
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelResponse'
+          description: List of channels
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of channels
+        totalPages:
+          type: integer
+          description: Total number of pages
 
-        PaginatedChannelResponse:
-            type: object
-            description: Paginated channel response
-            required:
-                - data
-                - page
-                - size
-                - totalElements
-                - totalPages
-            properties:
-                data:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/ChannelResponse'
-                    description: List of channels
-                page:
-                    type: integer
-                    description: Current page number
-                size:
-                    type: integer
-                    description: Number of items per page
-                totalElements:
-                    type: integer
-                    description: Total number of channels
-                totalPages:
-                    type: integer
-                    description: Total number of pages
+    AuditLogResponse:
+      type: object
+      description: Audit log entry
+      required:
+        - id
+        - action
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the audit log entry
+        userId:
+          type: string
+          description: ID of the user who performed the action
+        organizationId:
+          type: string
+          description: ID of the organization
+        action:
+          type: string
+          description: Action performed (e.g., MOBILE_APP_CREATED, BUILD_UPLOADED)
+        resourceType:
+          type: string
+          description: Type of resource affected (e.g., MOBILE_APPLICATION, BUILD)
+        resourceId:
+          type: string
+          description: ID of the affected resource
+        resourceName:
+          type: string
+          description: Name of the affected resource
+        httpMethod:
+          type: string
+          description: HTTP method used (GET, POST, PUT, DELETE)
+        endpoint:
+          type: string
+          description: API endpoint called
+        ipAddress:
+          type: string
+          description: IP address of the user
+        userAgent:
+          type: string
+          description: User agent string
+        requestBody:
+          type: string
+          description: Request body (if applicable)
+        responseStatus:
+          type: integer
+          description: HTTP response status code
+        errorMessage:
+          type: string
+          description: Error message (if action failed)
+        metadata:
+          type: string
+          description: Additional metadata in JSON format
+        createdAt:
+          type: string
+          format: date-time
+          description: When the action occurred
 
-        AuditLogResponse:
-            type: object
-            description: Audit log entry
-            required:
-                - id
-                - action
-                - createdAt
-            properties:
-                id:
-                    type: string
-                    description: Unique identifier for the audit log entry
-                userId:
-                    type: string
-                    description: ID of the user who performed the action
-                organizationId:
-                    type: string
-                    description: ID of the organization
-                action:
-                    type: string
-                    description: Action performed (e.g., MOBILE_APP_CREATED, BUILD_UPLOADED)
-                resourceType:
-                    type: string
-                    description: Type of resource affected (e.g., MOBILE_APPLICATION, BUILD)
-                resourceId:
-                    type: string
-                    description: ID of the affected resource
-                resourceName:
-                    type: string
-                    description: Name of the affected resource
-                httpMethod:
-                    type: string
-                    description: HTTP method used (GET, POST, PUT, DELETE)
-                endpoint:
-                    type: string
-                    description: API endpoint called
-                ipAddress:
-                    type: string
-                    description: IP address of the user
-                userAgent:
-                    type: string
-                    description: User agent string
-                requestBody:
-                    type: string
-                    description: Request body (if applicable)
-                responseStatus:
-                    type: integer
-                    description: HTTP response status code
-                errorMessage:
-                    type: string
-                    description: Error message (if action failed)
-                metadata:
-                    type: string
-                    description: Additional metadata in JSON format
-                createdAt:
-                    type: string
-                    format: date-time
-                    description: When the action occurred
+    PaginatedAuditLogResponse:
+      type: object
+      description: Paginated audit log response
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogResponse'
+          description: List of audit log entries
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of audit log entries
+        totalPages:
+          type: integer
+          description: Total number of pages
 
-        PaginatedAuditLogResponse:
-            type: object
-            description: Paginated audit log response
-            required:
-                - data
-                - page
-                - size
-                - totalElements
-                - totalPages
-            properties:
-                data:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/AuditLogResponse'
-                    description: List of audit log entries
-                page:
-                    type: integer
-                    description: Current page number
-                size:
-                    type: integer
-                    description: Number of items per page
-                totalElements:
-                    type: integer
-                    description: Total number of audit log entries
-                totalPages:
-                    type: integer
-                    description: Total number of pages
+    ErrorResponse:
+      type: object
+      description: Standardized error response
+      required:
+        - error
+        - timestamp
+      properties:
+        error:
+          type: object
+          description: Error information
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code (e.g., AUTH_001, ORG_002)
+              example: "AUTH_001"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Invalid credentials"
+            details:
+              type: object
+              description: Additional structured error details
+              additionalProperties: true
+              example:
+                field: "email"
+                value: "user@example.com"
+            stackTrace:
+              type: string
+              description: Stack trace of the exception (only included in development mode)
+              example: "java.lang.RuntimeException: Test error\n\tat com.app.server.service.UserService.method(UserService.java:123)"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred
 
-        ErrorResponse:
-            type: object
-            description: Standardized error response
-            required:
-                - error
-                - timestamp
-            properties:
-                error:
-                    type: object
-                    description: Error information
-                    required:
-                        - code
-                        - message
-                    properties:
-                        code:
-                            type: string
-                            description: Machine-readable error code (e.g., AUTH_001, ORG_002)
-                            example: "AUTH_001"
-                        message:
-                            type: string
-                            description: Human-readable error message
-                            example: "Invalid credentials"
-                        details:
-                            type: object
-                            description: Additional structured error details
-                            additionalProperties: true
-                            example:
-                                field: "email"
-                                value: "user@example.com"
-                timestamp:
-                    type: string
-                    format: date-time
-                    description: When the error occurred
+  responses:
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    UnauthorizedError:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    ForbiddenError:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    ConflictError:
+      description: Conflict - resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
-    responses:
-        NotFoundError:
-            description: Resource not found
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
-        ValidationError:
-            description: Validation error
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/ErrorResponse'
-
-        BadRequestError:
-            description: Bad request
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/ErrorResponse'
-
-        UnauthorizedError:
-            description: Unauthorized access
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/ErrorResponse'
-
-        ForbiddenError:
-            description: Forbidden - insufficient permissions
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/ErrorResponse'
-
-        ConflictError:
-            description: Conflict - resource already exists
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/ErrorResponse'
-
-    securitySchemes:
-        BearerAuth:
-            type: http
-            scheme: bearer
-            bearerFormat: JWT
-
-    parameters:
-        SubdomainHeader:
-            name: X-Subdomain
-            in: header
-            required: false
-            schema:
-                type: string
-            description: Organization subdomain (required for local development when not using subdomain-based URLs)
+  parameters:
+    SubdomainHeader:
+      name: X-Subdomain
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Organization subdomain (required for local development when not using subdomain-based URLs)
 
 paths:
-    /users:
-        post:
-            operationId: createUserAccount
-            summary: Create user account
-            description: Register a new user.
-            tags:
-                - Users
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UserRegistrationRequest'
-            responses:
-                '201':
-                    description: User registered successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AuthResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
+  /users:
+    post:
+      operationId: createUserAccount
+      summary: Create user account
+      description: Register a new user.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-    /users/me:
-        get:
-            operationId: getCurrentUser
-            summary: Get current user info with role and permissions for current organization
-            description: |
-                Returns the current user's information including their role and permissions
-                for the current organization (determined by the subdomain in the Origin header).
-                If not accessing via an organization subdomain, currentOrganizationRole will be null.
-            tags:
-                - Users
-            security:
-                - BearerAuth: []
-            responses:
-                '200':
-                    description: User information retrieved with role and permissions for current organization
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CurrentUserResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      summary: Get current user info with role and permissions for current organization
+      description: |
+        Returns the current user's information including their role and permissions 
+        for the current organization (determined by the subdomain in the Origin header).
+        If not accessing via an organization subdomain, currentOrganizationRole will be null.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved with role and permissions for current organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
-    /auth/login:
-        post:
-            operationId: login
-            summary: Sign in (context-aware based on subdomain)
-            description: Sign in user. Context-aware based on subdomain for organization-scoped sessions.
-            tags:
-                - Authentication
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/LoginRequest'
-            responses:
-                '200':
-                    description: Login successful
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AuthResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
+  /auth/login:
+    post:
+      operationId: login
+      summary: Sign in (context-aware based on subdomain)
+      description: Sign in user. Context-aware based on subdomain for organization-scoped sessions.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
-    /auth/refresh-token:
-        post:
-            operationId: refreshToken
-            summary: Refresh JWT token
-            tags:
-                - Authentication
-            security:
-                - BearerAuth: []
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RefreshTokenRequest'
-            responses:
-                '200':
-                    description: Token refreshed successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AuthResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
+  /auth/refresh-token:
+    post:
+      operationId: refreshToken
+      summary: Refresh JWT token
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
-    /auth/forgot-password:
-        post:
-            operationId: forgotPassword
-            summary: Request password reset
-            description: |
-                Request a password reset link. Always returns success message regardless of whether
-                the email exists (security best practice to prevent email enumeration).
-            tags:
-                - Authentication
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ForgotPasswordRequest'
-            responses:
-                '200':
-                    description: Success response (always returned)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ForgotPasswordResponse'
+  /auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      summary: Request password reset
+      description: |
+        Request a password reset link. Always returns success message regardless of whether
+        the email exists (security best practice to prevent email enumeration).
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Success response (always returned)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgotPasswordResponse'
 
-    /auth/reset-password:
-        post:
-            operationId: resetPassword
-            summary: Reset password with token
-            description: Reset password using the token received via email
-            tags:
-                - Authentication
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ResetPasswordRequest'
-            responses:
-                '200':
-                    description: Password successfully reset
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ResetPasswordResponse'
-                '400':
-                    description: Invalid request (invalid/expired/used token or weak password)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            examples:
-                                invalidToken:
-                                    summary: Invalid or expired token
-                                    value:
-                                        error:
-                                            code: "AUTH_007"
-                                            message: "Invalid or expired password reset token"
-                                            details: {}
-                                        timestamp: "2025-01-15T10:30:00.123Z"
-                                usedToken:
-                                    summary: Token already used
-                                    value:
-                                        error:
-                                            code: "AUTH_008"
-                                            message: "Password reset token has already been used"
-                                            details: {}
-                                        timestamp: "2025-01-15T10:30:00.123Z"
-                                weakPassword:
-                                    summary: Password doesn't meet requirements
-                                    value:
-                                        error:
-                                            code: "AUTH_009"
-                                            message: "Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character"
-                                            details: {}
-                                        timestamp: "2025-01-15T10:30:00.123Z"
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      summary: Reset password with token
+      description: Reset password using the token received via email
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPasswordResponse'
+        '400':
+          description: Invalid request (invalid/expired/used token or weak password)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidToken:
+                  summary: Invalid or expired token
+                  value:
+                    error:
+                      code: "AUTH_007"
+                      message: "Invalid or expired password reset token"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                usedToken:
+                  summary: Token already used
+                  value:
+                    error:
+                      code: "AUTH_008"
+                      message: "Password reset token has already been used"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                weakPassword:
+                  summary: Password doesn't meet requirements
+                  value:
+                    error:
+                      code: "AUTH_009"
+                      message: "Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
 
-    /organizations:
-        get:
-            operationId: listOrganizations
-            summary: List user's organizations
-            description: Returns all organizations that the authenticated user is a member of. Does not require subdomain context.
-            tags:
-                - Organizations
-            security:
-                - BearerAuth: []
-            responses:
-                '200':
-                    description: Organizations retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/OrganizationResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
+  /auth/signup/initiate:
+    post:
+      operationId: initiateSignup
+      summary: Initiate signup (send verification email)
+      description: |
+        Initiates the signup process by sending a verification email to the user.
+        If a valid (unexpired) token already exists for this email, returns success without sending a new email (idempotent).
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupInitiateRequest'
+      responses:
+        '201':
+          description: New verification email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupInitiateResponse'
+              example:
+                message: "Verification email sent"
+        '200':
+          description: Valid token already exists (idempotent response)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupInitiateResponse'
+              example:
+                message: "Email was already sent, check inbox"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "AUTH_002"
+                  message: "Email already registered"
+                  details:
+                    email: "user@example.com"
+                timestamp: "2025-01-15T10:30:00.123Z"
 
-        post:
-            operationId: createOrganization
-            summary: Create a new organization
-            description: Users can create up to 3 organizations. Does not require subdomain context.
-            tags:
-                - Organizations
-            security:
-                - BearerAuth: []
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateOrganizationRequest'
-            responses:
-                '201':
-                    description: Organization created successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/OrganizationResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
+  /auth/signup/resend:
+    post:
+      operationId: resendSignupVerification
+      summary: Resend verification email
+      description: |
+        Invalidates any existing signup tokens for the email and sends a new verification email.
+        Always generates a new token, even if an old one exists.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupResendRequest'
+      responses:
+        '201':
+          description: Verification email resent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResendResponse'
+              example:
+                message: "Verification email sent"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "AUTH_002"
+                  message: "Email already registered"
+                  details:
+                    email: "user@example.com"
+                timestamp: "2025-01-15T10:30:00.123Z"
 
-    /organizations/current:
-        get:
-            operationId: getCurrentOrganization
-            summary: Get current organization details
-            description: Get organization details based on the subdomain context. User must be a member of the organization.
-            tags:
-                - Organizations
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-            responses:
-                '200':
-                    description: Organization retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/OrganizationResponse'
-                '400':
-                    description: Subdomain is required
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /auth/signup/complete:
+    post:
+      operationId: completeSignup
+      summary: Complete signup with verification token
+      description: |
+        Completes the signup process by verifying the token and creating the user account.
+        Automatically logs in the user and returns JWT tokens.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupCompleteRequest'
+      responses:
+        '201':
+          description: User account created successfully and auto-logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request (invalid/expired/used token or weak password)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidToken:
+                  summary: Invalid or expired token
+                  value:
+                    error:
+                      code: "AUTH_010"
+                      message: "Invalid or expired signup token"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                usedToken:
+                  summary: Token already used
+                  value:
+                    error:
+                      code: "AUTH_011"
+                      message: "Signup token has already been used"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                weakPassword:
+                  summary: Password doesn't meet requirements
+                  value:
+                    error:
+                      code: "AUTH_009"
+                      message: "Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "AUTH_002"
+                  message: "Email already registered"
+                  details:
+                    email: "user@example.com"
+                timestamp: "2025-01-15T10:30:00.123Z"
 
-        patch:
-            operationId: updateOrganization
-            summary: Update organization
-            description: |
-                Update organization fields. Supports partial updates (PATCH semantics) - only provided fields will be updated.
+  /organizations:
+    get:
+      operationId: listOrganizations
+      summary: List user's organizations
+      description: Returns all organizations that the authenticated user is a member of. Does not require subdomain context.
+      tags:
+        - Organizations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Organizations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    post:
+      operationId: createOrganization
+      summary: Create a new organization
+      description: Users can create up to 3 organizations. Does not require subdomain context.
+      tags:
+        - Organizations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationRequest'
+      responses:
+        '201':
+          description: Organization created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-                Updatable fields:
-                - name: Organization display name
-                - logoUrl: URL to organization logo image
+  /organizations/current:
+    get:
+      operationId: getCurrentOrganization
+      summary: Get current organization details
+      description: Get organization details based on the subdomain context. User must be a member of the organization.
+      tags:
+        - Organizations
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+      responses:
+        '200':
+          description: Organization retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '400':
+          description: Subdomain is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateOrganization
+      summary: Update organization
+      description: |
+        Update organization fields. Supports partial updates (PATCH semantics) - only provided fields will be updated.
 
-                Immutable fields (cannot be changed):
-                - subdomain: Organization subdomain identifier
-                - created_at, created_by_user_id: Creation metadata
+        Updatable fields:
+        - name: Organization display name
+        - logoUrl: URL to organization logo image
 
-                Note: At least one field must be provided in the request. Requires Owner/Admin role or organization.update permission.
-            tags:
-                - Organizations
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateOrganizationRequest'
-            responses:
-                '200':
-                    description: Organization updated successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/OrganizationResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+        Immutable fields (cannot be changed):
+        - subdomain: Organization subdomain identifier
+        - created_at, created_by_user_id: Creation metadata
 
-    /roles:
-        get:
-            operationId: listRoles
-            summary: List available roles
-            description: Returns all global roles that can be assigned to organization members
-            tags:
-                - Roles & Permissions
-            security:
-                - BearerAuth: []
-            responses:
-                '200':
-                    description: Roles retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/RoleResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
+        Note: At least one field must be provided in the request. Requires Owner/Admin role or organization.update permission.
+      tags:
+        - Organizations
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationRequest'
+      responses:
+        '200':
+          description: Organization updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /invite:
-        post:
-            operationId: sendInvitation
-            summary: Send invitation
-            description: Send an invitation to add a new member to the organization. Organization context determined by subdomain. Requires Owner/Admin role.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateInvitationRequest'
-            responses:
-                '201':
-                    description: Invitation sent successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/InvitationResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
+  /roles:
+    get:
+      operationId: listRoles
+      summary: List available roles
+      description: Returns all global roles that can be assigned to organization members
+      tags:
+        - Roles & Permissions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
-    /invitations:
-        get:
-            operationId: listPendingInvitations
-            summary: List pending invitations
-            description: |
-                List all pending, non-expired invitations addressed to the authenticated user's email.
-                Returns invitations from all organizations where the user has been invited.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            responses:
-                '200':
-                    description: Invitations retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/InvitationResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
+  /invite:
+    post:
+      operationId: sendInvitation
+      summary: Send invitation
+      description: Send an invitation to add a new member to the organization. Organization context determined by subdomain. Requires Owner/Admin role.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitationRequest'
+      responses:
+        '201':
+          description: Invitation sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-    /invitations/{invitationId}/revoke:
-        delete:
-            operationId: revokeInvitation
-            summary: Revoke invitation (deletes user too)
-            description: Revoke an invitation. Also deletes the associated user if created. Organization context determined by subdomain. Requires Owner/Admin role.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: invitationId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Invitation ID
-            responses:
-                '204':
-                    description: Invitation revoked successfully
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /invitations:
+    get:
+      operationId: listPendingInvitations
+      summary: List pending invitations
+      description: |
+        List all pending, non-expired invitations addressed to the authenticated user's email.
+        Returns invitations from all organizations where the user has been invited.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Invitations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvitationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
-    /invitations/{invitationId}/accept:
-        post:
-            operationId: acceptInvitation
-            summary: Accept invitation and join organization
-            description: |
-                Accept an invitation and join the organization. Requires authentication.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            parameters:
-                - name: invitationId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Invitation ID
-            responses:
-                '200':
-                    description: Invitation accepted successfully, user is now a member
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/InvitationResponse'
-                '400':
-                    description: Bad request (invitation expired or already accepted)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            examples:
-                                expired:
-                                    value:
-                                        code: INV_002
-                                        message: This invitation has expired
-                                already_accepted:
-                                    value:
-                                        code: INV_003
-                                        message: This invitation has already been accepted
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    description: Forbidden (email mismatch)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            example:
-                                code: INV_006
-                                message: This invitation is addressed to different email
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
-                '409':
-                    description: Conflict (user already member)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                            example:
-                                code: INV_004
-                                message: You are already a member of this organization
+  /invitations/{invitationId}/revoke:
+    delete:
+      operationId: revokeInvitation
+      summary: Revoke invitation (deletes user too)
+      description: Revoke an invitation. Also deletes the associated user if created. Organization context determined by subdomain. Requires Owner/Admin role.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation ID
+      responses:
+        '204':
+          description: Invitation revoked successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /invitations/accept/{token}:
-        post:
-            operationId: acceptInvitationByToken
-            summary: Accept invitation by token
-            description: Accept invitation using token from email link. Requires authentication.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            parameters:
-                - name: token
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Invitation token from email
-            responses:
-                '200':
-                    description: Invitation accepted, user joined organization
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/InvitationResponse'
-                '400':
-                    description: Invalid invitation state (expired/already accepted)
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '404':
-                    description: Invalid token
-                '409':
-                    description: User already member
+  /invitations/{invitationId}/accept:
+    post:
+      operationId: acceptInvitation
+      summary: Accept invitation and join organization
+      description: |
+        Accept an invitation and join the organization. Requires authentication.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation ID
+      responses:
+        '200':
+          description: Invitation accepted successfully, user is now a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          description: Bad request (invitation expired or already accepted)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                expired:
+                  value:
+                    code: INV_002
+                    message: This invitation has expired
+                already_accepted:
+                  value:
+                    code: INV_003
+                    message: This invitation has already been accepted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Forbidden (email mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INV_006
+                message: This invitation is addressed to different email
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Conflict (user already member)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INV_004
+                message: You are already a member of this organization
 
-    /invitations/reject/{token}:
-        post:
-            operationId: rejectInvitationByToken
-            summary: Reject invitation by token
-            description: Reject invitation using token from email link. Requires authentication. Updates status to canceled.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            parameters:
-                - name: token
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Invitation token from email
-            responses:
-                '200':
-                    description: Invitation rejected successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/InvitationResponse'
-                '400':
-                    description: Invalid invitation state (not pending)
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '404':
-                    description: Invalid token
+  /invitations/accept/{token}:
+    post:
+      operationId: acceptInvitationByToken
+      summary: Accept invitation by token
+      description: Accept invitation using token from email link. Requires authentication.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation token from email
+      responses:
+        '200':
+          description: Invitation accepted, user joined organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          description: Invalid invitation state (expired/already accepted)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Invalid token
+        '409':
+          description: User already member
 
-    /invitations/{invitationId}/cancel:
-        get:
-            operationId: cancelInvitation
-            summary: Cancel/reject invitation (keeps user)
-            description: |
-                Cancel or reject an invitation. Requires authentication.
-                Updates invitation status to 'canceled' but keeps the user account.
-            tags:
-                - Invitations
-            security:
-                - BearerAuth: []
-            parameters:
-                - name: invitationId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Invitation ID
-            responses:
-                '200':
-                    description: Invitation canceled successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/InvitationResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /invitations/reject/{token}:
+    post:
+      operationId: rejectInvitationByToken
+      summary: Reject invitation by token
+      description: Reject invitation using token from email link. Requires authentication. Updates status to canceled.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation token from email
+      responses:
+        '200':
+          description: Invitation rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          description: Invalid invitation state (not pending)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Invalid token
 
-    /members:
-        get:
-            operationId: listOrganizationMembers
-            summary: List organization members
-            description: List all members of the organization. Organization context determined by subdomain. Any member can view.
-            tags:
-                - Members
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: page
-                  in: query
-                  description: Page number (0-based)
-                  required: false
-                  schema:
-                      type: integer
-                      minimum: 0
-                      default: 0
-                - name: limit
-                  in: query
-                  description: Number of items per page
-                  required: false
-                  schema:
-                      type: integer
-                      minimum: 1
-                      maximum: 100
-                      default: 20
-            responses:
-                '200':
-                    description: Members retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PaginatedOrganizationMemberResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
+  /invitations/{invitationId}/cancel:
+    get:
+      operationId: cancelInvitation
+      summary: Cancel/reject invitation (keeps user)
+      description: |
+        Cancel or reject an invitation. Requires authentication.
+        Updates invitation status to 'canceled' but keeps the user account.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation ID
+      responses:
+        '200':
+          description: Invitation canceled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /members/{membershipId}:
-        patch:
-            operationId: updateMemberRole
-            summary: Update member role
-            description: Update a member's role. Organization context determined by subdomain. Requires Owner/Admin role.
-            tags:
-                - Members/member
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: membershipId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Membership ID
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateMemberRoleRequest'
-            responses:
-                '200':
-                    description: Member role updated successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/OrganizationMemberResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /members:
+    get:
+      operationId: listOrganizationMembers
+      summary: List organization members
+      description: List all members of the organization. Organization context determined by subdomain. Any member can view.
+      tags:
+        - Members
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: page
+          in: query
+          description: Page number (0-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Members retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationMemberResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
 
-        delete:
-            operationId: removeMember
-            summary: Remove member
-            description: Remove a member from the organization. Organization context determined by subdomain. Requires Owner/Admin role. Owner cannot remove themselves.
-            tags:
-                - Members
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: membershipId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Membership ID
-            responses:
-                '204':
-                    description: Member removed successfully
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /members/{membershipId}:
+    patch:
+      operationId: updateMemberRole
+      summary: Update member role
+      description: Update a member's role. Organization context determined by subdomain. Requires Owner/Admin role.
+      tags:
+        - Members/member
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Membership ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRoleRequest'
+      responses:
+        '200':
+          description: Member role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMemberResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    delete:
+      operationId: removeMember
+      summary: Remove member
+      description: Remove a member from the organization. Organization context determined by subdomain. Requires Owner/Admin role. Owner cannot remove themselves.
+      tags:
+        - Members
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Membership ID
+      responses:
+        '204':
+          description: Member removed successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /apps:
-        get:
-            operationId: listApplications
-            summary: List applications
-            description: List all mobile applications for the organization. Organization context determined by subdomain. Any member can view.
-            tags:
-                - Mobile Applications
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-            responses:
-                '200':
-                    description: Mobile applications retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/MobileApplicationResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
+  /apps:
+    get:
+      operationId: listApplications
+      summary: List applications
+      description: List all mobile applications for the organization. Organization context determined by subdomain. Any member can view.
+      tags:
+        - Mobile Applications
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+      responses:
+        '200':
+          description: Mobile applications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MobileApplicationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+    
+    post:
+      operationId: createApplication
+      summary: Create application
+      description: Create a new mobile application. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Mobile Applications
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMobileApplicationRequest'
+      responses:
+        '201':
+          description: Mobile application created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileApplicationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-        post:
-            operationId: createApplication
-            summary: Create application
-            description: Create a new mobile application. Organization context determined by subdomain. Requires Developer+ role.
-            tags:
-                - Mobile Applications
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateMobileApplicationRequest'
-            responses:
-                '201':
-                    description: Mobile application created successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/MobileApplicationResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
+  /apps/{appId}:
+    get:
+      operationId: getApplication
+      summary: Get application details
+      description: Get mobile application details. Organization context determined by subdomain. Any member can view.
+      tags:
+        - Mobile Applications
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application ID
+      responses:
+        '200':
+          description: Mobile application retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileApplicationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateApplication
+      summary: Update application
+      description: Update mobile application. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Mobile Applications
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMobileApplicationRequest'
+      responses:
+        '200':
+          description: Mobile application updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileApplicationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    delete:
+      operationId: deleteApplication
+      summary: Delete application
+      description: Delete mobile application. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Mobile Applications
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Application ID
+      responses:
+        '204':
+          description: Mobile application deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /apps/{appId}:
-        get:
-            operationId: getApplication
-            summary: Get application details
-            description: Get mobile application details. Organization context determined by subdomain. Any member can view.
-            tags:
-                - Mobile Applications
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: appId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Application ID
-            responses:
-                '200':
-                    description: Mobile application retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/MobileApplicationResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /{bundleId}/builds:
+    get:
+      operationId: getBuilds
+      summary: Get builds with pagination and sorting
+      description: Organization context determined by subdomain.
+      tags:
+        - Builds
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bundle ID of the mobile application
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (default 0)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Page size (default 20)
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction by createdAt (default desc)
+      responses:
+        '200':
+          description: Builds retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBuildResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
 
-        patch:
-            operationId: updateApplication
-            summary: Update application
-            description: Update mobile application. Organization context determined by subdomain. Requires Developer+ role.
-            tags:
-                - Mobile Applications
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: appId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Application ID
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateMobileApplicationRequest'
-            responses:
-                '200':
-                    description: Mobile application updated successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/MobileApplicationResponse'
-                '400':
-                    $ref: '#/components/responses/ValidationError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /builds/{buildId}:
+    delete:
+      operationId: deleteBuild
+      summary: Delete a build by its UUID
+      description: Organization context determined by subdomain.
+      tags:
+        - Builds
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: buildId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The UUID of the build to delete
+      responses:
+        '204':
+          description: Build deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-        delete:
-            operationId: deleteApplication
-            summary: Delete application
-            description: Delete mobile application. Organization context determined by subdomain. Requires Developer+ role.
-            tags:
-                - Mobile Applications
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: appId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Application ID
-            responses:
-                '204':
-                    description: Mobile application deleted successfully
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /v1/builds:
+    post:
+      operationId: uploadBuildWithApiKey
+      summary: Upload a new build using API key authentication
+      description: "Upload builds using API key authentication. This is the only way to upload builds and is designed for CI/CD pipelines. Requires X-API-Key header instead of JWT token. Organization context is determined by the API key."
+      tags:
+        - Builds
+        - API Keys
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: API key for authentication (e.g., "flyway_abc123...")
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - commitHash
+                - branchName
+                - nativeVersion
+                - file
+              properties:
+                commitHash:
+                  type: string
+                  description: Git commit hash (unique identifier for the build)
+                branchName:
+                  type: string
+                  description: Git branch name
+                commitMessage:
+                  type: string
+                  description: Git commit message
+                nativeVersion:
+                  type: string
+                  description: Native app version (e.g., "1.0.0")
+                file:
+                  type: string
+                  format: binary
+                  description: The build file (APK/IPA, max 30MB)
+      responses:
+        '201':
+          description: Build uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-    /{bundleId}/builds:
-        get:
-            operationId: getBuilds
-            summary: Get builds with pagination and sorting
-            description: Organization context determined by subdomain.
-            tags:
-                - Builds
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: bundleId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Bundle ID of the mobile application
-                - name: page
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 0
-                  description: Page number (default 0)
-                - name: size
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 20
-                  description: Page size (default 20)
-                - name: sort
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [asc, desc]
-                      default: desc
-                  description: Sort direction by createdAt (default desc)
-            responses:
-                '200':
-                    description: Builds retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PaginatedBuildResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequestError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
+  /{bundleId}/api-keys:
+    get:
+      operationId: getApiKeys
+      summary: Get API keys with pagination and sorting
+      description: Organization context determined by subdomain.
+      tags:
+        - API Keys
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bundle ID of the mobile application
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (default 0)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Page size (default 20)
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction by createdAt (default desc)
+      responses:
+        '200':
+          description: API keys retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApiKeyResponse'
+        '400':
+          description: Bad request (e.g., invalid sort parameter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    post:
+      operationId: createApiKey
+      summary: Create a new API key
+      description: Organization context determined by subdomain.
+      tags:
+        - API Keys
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bundle ID of the mobile application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApiKeyRequest'
+      responses:
+        '201':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /builds/{buildId}:
-        delete:
-            operationId: deleteBuild
-            summary: Delete a build by its UUID
-            description: Organization context determined by subdomain.
-            tags:
-                - Builds
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: buildId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: The UUID of the build to delete
-            responses:
-                '204':
-                    description: Build deleted successfully
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /{bundleId}/api-keys/{keyId}:
+    delete:
+      operationId: deleteApiKey
+      summary: Delete an API key
+      description: Organization context determined by subdomain.
+      tags:
+        - API Keys
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Bundle ID of the mobile application
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: API key ID
+      responses:
+        '204':
+          description: API key deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-    /v1/builds:
-        post:
-            operationId: uploadBuildWithApiKey
-            summary: Upload a new build using API key authentication
-            description: "Upload builds using API key authentication. This is the only way to upload builds and is designed for CI/CD pipelines. Requires X-API-Key header instead of JWT token. Organization context is determined by the API key."
-            tags:
-                - Builds
-                - API Keys
-            parameters:
-                - name: X-API-Key
-                  in: header
-                  required: true
-                  schema:
-                      type: string
-                  description: API key for authentication (e.g., "flyway_abc123...")
-            requestBody:
-                required: true
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            required:
-                                - commitHash
-                                - branchName
-                                - nativeVersion
-                                - file
-                            properties:
-                                commitHash:
-                                    type: string
-                                    description: Git commit hash (unique identifier for the build)
-                                branchName:
-                                    type: string
-                                    description: Git branch name
-                                commitMessage:
-                                    type: string
-                                    description: Git commit message
-                                nativeVersion:
-                                    type: string
-                                    description: Native app version (e.g., "1.0.0")
-                                file:
-                                    type: string
-                                    format: binary
-                                    description: The build file (APK/IPA, max 30MB)
-            responses:
-                '201':
-                    description: Build uploaded successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/BuildResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequestError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
+  /channels:
+    get:
+      operationId: listChannels
+      summary: List channels
+      description: List all channels for the organization. Organization context determined by subdomain. Any member can view.
+      tags:
+        - Channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-based)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction by creation date
+      responses:
+        '200':
+          description: Channels retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChannelResponse'
+        '400':
+          description: Bad request (e.g., invalid sort parameter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+    
+    post:
+      operationId: createChannel
+      summary: Create channel
+      description: Create a new channel. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChannelRequest'
+      responses:
+        '201':
+          description: Channel created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
 
-    /{bundleId}/api-keys:
-        get:
-            operationId: getApiKeys
-            summary: Get API keys with pagination and sorting
-            description: Organization context determined by subdomain.
-            tags:
-                - API Keys
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: bundleId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Bundle ID of the mobile application
-                - name: page
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 0
-                  description: Page number (default 0)
-                - name: size
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 20
-                  description: Page size (default 20)
-                - name: sort
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [asc, desc]
-                      default: desc
-                  description: Sort direction by createdAt (default desc)
-            responses:
-                '200':
-                    description: API keys retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PaginatedApiKeyResponse'
-                '400':
-                    description: Bad request (e.g., invalid sort parameter)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
+  /channels/{channelId}:
+    get:
+      operationId: getChannel
+      summary: Get channel details
+      description: Get channel details. Organization context determined by subdomain. Any member can view.
+      tags:
+        - Channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Channel ID
+      responses:
+        '200':
+          description: Channel retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateChannel
+      summary: Update channel
+      description: Update channel. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Channel ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChannelRequest'
+      responses:
+        '200':
+          description: Channel updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+    
+    delete:
+      operationId: deleteChannel
+      summary: Delete channel
+      description: Delete channel. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Channel ID
+      responses:
+        '204':
+          description: Channel deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
-        post:
-            operationId: createApiKey
-            summary: Create a new API key
-            description: Organization context determined by subdomain.
-            tags:
-                - API Keys
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: bundleId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Bundle ID of the mobile application
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateApiKeyRequest'
-            responses:
-                '201':
-                    description: API key created successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ApiKeyResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequestError'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
-
-    /{bundleId}/api-keys/{keyId}:
-        delete:
-            operationId: deleteApiKey
-            summary: Delete an API key
-            description: Organization context determined by subdomain.
-            tags:
-                - API Keys
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: bundleId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Bundle ID of the mobile application
-                - name: keyId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: API key ID
-            responses:
-                '204':
-                    description: API key deleted successfully
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
-
-    /channels:
-        get:
-            operationId: listChannels
-            summary: List channels
-            description: List all channels for the organization. Organization context determined by subdomain. Any member can view.
-            tags:
-                - Channels
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: page
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 0
-                  description: Page number (0-based)
-                - name: size
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 20
-                  description: Number of items per page
-                - name: sort
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [asc, desc]
-                      default: desc
-                  description: Sort direction by creation date
-            responses:
-                '200':
-                    description: Channels retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PaginatedChannelResponse'
-                '400':
-                    description: Bad request (e.g., invalid sort parameter)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-
-        post:
-            operationId: createChannel
-            summary: Create channel
-            description: Create a new channel. Organization context determined by subdomain. Requires Developer+ role.
-            tags:
-                - Channels
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateChannelRequest'
-            responses:
-                '201':
-                    description: Channel created successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ChannelResponse'
-                '400':
-                    description: Bad request (e.g., validation error)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
-
-    /channels/{channelId}:
-        get:
-            operationId: getChannel
-            summary: Get channel details
-            description: Get channel details. Organization context determined by subdomain. Any member can view.
-            tags:
-                - Channels
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: channelId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Channel ID
-            responses:
-                '200':
-                    description: Channel retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ChannelResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
-
-        patch:
-            operationId: updateChannel
-            summary: Update channel
-            description: Update channel. Organization context determined by subdomain. Requires Developer+ role.
-            tags:
-                - Channels
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: channelId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Channel ID
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateChannelRequest'
-            responses:
-                '200':
-                    description: Channel updated successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ChannelResponse'
-                '400':
-                    description: Bad request (e.g., validation error)
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ErrorResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
-                '409':
-                    $ref: '#/components/responses/ConflictError'
-
-        delete:
-            operationId: deleteChannel
-            summary: Delete channel
-            description: Delete channel. Organization context determined by subdomain. Requires Developer+ role.
-            tags:
-                - Channels
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: channelId
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-                  description: Channel ID
-            responses:
-                '204':
-                    description: Channel deleted successfully
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
-                '404':
-                    $ref: '#/components/responses/NotFoundError'
-
-    /audit-logs:
-        get:
-            operationId: getAuditLogs
-            summary: Get audit logs for an organization
-            description: Retrieve paginated audit logs with optional filtering by action, resource type, user, and date range. Organization context determined by subdomain.
-            tags:
-                - Audit Logs
-            security:
-                - BearerAuth: []
-            parameters:
-                - $ref: '#/components/parameters/SubdomainHeader'
-                - name: action
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                  description: Filter by action (e.g., MOBILE_APP_CREATED)
-                - name: resourceType
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                  description: Filter by resource type (e.g., MOBILE_APPLICATION)
-                - name: userId
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                  description: Filter by user ID
-                - name: startDate
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      format: date-time
-                  description: Filter by start date
-                - name: endDate
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      format: date-time
-                  description: Filter by end date
-                - name: page
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 0
-                  description: Page number (0-indexed)
-                - name: size
-                  in: query
-                  required: false
-                  schema:
-                      type: integer
-                      default: 20
-                  description: Page size
-                - name: sort
-                  in: query
-                  required: false
-                  schema:
-                      type: string
-                      enum: [asc, desc]
-                      default: desc
-                  description: Sort order by created date
-            responses:
-                '200':
-                    description: Audit logs retrieved successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PaginatedAuditLogResponse'
-                '401':
-                    $ref: '#/components/responses/UnauthorizedError'
-                '403':
-                    $ref: '#/components/responses/ForbiddenError'
+  /audit-logs:
+    get:
+      operationId: getAuditLogs
+      summary: Get audit logs for an organization
+      description: Retrieve paginated audit logs with optional filtering by action, resource type, user, and date range. Organization context determined by subdomain.
+      tags:
+        - Audit Logs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by action (e.g., MOBILE_APP_CREATED)
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by resource type (e.g., MOBILE_APPLICATION)
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by user ID
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Filter by start date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Filter by end date
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-indexed)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Page size
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order by created date
+      responses:
+        '200':
+          description: Audit logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditLogResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'

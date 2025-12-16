@@ -30,7 +30,28 @@
       "error_email_exists": "Email already exists",
       "error_generic": "An error occurred. Please try again.",
       "success_message": "Account created successfully!",
-      "invitation_note": "You're signing up to accept an invitation. After creating your account, you'll be able to review and accept the invitation."
+      "invitation_note": "You're signing up to accept an invitation. After creating your account, you'll be able to review and accept the invitation.",
+      "initiate": {
+        "title": "Get Started",
+        "subtitle": "Enter your email to create an account",
+        "submit_button": "Continue",
+        "success_title": "Check Your Email",
+        "success_message": "We've sent a verification link to {{email}}. Please check your inbox and click the link to complete your registration.",
+        "resend_button": "Resend Email"
+      },
+      "complete": {
+        "title": "Complete Your Account",
+        "subtitle": "Fill in your details to finish signing up",
+        "confirm_password_label": "Confirm Password",
+        "confirm_password_placeholder": "Re-enter your password",
+        "submit_button": "Create Account"
+      },
+      "errors": {
+        "email_exists": "This email is already registered",
+        "invalid_token": "This link is invalid or has expired",
+        "token_used": "This link has already been used",
+        "weak_password": "Password must be at least 8 characters"
+      }
     },
     "logout": "Logout"
   },
@@ -99,6 +120,8 @@
     "email_invalid": "Invalid email address",
     "password_required": "Password is required",
     "password_min": "Password must be at least 8 characters",
+    "confirm_password_required": "Please confirm your password",
+    "passwords_must_match": "Passwords do not match",
     "first_name_required": "First name is required",
     "last_name_required": "Last name is required",
     "organization_name_required": "Organization name is required",

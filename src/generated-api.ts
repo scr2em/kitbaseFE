@@ -49,10 +49,10 @@ export interface UserRegistrationRequest {
    */
   email: string;
   /**
-   * User's password (minimum 8 characters and max 12 characters)
+   * User's password (minimum 8 characters and max 50 characters)
    * @format password
    * @minLength 8
-   * @maxLength 12
+   * @maxLength 50
    */
   password: string;
   /**
@@ -126,17 +126,48 @@ export interface ResetPasswordResponse {
   message: string;
 }
 
+export interface SignupInitiateRequest {
+  /**
+   * User's email address
+   * @format email
+   */
+  email: string;
+}
+
+export interface SignupInitiateResponse {
+  /** @example "Verification email sent" */
+  message: string;
+}
+
+export interface SignupResendRequest {
+  /** @format email */
+  email: string;
+}
+
+export interface SignupResendResponse {
+  /** @example "Verification email sent" */
+  message: string;
+}
+
+export interface SignupCompleteRequest {
+  /** Verification token from email (64 hex chars) */
+  token: string;
+  /**
+   * @format password
+   * @minLength 8
+   * @maxLength 50
+   */
+  password: string;
+  /** @minLength 2 */
+  firstName: string;
+  /** @minLength 2 */
+  lastName: string;
+}
+
 /** Request to create a new organization */
 export interface CreateOrganizationRequest {
   /** Organization name */
   name: string;
-  /**
-   * Organization subdomain (lowercase alphanumeric with hyphens, 3-63 characters). Must be unique.
-   * @minLength 3
-   * @maxLength 63
-   * @pattern ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$
-   */
-  subdomain: string;
   /** Organization description */
   description?: string;
   /**
@@ -146,7 +177,7 @@ export interface CreateOrganizationRequest {
   logoUrl?: string;
 }
 
-/** Request to update an organization */
+/** Request to update an organization */  
 export interface UpdateOrganizationRequest {
   /**
    * Organization name
@@ -701,6 +732,12 @@ export interface ErrorResponse {
      * @example {"field":"email","value":"user@example.com"}
      */
     details?: Record<string, any>;
+    /**
+     * Stack trace of the exception (only included in development mode)
+     * @example "java.lang.RuntimeException: Test error
+     * 	at com.app.server.service.UserService.method(UserService.java:123)"
+     */
+    stackTrace?: string;
   };
   /**
    * When the error occurred
@@ -1009,6 +1046,63 @@ export class Api<
     resetPassword: (data: ResetPasswordRequest, params: RequestParams = {}) =>
       this.request<ResetPasswordResponse, ErrorResponse>({
         path: `/auth/reset-password`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Initiates the signup process by sending a verification email to the user. If a valid (unexpired) token already exists for this email, returns success without sending a new email (idempotent).
+     *
+     * @tags Authentication
+     * @name InitiateSignup
+     * @summary Initiate signup (send verification email)
+     * @request POST:/auth/signup/initiate
+     */
+    initiateSignup: (data: SignupInitiateRequest, params: RequestParams = {}) =>
+      this.request<SignupInitiateResponse, ErrorResponse>({
+        path: `/auth/signup/initiate`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Invalidates any existing signup tokens for the email and sends a new verification email. Always generates a new token, even if an old one exists.
+     *
+     * @tags Authentication
+     * @name ResendSignupVerification
+     * @summary Resend verification email
+     * @request POST:/auth/signup/resend
+     */
+    resendSignupVerification: (
+      data: SignupResendRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<SignupResendResponse, ErrorResponse>({
+        path: `/auth/signup/resend`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Completes the signup process by verifying the token and creating the user account. Automatically logs in the user and returns JWT tokens.
+     *
+     * @tags Authentication
+     * @name CompleteSignup
+     * @summary Complete signup with verification token
+     * @request POST:/auth/signup/complete
+     */
+    completeSignup: (data: SignupCompleteRequest, params: RequestParams = {}) =>
+      this.request<AuthResponse, ErrorResponse>({
+        path: `/auth/signup/complete`,
         method: "POST",
         body: data,
         type: ContentType.Json,

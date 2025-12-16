@@ -22,5 +22,4 @@ alwaysApply: true
 16. when dealing with pagination use useInfiniteQuery from react query
 17. ask for my confirmation whenver you are going to useEffect because generally we won't need it
 19. don't ever user useMemo, memo, or useCallback
-
-
+20 if you need to know any missing information this is  the backend repo /Users/mohamed/private/Flyway/src 
