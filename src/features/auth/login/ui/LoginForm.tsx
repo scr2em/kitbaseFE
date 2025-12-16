@@ -76,6 +76,15 @@ export function LoginForm() {
           error={errors.password?.message ? t(errors.password.message) : undefined}
         />
 
+        <Anchor
+          onClick={() => navigate('/forgot-password')}
+          size="sm"
+          c="brand"
+          style={{ cursor: 'pointer', alignSelf: 'flex-end' }}
+        >
+          {t('auth.login.forgot_password_link')}
+        </Anchor>
+
         <Button
           type="submit"
           fullWidth

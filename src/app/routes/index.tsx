@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router';
 import { LoginPage } from '../../features/auth/login';
 import { SignupPage } from '../../features/auth/signup';
+import { ForgotPasswordPage, ResetPasswordPage } from '../../features/auth/reset-password';
 import { DashboardPage } from '../../features/dashboard';
 import { CreateOrganizationPage } from '../../features/organization/create-organization';
 import { OrganizationPage } from '../../features/organization/view-organization';
@@ -44,6 +45,22 @@ export function AppRoutes() {
         element={
           <PublicRoute>
             <SignupPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPasswordPage />
           </PublicRoute>
         }
       />

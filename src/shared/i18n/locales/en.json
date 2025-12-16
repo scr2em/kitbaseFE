@@ -10,8 +10,47 @@
       "submit_button": "Sign In",
       "no_account": "Don't have an account?",
       "signup_link": "Sign up",
+      "forgot_password_link": "Forgot password?",
       "error_invalid_credentials": "Invalid email or password",
       "error_generic": "An error occurred. Please try again."
+    },
+    "reset_password": {
+      "forgot": {
+        "title": "Reset Password",
+        "subtitle": "Enter your email and we'll send you a link to reset your password",
+        "tagline": "Reset your password securely",
+        "email_label": "Email",
+        "email_placeholder": "Enter your email address",
+        "submit_button": "Send Reset Link",
+        "back_to_login": "Back to login",
+        "success_title": "Check Your Email",
+        "success_message": "If an account exists with {{email}}, we've sent a password reset link. Please check your inbox.",
+        "error_generic": "An error occurred. Please try again."
+      },
+      "reset": {
+        "title": "Create New Password",
+        "subtitle": "Enter your new password below",
+        "tagline": "Set a new secure password",
+        "new_password_label": "New Password",
+        "new_password_placeholder": "Enter new password",
+        "confirm_password_label": "Confirm Password",
+        "confirm_password_placeholder": "Re-enter new password",
+        "password_requirements": "Password must be at least 8 characters with uppercase, lowercase, number, and special character.",
+        "submit_button": "Reset Password",
+        "back_to_login": "Back to login",
+        "request_new_link": "Request new link",
+        "success_title": "Password Reset Successful",
+        "success_message": "Your password has been reset successfully. You can now sign in with your new password.",
+        "go_to_login": "Go to Login",
+        "error_generic": "An error occurred. Please try again."
+      },
+      "errors": {
+        "title": "Invalid Link",
+        "invalid_link": "This password reset link is invalid or missing. Please request a new one.",
+        "invalid_token": "This link is invalid or has expired. Please request a new password reset.",
+        "token_used": "This password reset link has already been used. Please request a new one.",
+        "weak_password": "Password doesn't meet requirements. Please use at least 8 characters with uppercase, lowercase, number, and special character."
+      }
     },
     "signup": {
       "title": "Create Account",

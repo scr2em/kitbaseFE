@@ -4,7 +4,9 @@ import type {
   LoginRequest, 
   AuthResponse,
   SignupInitiateRequest,
-  SignupCompleteRequest
+  SignupCompleteRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest
 } from '../../../generated-api';
 import { USER_QUERY_KEY } from './user';
 import { tokenStorage } from '../../lib/cookies';
@@ -48,6 +50,24 @@ export function useCompleteSignupMutation() {
       tokenStorage.setRefreshToken(data.refreshToken);
       // Invalidate user query to fetch fresh data
       queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+    },
+  });
+}
+
+export function useForgotPasswordMutation() {
+  return useMutation({
+    mutationFn: async (data: ForgotPasswordRequest) => {
+      const response = await apiClient.auth.forgotPassword(data);
+      return response.data;
+    },
+  });
+}
+
+export function useResetPasswordMutation() {
+  return useMutation({
+    mutationFn: async (data: ResetPasswordRequest) => {
+      const response = await apiClient.auth.resetPassword(data);
+      return response.data;
     },
   });
 }
