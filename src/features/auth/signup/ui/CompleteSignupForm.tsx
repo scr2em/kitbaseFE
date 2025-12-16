@@ -10,10 +10,9 @@ import {
   Anchor, 
   Divider,
   Group,
-  Alert
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { User, Lock, AlertCircle } from 'lucide-react';
+import { User, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { completeSignupSchema, type CompleteSignupFormData } from '../model/schema';
 import { useCompleteSignupMutation } from '../../../../shared/api/queries/auth';

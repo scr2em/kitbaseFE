@@ -34,9 +34,11 @@ export function SignupPage() {
         <Container size="xl" h="100%">
           <Group justify="space-between" h="100%">
             <Group>
-              <Title order={3} c="brand.7" component={Link} to="/" style={{ textDecoration: 'none' }}>
-                Kitbase
-              </Title>
+              <Link to="/" style={{ textDecoration: 'none' }}>
+                <Title order={3} c="brand.7">
+                  Kitbase
+                </Title>
+              </Link>
             </Group>
 
             <Group>

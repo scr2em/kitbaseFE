@@ -8,7 +8,6 @@ import {
   Text, 
   Anchor, 
   Divider,
-  Alert,
   Title
 } from '@mantine/core';
 import { Mail, CheckCircle, RefreshCw } from 'lucide-react';
