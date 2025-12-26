@@ -165,13 +165,17 @@
     "first_name_required": "First name is required",
     "last_name_required": "Last name is required",
     "organization_name_required": "Organization name is required",
+    "app_name_required": "App name is required",
     "subdomain_required": "Subdomain is required",
     "subdomain_min_length": "Subdomain must be at least 3 characters",
     "subdomain_max_length": "Subdomain must be at most 63 characters",
     "subdomain_invalid_format": "Subdomain can only contain lowercase letters, numbers, and hyphens. Must start and end with a letter or number",
     "role_name_required": "Role name is required",
     "organization_id_required": "Organization ID is required",
-    "role_required": "Role is required"
+    "role_required": "Role is required",
+    "version_required": "Version is required",
+    "version_format": "Version must be in format: X.Y.Z (e.g., 1.0.0)",
+    "markdown_required": "Content is required"
   },
   "common": {
     "loading": "Loading...",
@@ -382,6 +386,16 @@
         "name_required": "App name is required"
       }
     },
+    "edit": {
+      "modal_title": "Edit Application",
+      "name_label": "App Name",
+      "name_placeholder": "Enter app name",
+      "description_label": "Description (Optional)",
+      "description_placeholder": "Describe your application",
+      "submit_button": "Save Changes",
+      "success_message": "Application updated successfully",
+      "menu_item": "Edit app"
+    },
     "delete": {
       "title": "Delete Application",
       "confirmation": "Are you sure you want to delete '{{name}}'? This action cannot be undone and all associated data will be lost.",
@@ -403,6 +417,7 @@
         "bundles": "Bundles",
         "builds": "Builds",
         "access": "Access",
+        "changelog": "Changelog",
         "api_keys": "API Keys"
       },
       "bundles": {
@@ -482,6 +497,57 @@
           "cancel": "Cancel",
           "success_message": "API key deleted successfully",
           "menu_item": "Delete key"
+        }
+      },
+      "changelog": {
+        "title": "Changelog",
+        "subtitle": "Manage version release notes",
+        "create_button": "Create Changelog",
+        "no_changelogs": "No changelogs created yet",
+        "create_first": "Create your first changelog entry",
+        "error_loading": "Failed to load changelogs. Please try again.",
+        "showing_count": "Showing {{from}}-{{to}} of {{total}} changelogs",
+        "table": {
+          "version": "Version",
+          "content": "Content",
+          "created_at": "Created",
+          "updated_at": "Updated",
+          "actions": "Actions"
+        },
+        "create": {
+          "page_title": "Create Changelog",
+          "back_button": "Back to Changelog",
+          "version_label": "Version",
+          "version_placeholder": "1.0.0",
+          "version_description": "Semantic version number (e.g., 1.0.0)",
+          "markdown_label": "Content",
+          "markdown_placeholder": "Write your changelog content...",
+          "markdown_description": "Describe what's new, fixed, or changed in this version",
+          "submit_button": "Create Changelog",
+          "cancel_button": "Cancel",
+          "success_message": "Changelog created successfully"
+        },
+        "edit": {
+          "page_title": "Edit Changelog",
+          "back_button": "Back to Changelog",
+          "version_label": "Version",
+          "version_placeholder": "1.0.0",
+          "version_description": "Semantic version number (e.g., 1.0.0)",
+          "markdown_description": "Describe what's new, fixed, or changed in this version",
+          "markdown_label": "Content",
+          "markdown_placeholder": "Write your changelog content...",
+          "submit_button": "Update Changelog",
+          "cancel_button": "Cancel",
+          "success_message": "Changelog updated successfully",
+          "menu_item": "Edit changelog"
+        },
+        "delete": {
+          "title": "Delete Changelog",
+          "confirmation": "Are you sure you want to delete the changelog for version '{{version}}'? This action cannot be undone.",
+          "confirm": "Delete",
+          "cancel": "Cancel",
+          "success_message": "Changelog deleted successfully",
+          "menu_item": "Delete changelog"
         }
       }
     }

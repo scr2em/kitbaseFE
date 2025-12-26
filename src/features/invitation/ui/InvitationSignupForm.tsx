@@ -120,3 +120,4 @@ export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSig
   );
 }
 
+

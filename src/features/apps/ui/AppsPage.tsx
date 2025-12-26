@@ -8,7 +8,7 @@ import {
   ActionIcon,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Plus, MoreVertical, Trash2, Package, Building } from 'lucide-react';
+import { AlertCircle, Plus, MoreVertical, Trash2, Package, Building, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
@@ -19,16 +19,19 @@ import {
 } from '../../../shared/api/queries';
 import { useShowBackendError, usePermissions, useCurrentOrganization } from '../../../shared/hooks';
 import { CreateAppModal } from './CreateAppModal';
+import { EditAppModal } from './EditAppModal';
+import type { MobileApplicationResponse } from '../../../generated-api';
 
 export function AppsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [createModalOpened, setCreateModalOpened] = useState(false);
+  const [editingApp, setEditingApp] = useState<MobileApplicationResponse | null>(null);
   const { hasOrganizations, isLoading: isLoadingUser } = useCurrentOrganization();
   const { data: apps, isLoading, isError } = useMobileAppsQuery();
   const deleteAppMutation = useDeleteMobileAppMutation();
   const { showError } = useShowBackendError();
-  const { canCreateApp, canDeleteApp } = usePermissions();
+  const { canCreateApp, canDeleteApp, canUpdateApp } = usePermissions();
 
   const handleDeleteApp = (appId: string, appName: string) => {
     modals.openConfirmModal({
@@ -175,7 +178,7 @@ export function AppsPage() {
                       </Badge>
                     </div>
                     
-                    {canDeleteApp && (
+                    {(canUpdateApp || canDeleteApp) && (
                       <Menu shadow="md" width={200} position="bottom-end">
                         <Menu.Target>
                           <ActionIcon 
@@ -187,16 +190,29 @@ export function AppsPage() {
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                          <Menu.Item
-                            color="red"
-                            leftSection={<Trash2 size={16} />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteApp(app.id, app.name);
-                            }}
-                          >
-                            {t('apps.delete.menu_item')}
-                          </Menu.Item>
+                          {canUpdateApp && (
+                            <Menu.Item
+                              leftSection={<Pencil size={16} />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingApp(app);
+                              }}
+                            >
+                              {t('apps.edit.menu_item')}
+                            </Menu.Item>
+                          )}
+                          {canDeleteApp && (
+                            <Menu.Item
+                              color="red"
+                              leftSection={<Trash2 size={16} />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteApp(app.id, app.name);
+                              }}
+                            >
+                              {t('apps.delete.menu_item')}
+                            </Menu.Item>
+                          )}
                         </Menu.Dropdown>
                       </Menu>
                     )}
@@ -232,6 +248,14 @@ export function AppsPage() {
         opened={createModalOpened}
         onClose={() => setCreateModalOpened(false)}
       />
+
+      {editingApp && (
+        <EditAppModal
+          opened={true}
+          onClose={() => setEditingApp(null)}
+          app={editingApp}
+        />
+      )}
     </div>
   );
 }

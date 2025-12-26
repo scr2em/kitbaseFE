@@ -12,7 +12,10 @@ import {
   BundlesPage, 
   AppBuildsPage, 
   AccessPage,
-  ApiKeysPage 
+  ApiKeysPage,
+  ChangelogPage,
+  CreateChangelogPage,
+  EditChangelogPage,
 } from '../../features/apps';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { ChannelsPage } from '../../features/channels';
@@ -79,6 +82,9 @@ const routes: RouteObject[] = [
               { path: 'bundles', element: <BundlesPage /> },
               { path: 'builds', element: <AppBuildsPage /> },
               { path: 'access', element: <AccessPage /> },
+              { path: 'changelog', element: <ChangelogPage /> },
+              { path: 'changelog/create', element: <CreateChangelogPage /> },
+              { path: 'changelog/:changelogId/edit', element: <EditChangelogPage /> },
               { path: 'api-keys', element: <ApiKeysPage /> },
             ],
           },

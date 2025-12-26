@@ -7,7 +7,7 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation, Outlet } from 'react-router';
-import { AlertCircle, Package, ArrowLeft, Hammer, Key } from 'lucide-react';
+import { AlertCircle, Package, ArrowLeft, Hammer, Key, FileText } from 'lucide-react';
 import { useMobileAppQuery } from '../../../shared/api/queries';
 
 export function AppDetailPage() {
@@ -33,6 +33,11 @@ export function AppDetailPage() {
     //   path: `/apps/${bundleId}/access`,
     //   icon: <Lock size={18} />,
     // },
+    {
+      label: t('apps.detail.nav.changelog'),
+      path: `/apps/${bundleId}/changelog`,
+      icon: <FileText size={18} />,
+    },
     {
       label: t('apps.detail.nav.api_keys'),
       path: `/apps/${bundleId}/api-keys`,

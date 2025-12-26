@@ -21,10 +21,18 @@
     "@scr2em/config": "^0.0.9",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.90.3",
+    "@tiptap/extension-image": "^3.14.0",
+    "@tiptap/extension-link": "^3.14.0",
+    "@tiptap/extension-youtube": "^3.14.0",
+    "@tiptap/pm": "^3.14.0",
+    "@tiptap/react": "^3.14.0",
+    "@tiptap/starter-kit": "^3.14.0",
     "axios": "^1.12.2",
     "data-fns": "^1.1.0",
     "i18next": "^25.6.0",
     "lucide-react": "^0.545.0",
+    "msw": "^2.12.6",
+    "nanoid": "^5.1.6",
     "nuqs": "^2.7.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -51,5 +59,10 @@
     "typescript-eslint": "^8.45.0",
     "vite": "^7.1.7"
   },
-  "prettier": "@scr2em/config/prettier"
+  "prettier": "@scr2em/config/prettier",
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }

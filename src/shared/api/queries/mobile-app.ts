@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../client';
-import type { CreateMobileApplicationRequest } from '../../../generated-api';
+import type { CreateMobileApplicationRequest, UpdateMobileApplicationRequest } from '../../../generated-api';
 
 export const MOBILE_APPS_QUERY_KEY = ['mobileApplications'];
 
@@ -46,6 +46,19 @@ export function useDeleteMobileAppMutation() {
   return useMutation({
     mutationFn: async (appId: string) => {
       await apiClient.apps.deleteApplication(appId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: MOBILE_APPS_QUERY_KEY });
+    },
+  });
+}
+
+export function useUpdateMobileAppMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ appId, data }: { appId: string; data: UpdateMobileApplicationRequest }) => {
+      const response = await apiClient.apps.updateApplication(appId, data);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MOBILE_APPS_QUERY_KEY });

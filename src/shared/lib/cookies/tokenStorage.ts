@@ -33,7 +33,7 @@ export const tokenStorage = {
   setAccessToken: (token: string): void => {
     cookies.set('accessToken', token, {
       ...COOKIE_OPTIONS,
-      maxAge: 15 * 60, // 15 minutes (access token expiry)
+      maxAge: 60 * 60, // 1 hour (access token expiry)
     });
   },
 

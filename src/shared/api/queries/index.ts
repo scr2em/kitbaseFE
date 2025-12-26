@@ -11,6 +11,7 @@ export {
   useMobileAppQuery,
   useCreateMobileAppMutation,
   useDeleteMobileAppMutation,
+  useUpdateMobileAppMutation,
   MOBILE_APPS_QUERY_KEY,
 } from './mobile-app';
 export {
@@ -31,4 +32,12 @@ export {
   useDeleteChannelMutation,
   CHANNELS_QUERY_KEY,
 } from './channels';
+export {
+  useChangelogsQuery,
+  useChangelogQuery,
+  useCreateChangelogMutation,
+  useUpdateChangelogMutation,
+  useDeleteChangelogMutation,
+  CHANGELOG_QUERY_KEY,
+} from './changelog';
 

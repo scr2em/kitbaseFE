@@ -1,0 +1,160 @@
+import { Button, Paper, Alert, Loader } from '@mantine/core';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
+import { useParams, useNavigate } from 'react-router';
+import { notifications } from '@mantine/notifications';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { changelogSchema, type ChangelogFormData } from '../model/changelog-schema';
+import { ControlledTextInput } from '../../../shared/controlled-form-fields';
+import { TipTapEditor } from '../../../shared/components/TipTapEditor';
+import { useCreateChangelogMutation } from '../../../shared/api/queries/changelog';
+import { useMobileAppQuery } from '../../../shared/api/queries';
+import { useShowBackendError } from '../../../shared/hooks';
+
+export function CreateChangelogPage() {
+  const { t } = useTranslation();
+  const { bundleId } = useParams<{ bundleId: string }>();
+  const navigate = useNavigate();
+  const { showError } = useShowBackendError();
+  const createChangelogMutation = useCreateChangelogMutation();
+  
+  const { data: app, isLoading: isLoadingApp, isError: isAppError } = useMobileAppQuery(bundleId || '');
+
+  const form = useForm<ChangelogFormData>({
+    resolver: zodResolver(changelogSchema),
+    defaultValues: {
+      version: '',
+      markdown: '',
+    },
+  });
+
+  const handleSubmit = async (data: ChangelogFormData) => {
+    try {
+      await createChangelogMutation.mutateAsync({
+        bundleId: bundleId || '',
+        version: data.version,
+        markdown: data.markdown,
+      });
+
+      notifications.show({
+        title: t('common.success'),
+        message: t('apps.detail.changelog.create.success_message'),
+        color: 'green',
+      });
+
+      navigate(`/apps/${bundleId}/changelog`);
+    } catch (error) {
+      showError(error);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(`/apps/${bundleId}/changelog`);
+  };
+
+  if (isLoadingApp) {
+    return (
+      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
+        <Loader size="lg" />
+      </div>
+    );
+  }
+
+  if (isAppError || !app) {
+    return (
+      <Alert
+        icon={<AlertCircle size={16} />}
+        title={t('common.error')}
+        color="red"
+      >
+        {t('apps.detail.error_loading')}
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="subtle"
+              size="sm"
+              leftSection={<ArrowLeft size={16} />}
+              onClick={handleCancel}
+            >
+              {t('apps.detail.changelog.create.back_button')}
+            </Button>
+            <div>
+              <h2 className="text-2xl font-semibold">
+                {t('apps.detail.changelog.create.page_title')}
+              </h2>
+              <p className="text-sm text-gray-500">{app.name}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <Paper withBorder p="xl">
+          <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <div className="flex flex-col gap-6">
+              <ControlledTextInput
+                control={form.control}
+                name="version"
+                label={t('apps.detail.changelog.create.version_label')}
+                placeholder={t('apps.detail.changelog.create.version_placeholder')}
+                description={t('apps.detail.changelog.create.version_description')}
+                required
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('apps.detail.changelog.create.markdown_label')} <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  {t('apps.detail.changelog.create.markdown_description')}
+                </p>
+                <Controller
+                  control={form.control}
+                  name="markdown"
+                  render={({ field, fieldState }) => (
+                    <div>
+                      <TipTapEditor
+                        content={field.value}
+                        onChange={field.onChange}
+                        minHeight="400px"
+                      />
+                      {fieldState.error && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {t(fieldState.error.message || '')}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                >
+                  {t('apps.detail.changelog.create.cancel_button')}
+                </Button>
+                <Button
+                  type="submit"
+                  loading={createChangelogMutation.isPending}
+                >
+                  {t('apps.detail.changelog.create.submit_button')}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Paper>
+      </div>
+    </div>
+  );
+}
+
