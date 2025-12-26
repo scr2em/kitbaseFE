@@ -125,6 +125,7 @@
       "subdomain_label": "Subdomain",
       "subdomain_placeholder": "Enter subdomain (e.g., mycompany)",
       "subdomain_help": "This will be used for your organization's URL: mycompany.kitbase.app",
+      "subdomain_help_prefix": "Your organization's URL will be:",
       "description_label": "Description (Optional)",
       "description_placeholder": "Tell us about your organization",
       "submit_button": "Create Organization",

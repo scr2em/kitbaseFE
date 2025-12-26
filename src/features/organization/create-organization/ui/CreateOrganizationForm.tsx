@@ -15,9 +15,12 @@ export function CreateOrganizationForm() {
   const {
     control,
     handleSubmit,
+    watch,
   } = useForm<CreateOrganizationFormData>({
     resolver: zodResolver(createOrganizationSchema),
   });
+
+  const subdomain = watch('subdomain');
 
   const onSubmit = async (data: CreateOrganizationFormData) => {
     try {
@@ -64,7 +67,10 @@ export function CreateOrganizationForm() {
         />
         
         <p className="text-sm text-gray-500">
-          {t('organization.create.subdomain_help')}
+          {t('organization.create.subdomain_help_prefix')}{' '}
+          <span className="font-medium text-gray-700">
+            {subdomain || 'yourcompany'}.{import.meta.env.VITE_APP_DOMAIN}
+          </span>
         </p>
 
         <Button
