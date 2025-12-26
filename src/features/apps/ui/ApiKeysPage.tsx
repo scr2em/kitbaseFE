@@ -38,7 +38,6 @@ export function ApiKeysPage() {
 
   const apiKeys = data?.data || [];
   const totalPages = data?.totalPages || 0;
-  const totalElements = data?.totalElements || 0;
 
   const handleCreateKey = async (name: string) => {
     try {
@@ -136,15 +135,6 @@ export function ApiKeysPage() {
             <p className="text-sm text-gray-500">
               {t('apps.detail.api_keys.subtitle')}
             </p>
-            {totalElements > 0 && (
-              <p className="text-xs text-gray-500 mt-2">
-                {t('apps.detail.api_keys.showing_count', {
-                  from: (currentPage - 1) * pageSize + 1,
-                  to: Math.min(currentPage * pageSize, totalElements),
-                  total: totalElements,
-                })}
-              </p>
-            )}
           </div>
           <Button
             leftSection={<Key size={16} />}

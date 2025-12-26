@@ -39,7 +39,6 @@ export function ChangelogPage() {
 
   const changelogs = data?.data || [];
   const totalPages = data?.totalPages || 0;
-  const totalElements = data?.totalElements || 0;
 
   const handleDelete = (changelog: Changelog) => {
     modals.openConfirmModal({
@@ -117,15 +116,6 @@ export function ChangelogPage() {
             <p className="text-sm text-gray-500">
               {t('apps.detail.changelog.subtitle')}
             </p>
-            {totalElements > 0 && (
-              <p className="text-xs text-gray-500 mt-2">
-                {t('apps.detail.changelog.showing_count', {
-                  from: (currentPage - 1) * pageSize + 1,
-                  to: Math.min(currentPage * pageSize, totalElements),
-                  total: totalElements,
-                })}
-              </p>
-            )}
           </div>
           <Button
             leftSection={<FileText size={16} />}

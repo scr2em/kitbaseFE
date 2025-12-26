@@ -2,12 +2,17 @@ import {
   Loader,
   Alert,
   Badge,
-  Button,
-  NavLink,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation, Outlet } from 'react-router';
-import { AlertCircle, Package, ArrowLeft, Hammer, Key, FileText } from 'lucide-react';
+import { 
+  AlertCircle, 
+  Package, 
+  ArrowLeft, 
+  Hammer, 
+  Key, 
+  FileText,
+} from 'lucide-react';
 import { useMobileAppQuery } from '../../../shared/api/queries';
 
 export function AppDetailPage() {
@@ -28,11 +33,6 @@ export function AppDetailPage() {
       path: `/apps/${bundleId}/builds`,
       icon: <Hammer size={18} />,
     },
-    // {
-    //   label: t('apps.detail.nav.access'),
-    //   path: `/apps/${bundleId}/access`,
-    //   icon: <Lock size={18} />,
-    // },
     {
       label: t('apps.detail.nav.changelog'),
       path: `/apps/${bundleId}/changelog`,
@@ -68,56 +68,71 @@ export function AppDetailPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        {/* Header with Back Button */}
-        <div className="flex justify-between items-center">
-          <div className="flex gap-3 items-center">
-            <Package size={24} strokeWidth={2} />
-            <div>
-              <div className="flex gap-3 items-center">
-                <h2 className="text-2xl font-semibold">{app.name}</h2>
-                <Badge variant="light" color="blue" size="sm">
-                  {app.bundleId}
-                </Badge>
-              </div>
-            </div>
-          </div>
-          <Button
-            variant="subtle"
-            size="sm"
-            leftSection={<ArrowLeft size={16} />}
+    <div className="flex flex-col gap-4">
+      {/* Simple Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => navigate('/apps')}
+            className="p-1.5 -ml-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           >
-            {t('apps.detail.back_to_apps')}
-          </Button>
+            <ArrowLeft size={18} />
+          </button>
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+            <Package size={18} className="text-white" strokeWidth={2} />
+          </div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-slate-900">{app.name}</h1>
+            <Badge variant="light" color="gray" size="sm" className="font-mono">
+              {app.bundleId}
+            </Badge>
+          </div>
         </div>
+      </div>
 
-        {/* Main Content with Side Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <div className="md:col-span-3 lg:col-span-2">
-            <div className="flex flex-col gap-2">
-              {navigationItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  label={item.label}
-                  leftSection={item.icon}
-                  active={location.pathname === item.path}
-                  onClick={() => navigate(item.path)}
-                  styles={{
-                    root: {
-                      borderRadius: 'var(--mantine-radius-md)',
-                    },
-                  }}
-                />
-              ))}
+      {/* Main Content with Side Navigation - Intercom Style */}
+      <div className="flex flex-col lg:flex-row gap-0 flex-1 -mx-6 -mb-6">
+        {/* Side Navigation */}
+        <aside className="lg:w-56 xl:w-64 shrink-0 bg-slate-50 border-r border-slate-200 min-h-[calc(100vh-180px)]">
+          <nav className="sticky top-4 py-4">
+            <div className="px-3 mb-2">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">
+                {t('navigation.settings')}
+              </span>
             </div>
-          </div>
-          
-          <div className="md:col-span-9 lg:col-span-10">
-            <Outlet />
-          </div>
-        </div>
+            <div className="flex flex-col gap-0.5 px-3">
+              {navigationItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`
+                      relative flex items-center gap-3 px-3 py-2.5 text-left transition-all w-full rounded-md
+                      ${isActive 
+                        ? 'bg-white text-slate-900 font-medium' 
+                        : 'text-slate-600 hover:bg-white/60 hover:text-slate-900'
+                      }
+                    `}
+                  >
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full" />
+                    )}
+                    <span className={`transition-colors ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-500'}`}>
+                      {item.icon}
+                    </span>
+                    <span className="text-sm">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        </aside>
+        
+        {/* Content Area */}
+        <main className="flex-1 px-6 py-4 min-w-0">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

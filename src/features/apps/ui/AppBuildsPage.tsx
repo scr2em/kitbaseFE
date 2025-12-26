@@ -35,7 +35,6 @@ export function AppBuildsPage() {
 
   const builds = data?.data || [];
   const totalPages = data?.totalPages || 0;
-  const totalElements = data?.totalElements || 0;
 
   const handleDeleteBuild = (buildId: string) => {
     modals.openConfirmModal({
@@ -125,15 +124,6 @@ export function AppBuildsPage() {
           <p className="text-sm text-gray-500">
             {t('apps.detail.builds.subtitle')}
           </p>
-          {totalElements > 0 && (
-            <p className="text-xs text-gray-500 mt-2">
-              {t('apps.detail.builds.showing_count', {
-                from: (currentPage - 1) * pageSize + 1,
-                to: Math.min(currentPage * pageSize, totalElements),
-                total: totalElements,
-              })}
-            </p>
-          )}
         </div>
 
         {!hasBuilds ? (
