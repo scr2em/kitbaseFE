@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { changelogSchema, type ChangelogFormData } from '../model/changelog-schema';
-import { ControlledTextInput } from '../../../shared/controlled-form-fields';
+import { ControlledTextInput, ControlledCheckbox } from '../../../shared/controlled-form-fields';
 import { TipTapEditor } from '../../../shared/components/TipTapEditor';
 import { useUpdateChangelogMutation, useChangelogQuery } from '../../../shared/api/queries/changelog';
 import { useMobileAppQuery } from '../../../shared/api/queries';
@@ -30,6 +30,7 @@ export function EditChangelogPage() {
     values: changelog ? {
       version: changelog.version,
       markdown: changelog.markdown,
+      is_published: changelog.is_published,
     } : undefined,
   });
 
@@ -40,6 +41,7 @@ export function EditChangelogPage() {
         id: changelogId || '',
         version: data.version,
         markdown: data.markdown,
+        is_published: data.is_published,
       });
 
       notifications.show({
@@ -127,7 +129,8 @@ export function EditChangelogPage() {
                   render={({ field, fieldState }) => (
                     <div>
                       <TipTapEditor
-                        content={field.value}
+                        key={changelog.id}
+                        content={field.value || changelog.markdown}
                         onChange={field.onChange}
                         minHeight="400px"
                       />
@@ -141,7 +144,14 @@ export function EditChangelogPage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <ControlledCheckbox
+                control={form.control}
+                name="is_published"
+                label={t('apps.detail.changelog.edit.published_label')}
+                description={t('apps.detail.changelog.edit.published_description')}
+              />
+
+              <div className="flex justify-end gap-3 pt-4 ">
                 <Button
                   variant="outline"
                   onClick={handleCancel}

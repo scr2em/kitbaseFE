@@ -1,23 +1,46 @@
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
-import Youtube from '@tiptap/extension-youtube';
-import Link from '@tiptap/extension-link';
-import { ActionIcon, Tooltip } from '@mantine/core';
+import { StarterKit } from '@tiptap/starter-kit';
+import { Image } from '@tiptap/extension-image';
+import { Youtube } from '@tiptap/extension-youtube';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { TaskList } from '@tiptap/extension-task-list';
+import { TaskItem } from '@tiptap/extension-task-item';
+import { Placeholder } from '@tiptap/extension-placeholder';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Subscript } from '@tiptap/extension-subscript';
+import { Superscript } from '@tiptap/extension-superscript';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
+import { ActionIcon, Tooltip, Menu, ColorSwatch } from '@mantine/core';
 import {
   Bold,
   Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Code,
   List,
   ListOrdered,
+  ListChecks,
   Heading1,
   Heading2,
   Heading3,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Quote,
+  Minus,
   Undo,
   Redo,
-  Code,
   ImageIcon,
   Youtube as YoutubeIcon,
   Link as LinkIcon,
+  Unlink,
+  Highlighter,
+  Subscript as SubscriptIcon,
+  Superscript as SuperscriptIcon,
+  Palette,
+  RemoveFormatting,
 } from 'lucide-react';
 
 interface TipTapEditorProps {
@@ -27,13 +50,30 @@ interface TipTapEditorProps {
   minHeight?: string;
 }
 
-export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapEditorProps) {
+const TEXT_COLORS = [
+  '#000000', '#374151', '#DC2626', '#EA580C', '#D97706', 
+  '#65A30D', '#16A34A', '#0D9488', '#0284C7', '#2563EB',
+  '#7C3AED', '#C026D3', '#DB2777', '#64748B',
+];
+
+const HIGHLIGHT_COLORS = [
+  '#FEF08A', '#FDE68A', '#FED7AA', '#FECACA', '#E9D5FF',
+  '#BFDBFE', '#A7F3D0', '#99F6E4', '#E2E8F0',
+];
+
+export function TipTapEditor({ content, onChange, placeholder = 'Write something...', minHeight = '200px' }: TipTapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
       Image.configure({
+        inline: false,
+        allowBase64: true,
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-md',
+          class: 'rounded-md max-w-full',
         },
       }),
       Youtube.configure({
@@ -43,12 +83,23 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
         width: 640,
         height: 360,
       }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-500 underline',
-        },
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
       }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      Placeholder.configure({
+        placeholder,
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Subscript,
+      Superscript,
+      TextStyle,
+      Color,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -80,13 +131,11 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
     }
   };
 
-  const addLink = () => {
+  const setLink = () => {
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('Enter URL:', previousUrl);
     
-    if (url === null) {
-      return;
-    }
+    if (url === null) return;
 
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
@@ -99,7 +148,35 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
   return (
     <div className="border border-gray-300 rounded-md overflow-hidden">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-gray-50">
+      <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-gray-200 bg-gray-50">
+        {/* Undo / Redo */}
+        <Tooltip label="Undo">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+          >
+            <Undo size={16} />
+          </ActionIcon>
+        </Tooltip>
+        
+        <Tooltip label="Redo">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+          >
+            <Redo size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Text Formatting */}
         <Tooltip label="Bold">
           <ActionIcon
             variant={editor.isActive('bold') ? 'filled' : 'subtle'}
@@ -121,6 +198,28 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
             <Italic size={16} />
           </ActionIcon>
         </Tooltip>
+
+        <Tooltip label="Underline">
+          <ActionIcon
+            variant={editor.isActive('underline') ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+          >
+            <UnderlineIcon size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Strikethrough">
+          <ActionIcon
+            variant={editor.isActive('strike') ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+          >
+            <Strikethrough size={16} />
+          </ActionIcon>
+        </Tooltip>
         
         <Tooltip label="Code">
           <ActionIcon
@@ -135,6 +234,102 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
+        {/* Text Color */}
+        <Menu shadow="md" width={200}>
+          <Menu.Target>
+            <Tooltip label="Text Color">
+              <ActionIcon variant="subtle" color="gray" size="sm">
+                <Palette size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <div className="p-2">
+              <p className="text-xs text-gray-500 mb-2">Text Color</p>
+              <div className="flex flex-wrap gap-1">
+                {TEXT_COLORS.map((color) => (
+                  <ColorSwatch
+                    key={color}
+                    color={color}
+                    size={20}
+                    className="cursor-pointer"
+                    onClick={() => editor.chain().focus().setColor(color).run()}
+                  />
+                ))}
+              </div>
+              <button
+                className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+                onClick={() => editor.chain().focus().unsetColor().run()}
+              >
+                Reset color
+              </button>
+            </div>
+          </Menu.Dropdown>
+        </Menu>
+
+        {/* Highlight */}
+        <Menu shadow="md" width={200}>
+          <Menu.Target>
+            <Tooltip label="Highlight">
+              <ActionIcon
+                variant={editor.isActive('highlight') ? 'filled' : 'subtle'}
+                color="gray"
+                size="sm"
+              >
+                <Highlighter size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <div className="p-2">
+              <p className="text-xs text-gray-500 mb-2">Highlight Color</p>
+              <div className="flex flex-wrap gap-1">
+                {HIGHLIGHT_COLORS.map((color) => (
+                  <ColorSwatch
+                    key={color}
+                    color={color}
+                    size={20}
+                    className="cursor-pointer"
+                    onClick={() => editor.chain().focus().toggleHighlight({ color }).run()}
+                  />
+                ))}
+              </div>
+              <button
+                className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+                onClick={() => editor.chain().focus().unsetHighlight().run()}
+              >
+                Remove highlight
+              </button>
+            </div>
+          </Menu.Dropdown>
+        </Menu>
+
+        {/* Subscript / Superscript */}
+        <Tooltip label="Subscript">
+          <ActionIcon
+            variant={editor.isActive('subscript') ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleSubscript().run()}
+          >
+            <SubscriptIcon size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Superscript">
+          <ActionIcon
+            variant={editor.isActive('superscript') ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleSuperscript().run()}
+          >
+            <SuperscriptIcon size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Headings */}
         <Tooltip label="Heading 1">
           <ActionIcon
             variant={editor.isActive('heading', { level: 1 }) ? 'filled' : 'subtle'}
@@ -170,6 +365,54 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
+        {/* Text Alignment */}
+        <Tooltip label="Align Left">
+          <ActionIcon
+            variant={editor.isActive({ textAlign: 'left' }) ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          >
+            <AlignLeft size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Align Center">
+          <ActionIcon
+            variant={editor.isActive({ textAlign: 'center' }) ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          >
+            <AlignCenter size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Align Right">
+          <ActionIcon
+            variant={editor.isActive({ textAlign: 'right' }) ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          >
+            <AlignRight size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Justify">
+          <ActionIcon
+            variant={editor.isActive({ textAlign: 'justify' }) ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+          >
+            <AlignJustify size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Lists */}
         <Tooltip label="Bullet List">
           <ActionIcon
             variant={editor.isActive('bulletList') ? 'filled' : 'subtle'}
@@ -192,16 +435,65 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
           </ActionIcon>
         </Tooltip>
 
+        <Tooltip label="Task List">
+          <ActionIcon
+            variant={editor.isActive('taskList') ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+          >
+            <ListChecks size={16} />
+          </ActionIcon>
+        </Tooltip>
+
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
+        {/* Block Elements */}
+        <Tooltip label="Blockquote">
+          <ActionIcon
+            variant={editor.isActive('blockquote') ? 'filled' : 'subtle'}
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          >
+            <Quote size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Horizontal Rule">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          >
+            <Minus size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Links & Media */}
         <Tooltip label="Add Link">
           <ActionIcon
             variant={editor.isActive('link') ? 'filled' : 'subtle'}
             color="gray"
             size="sm"
-            onClick={addLink}
+            onClick={setLink}
           >
             <LinkIcon size={16} />
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Remove Link">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            onClick={() => editor.chain().focus().unsetLink().run()}
+            disabled={!editor.isActive('link')}
+          >
+            <Unlink size={16} />
           </ActionIcon>
         </Tooltip>
 
@@ -229,27 +521,15 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
-        <Tooltip label="Undo">
+        {/* Clear Formatting */}
+        <Tooltip label="Clear Formatting">
           <ActionIcon
             variant="subtle"
             color="gray"
             size="sm"
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
+            onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
           >
-            <Undo size={16} />
-          </ActionIcon>
-        </Tooltip>
-        
-        <Tooltip label="Redo">
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-          >
-            <Redo size={16} />
+            <RemoveFormatting size={16} />
           </ActionIcon>
         </Tooltip>
       </div>
@@ -257,8 +537,10 @@ export function TipTapEditor({ content, onChange, minHeight = '200px' }: TipTapE
       {/* Editor Content */}
       <EditorContent 
         editor={editor} 
-        className="p-4 [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_h1]:text-2xl [&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h1]:mb-3 [&_.ProseMirror_h2]:text-xl [&_.ProseMirror_h2]:font-bold [&_.ProseMirror_h2]:mb-2 [&_.ProseMirror_h3]:text-lg [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_h3]:mb-2 [&_.ProseMirror_p]:mb-3 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ul]:mb-3 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_ol]:mb-3 [&_.ProseMirror_code]:bg-gray-100 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-sm [&_.ProseMirror_img]:my-4 [&_.ProseMirror_iframe]:my-4"
+        className="p-4"
       />
+
+     
     </div>
   );
 }

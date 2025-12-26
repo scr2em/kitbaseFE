@@ -5,6 +5,7 @@ interface Changelog {
   id: string;
   version: string;
   markdown: string;
+  is_published: boolean;
   bundleId: string;
   createdAt: string;
   updatedAt: string;
@@ -80,7 +81,7 @@ export const changelogHandlers = [
     await delay(400);
     
     const { bundleId } = params;
-    const body = await request.json() as { version: string; markdown: string };
+    const body = await request.json() as { version: string; markdown: string; is_published?: boolean };
     
     // Check for duplicate version
     if (versionExistsForApp(bundleId as string, body.version)) {
@@ -95,6 +96,7 @@ export const changelogHandlers = [
       id: generateId(),
       version: body.version,
       markdown: body.markdown,
+      is_published: body.is_published ?? false,
       bundleId: bundleId as string,
       createdAt: now,
       updatedAt: now,
@@ -110,7 +112,7 @@ export const changelogHandlers = [
     await delay(400);
     
     const { bundleId, id } = params;
-    const body = await request.json() as { version: string; markdown: string };
+    const body = await request.json() as { version: string; markdown: string; is_published?: boolean };
     
     const existing = changelogs.get(id as string);
     if (!existing) {
@@ -132,6 +134,7 @@ export const changelogHandlers = [
       ...existing,
       version: body.version,
       markdown: body.markdown,
+      is_published: body.is_published ?? existing.is_published,
       updatedAt: new Date().toISOString(),
     };
     

@@ -7,6 +7,7 @@ import {
   Loader,
   Paper,
   Pagination,
+  Badge,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router';
@@ -155,6 +156,7 @@ export function ChangelogPage() {
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>{t('apps.detail.changelog.table.version')}</Table.Th>
+                    <Table.Th>{t('apps.detail.changelog.table.status')}</Table.Th>
                     <Table.Th>{t('apps.detail.changelog.table.updated_at')}</Table.Th>
                     <Table.Th>{t('apps.detail.changelog.table.actions')}</Table.Th>
                   </Table.Tr>
@@ -164,6 +166,17 @@ export function ChangelogPage() {
                     <Table.Tr key={changelog.id}>
                       <Table.Td>
                         <p className="font-mono font-medium">{changelog.version}</p>
+                      </Table.Td>
+                      <Table.Td>
+                        <Badge 
+                          color={changelog.is_published ? 'green' : 'gray'} 
+                          variant="light"
+                          size="sm"
+                        >
+                          {changelog.is_published 
+                            ? t('apps.detail.changelog.status.published') 
+                            : t('apps.detail.changelog.status.draft')}
+                        </Badge>
                       </Table.Td>
                       <Table.Td>
                         <p className="text-sm">{formatDate(changelog.updatedAt)}</p>

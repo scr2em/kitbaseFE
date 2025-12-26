@@ -6,6 +6,7 @@ export const changelogSchema = z.object({
     .min(1, 'validation.version_required')
     .regex(/^\d+\.\d+\.\d+$/, 'validation.version_format'),
   markdown: z.string().min(1, 'validation.markdown_required'),
+  is_published: z.boolean(),
 });
 
 export type ChangelogFormData = z.infer<typeof changelogSchema>;
@@ -14,6 +15,7 @@ export interface Changelog {
   id: string;
   version: string;
   markdown: string;
+  is_published: boolean;
   bundleId: string;
   createdAt: string;
   updatedAt: string;

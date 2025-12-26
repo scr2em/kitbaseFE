@@ -40,14 +40,16 @@ export function useCreateChangelogMutation() {
       bundleId,
       version,
       markdown,
+      is_published,
     }: {
       bundleId: string;
       version: string;
       markdown: string;
+      is_published: boolean;
     }) => {
       const response = await axios.post<Changelog>(
         `/api/mobile-apps/${bundleId}/changelogs`,
-        { version, markdown }
+        { version, markdown, is_published }
       );
       return response.data;
     },
@@ -68,15 +70,17 @@ export function useUpdateChangelogMutation() {
       id,
       version,
       markdown,
+      is_published,
     }: {
       bundleId: string;
       id: string;
       version: string;
       markdown: string;
+      is_published: boolean;
     }) => {
       const response = await axios.put<Changelog>(
         `/api/mobile-apps/${bundleId}/changelogs/${id}`,
-        { version, markdown }
+        { version, markdown, is_published }
       );
       return response.data;
     },

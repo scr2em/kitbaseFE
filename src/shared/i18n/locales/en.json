@@ -509,10 +509,15 @@
         "showing_count": "Showing {{from}}-{{to}} of {{total}} changelogs",
         "table": {
           "version": "Version",
+          "status": "Status",
           "content": "Content",
           "created_at": "Created",
           "updated_at": "Updated",
           "actions": "Actions"
+        },
+        "status": {
+          "published": "Published",
+          "draft": "Draft"
         },
         "create": {
           "page_title": "Create Changelog",
@@ -523,6 +528,8 @@
           "markdown_label": "Content",
           "markdown_placeholder": "Write your changelog content...",
           "markdown_description": "Describe what's new, fixed, or changed in this version",
+          "published_label": "Publish changelog",
+          "published_description": "When published, this changelog will be visible to users",
           "submit_button": "Create Changelog",
           "cancel_button": "Cancel",
           "success_message": "Changelog created successfully"
@@ -536,6 +543,8 @@
           "markdown_description": "Describe what's new, fixed, or changed in this version",
           "markdown_label": "Content",
           "markdown_placeholder": "Write your changelog content...",
+          "published_label": "Publish changelog",
+          "published_description": "When published, this changelog will be visible to users",
           "submit_button": "Update Changelog",
           "cancel_button": "Cancel",
           "success_message": "Changelog updated successfully",

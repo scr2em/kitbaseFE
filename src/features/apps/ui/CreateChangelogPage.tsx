@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { changelogSchema, type ChangelogFormData } from '../model/changelog-schema';
-import { ControlledTextInput } from '../../../shared/controlled-form-fields';
+import { ControlledTextInput, ControlledCheckbox } from '../../../shared/controlled-form-fields';
 import { TipTapEditor } from '../../../shared/components/TipTapEditor';
 import { useCreateChangelogMutation } from '../../../shared/api/queries/changelog';
 import { useMobileAppQuery } from '../../../shared/api/queries';
@@ -26,6 +26,7 @@ export function CreateChangelogPage() {
     defaultValues: {
       version: '',
       markdown: '',
+      is_published: false,
     },
   });
 
@@ -35,6 +36,7 @@ export function CreateChangelogPage() {
         bundleId: bundleId || '',
         version: data.version,
         markdown: data.markdown,
+        is_published: data.is_published,
       });
 
       notifications.show({
@@ -136,7 +138,14 @@ export function CreateChangelogPage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <ControlledCheckbox
+                control={form.control}
+                name="is_published"
+                label={t('apps.detail.changelog.create.published_label')}
+                description={t('apps.detail.changelog.create.published_description')}
+              />
+
+              <div className="flex justify-end gap-3 pt-4 ">
                 <Button
                   variant="outline"
                   onClick={handleCancel}
