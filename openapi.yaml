@@ -1400,61 +1400,57 @@ paths:
                     email: "user@example.com"
                 timestamp: "2025-01-15T10:30:00.123Z"
 
-  /auth/signup/resend:
-    post:
-      operationId: resendSignupVerification
-      summary: Resend verification email
-      description: |
-        Invalidates any existing signup tokens for the email and sends a new verification email.
-        Always generates a new token, even if an old one exists.
-      tags:
-        - Authentication
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SignupResendRequest'
-      responses:
-        '201':
-          description: Verification email resent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SignupResendResponse'
-              example:
-                message: "Verification email sent"
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '409':
-          description: Email already registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error:
-                  code: "AUTH_002"
-                  message: "Email already registered"
-                  details:
-                    email: "user@example.com"
-                timestamp: "2025-01-15T10:30:00.123Z"
-
   /auth/signup/complete:
     post:
       operationId: completeSignup
-      summary: Complete signup with verification token
+      summary: Complete signup with verification token or invitation
       description: |
-        Completes the signup process by verifying the token and creating the user account.
-        Automatically logs in the user and returns JWT tokens.
+        Completes the signup process in two possible ways:
+
+        **Regular Signup (invitation=false or omitted):**
+        - Verifies the signup token sent via email
+        - Creates user account with 'user' role
+        - Automatically logs in the user and returns JWT tokens
+
+        **Invitation-Based Signup (invitation=true):**
+        - Verifies the invitation token sent via email
+        - Creates user account with 'user' role
+        - Automatically adds user to the organization with the role specified in the invitation
+        - Automatically logs in the user and returns JWT tokens
+        - Email is pre-verified via the invitation (no separate verification needed)
       tags:
         - Authentication
+      parameters:
+        - name: invitation
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: |
+            Set to true for invitation-based signup. When true, the token in the request body
+            is treated as an invitation token rather than a signup verification token.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SignupCompleteRequest'
+            examples:
+              regularSignup:
+                summary: Regular signup (email verification token)
+                value:
+                  token: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+                  password: "SecurePass123!"
+                  firstName: "John"
+                  lastName: "Doe"
+              invitationSignup:
+                summary: Invitation-based signup (invitation token)
+                value:
+                  token: "inv_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+                  password: "SecurePass123!"
+                  firstName: "Jane"
+                  lastName: "Smith"
       responses:
         '201':
           description: User account created successfully and auto-logged in
@@ -1463,26 +1459,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
         '400':
-          description: Invalid request (invalid/expired/used token or weak password)
+          description: Invalid request (invalid/expired token or weak password)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                invalidToken:
-                  summary: Invalid or expired token
+                invalidSignupToken:
+                  summary: Invalid or expired signup token
                   value:
                     error:
                       code: "AUTH_010"
                       message: "Invalid or expired signup token"
                       details: {}
                     timestamp: "2025-01-15T10:30:00.123Z"
-                usedToken:
-                  summary: Token already used
+                invalidInvitationToken:
+                  summary: Invalid or expired invitation token
                   value:
                     error:
-                      code: "AUTH_011"
-                      message: "Signup token has already been used"
+                      code: "INV_001"
+                      message: "Invalid or expired invitation token"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                expiredInvitation:
+                  summary: Invitation has expired
+                  value:
+                    error:
+                      code: "INV_002"
+                      message: "This invitation has expired"
+                      details: {}
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                alreadyAccepted:
+                  summary: Invitation already accepted
+                  value:
+                    error:
+                      code: "INV_003"
+                      message: "This invitation has already been accepted"
                       details: {}
                     timestamp: "2025-01-15T10:30:00.123Z"
                 weakPassword:
@@ -1499,13 +1511,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error:
-                  code: "AUTH_002"
-                  message: "Email already registered"
-                  details:
-                    email: "user@example.com"
-                timestamp: "2025-01-15T10:30:00.123Z"
+              examples:
+                emailExists:
+                  summary: Email already registered
+                  value:
+                    error:
+                      code: "AUTH_002"
+                      message: "Email already registered"
+                      details:
+                        email: "user@example.com"
+                    timestamp: "2025-01-15T10:30:00.123Z"
+                emailExistsInvitation:
+                  summary: Email already registered (invitation flow)
+                  value:
+                    error:
+                      code: "AUTH_002"
+                      message: "An account with this email already exists. Please log in to accept the invitation."
+                      details:
+                        email: "user@example.com"
+                    timestamp: "2025-01-15T10:30:00.123Z"
 
   /organizations:
     get:

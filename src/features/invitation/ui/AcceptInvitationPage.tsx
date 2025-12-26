@@ -1,12 +1,15 @@
-import { Paper, Button, Alert } from '@mantine/core';
+import { Paper, Button, Alert, Divider } from '@mantine/core';
 import { useSearchParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Mail, AlertCircle, XCircle, CheckCircle } from 'lucide-react';
-import { useAcceptInvitationMutation, useCancelInvitationMutation } from '../../../shared/api/queries/invitation';
+import { Mail, AlertCircle, XCircle, CheckCircle, UserPlus, LogIn } from 'lucide-react';
+import { useAcceptInvitationByTokenMutation, useRejectInvitationByTokenMutation } from '../../../shared/api/queries/invitation';
 import { useShowBackendError } from '../../../shared/hooks/useShowBackendError';
 import { notifications } from '@mantine/notifications';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../../shared/lib/auth/AuthContext';
+import { InvitationSignupForm } from './InvitationSignupForm';
+
+type ViewState = 'options' | 'signup';
 
 export function AcceptInvitationPage() {
   const { t } = useTranslation();
@@ -15,23 +18,15 @@ export function AcceptInvitationPage() {
   const showBackendError = useShowBackendError();
   const { isAuthenticated } = useAuth();
   const [isProcessed, setIsProcessed] = useState(false);
+  const [viewState, setViewState] = useState<ViewState>('options');
 
-  // Note: The API now uses invitationId instead of token
-  // This may need to be updated based on how invitations are sent
-  const invitationId = searchParams.get('id') || searchParams.get('token') || '';
+  const token = searchParams.get('token') || '';
   
-  const acceptMutation = useAcceptInvitationMutation();
-  const cancelMutation = useCancelInvitationMutation();
-
-  // Redirect to signup if not authenticated
-  useEffect(() => {
-    if (invitationId && !isAuthenticated) {
-      navigate(`/signup?invitationId=${invitationId}`, { replace: true });
-    }
-  }, [invitationId, isAuthenticated, navigate]);
+  const acceptMutation = useAcceptInvitationByTokenMutation();
+  const rejectMutation = useRejectInvitationByTokenMutation();
 
   const handleAccept = async () => {
-    if (!invitationId) {
+    if (!token) {
       notifications.show({
         title: t('common.error'),
         message: t('invitation.accept.invalid_invitation'),
@@ -41,7 +36,7 @@ export function AcceptInvitationPage() {
     }
 
     try {
-      await acceptMutation.mutateAsync(invitationId);
+      await acceptMutation.mutateAsync(token);
       notifications.show({
         title: t('common.success'),
         message: t('invitation.accept.success_message'),
@@ -58,7 +53,7 @@ export function AcceptInvitationPage() {
   };
 
   const handleReject = async () => {
-    if (!invitationId) {
+    if (!token) {
       notifications.show({
         title: t('common.error'),
         message: t('invitation.accept.invalid_invitation'),
@@ -68,7 +63,7 @@ export function AcceptInvitationPage() {
     }
 
     try {
-      await cancelMutation.mutateAsync(invitationId);
+      await rejectMutation.mutateAsync(token);
       notifications.show({
         title: t('common.success'),
         message: t('invitation.accept.reject_success_message'),
@@ -84,7 +79,26 @@ export function AcceptInvitationPage() {
     }
   };
 
-  if (!invitationId) {
+  const handleLoginRedirect = () => {
+    const returnUrl = `/invitations/accept?token=${token}`;
+    navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+  };
+
+  const handleSignupSuccess = () => {
+    notifications.show({
+      title: t('common.success'),
+      message: t('invitation.accept.success_message'),
+      color: 'green',
+      icon: <CheckCircle size={18} />,
+    });
+    setIsProcessed(true);
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 2000);
+  };
+
+  // No token provided - show error
+  if (!token) {
     return (
       <div className="max-w-md mx-auto pt-20 px-4">
         <Paper shadow="md" p="xl" radius="md" withBorder>
@@ -103,6 +117,7 @@ export function AcceptInvitationPage() {
     );
   }
 
+  // Invitation processed - show success and redirect
   if (isProcessed) {
     return (
       <div className="max-w-md mx-auto pt-20 px-4">
@@ -119,11 +134,79 @@ export function AcceptInvitationPage() {
     );
   }
 
-  // Don't render anything if not authenticated (will redirect)
-  if (!isAuthenticated) {
-    return null;
+  // Authenticated user - show accept/reject UI
+  if (isAuthenticated) {
+    return (
+      <div className="max-w-md mx-auto pt-20 px-4">
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2 items-center">
+              <Mail size={48} color="var(--mantine-color-blue-6)" />
+              <h2 className="text-2xl font-semibold">{t('invitation.accept.title')}</h2>
+              <p className="text-gray-500 text-center">
+                {t('invitation.accept.subtitle')}
+              </p>
+            </div>
+
+            <Alert color="blue" icon={<AlertCircle size={16} />}>
+              <p className="text-sm">
+                {t('invitation.accept.logged_in_note')}
+              </p>
+            </Alert>
+
+            <div className="flex justify-center gap-3 mt-4">
+              <Button
+                variant="subtle"
+                onClick={handleReject}
+                disabled={acceptMutation.isPending || rejectMutation.isPending}
+                loading={rejectMutation.isPending}
+                leftSection={<XCircle size={18} />}
+              >
+                {t('invitation.accept.reject_button')}
+              </Button>
+              <Button
+                onClick={handleAccept}
+                disabled={acceptMutation.isPending || rejectMutation.isPending}
+                loading={acceptMutation.isPending}
+                variant="gradient"
+                gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
+                leftSection={<CheckCircle size={18} />}
+              >
+                {t('invitation.accept.accept_button')}
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </div>
+    );
   }
 
+  // Unauthenticated user - show signup form
+  if (viewState === 'signup') {
+    return (
+      <div className="max-w-md mx-auto pt-20 px-4">
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2 items-center">
+              <UserPlus size={48} color="var(--mantine-color-blue-6)" />
+              <h2 className="text-2xl font-semibold">{t('invitation.signup.title')}</h2>
+              <p className="text-gray-500 text-center">
+                {t('invitation.signup.subtitle')}
+              </p>
+            </div>
+
+            <InvitationSignupForm 
+              token={token} 
+              onBack={() => setViewState('options')}
+              onSuccess={handleSignupSuccess}
+            />
+          </div>
+        </Paper>
+      </div>
+    );
+  }
+
+  // Unauthenticated user - show options (signup/login)
   return (
     <div className="max-w-md mx-auto pt-20 px-4">
       <Paper shadow="md" p="xl" radius="md" withBorder>
@@ -138,29 +221,28 @@ export function AcceptInvitationPage() {
 
           <Alert color="blue" icon={<AlertCircle size={16} />}>
             <p className="text-sm">
-              {t('invitation.accept.logged_in_note')}
+              {t('invitation.accept.auth_required_note')}
             </p>
           </Alert>
 
-          <div className="flex justify-center gap-3 mt-4">
+          <div className="flex flex-col gap-3">
             <Button
-              variant="subtle"
-              onClick={handleReject}
-              disabled={acceptMutation.isPending || cancelMutation.isPending}
-              loading={cancelMutation.isPending}
-              leftSection={<XCircle size={18} />}
+              onClick={() => setViewState('signup')}
+              size="md"
+              leftSection={<UserPlus size={18} />}
             >
-              {t('invitation.accept.reject_button')}
+              {t('invitation.accept.signup_button')}
             </Button>
+
+            <Divider label={t('invitation.accept.or_divider')} labelPosition="center" />
+
             <Button
-              onClick={handleAccept}
-              disabled={acceptMutation.isPending || cancelMutation.isPending}
-              loading={acceptMutation.isPending}
-              variant="gradient"
-              gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
-              leftSection={<CheckCircle size={18} />}
+              onClick={handleLoginRedirect}
+              variant="light"
+              size="md"
+              leftSection={<LogIn size={18} />}
             >
-              {t('invitation.accept.accept_button')}
+              {t('invitation.accept.login_button')}
             </Button>
           </div>
         </div>

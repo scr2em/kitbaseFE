@@ -7,13 +7,16 @@ import { Mail, Lock } from 'lucide-react';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLoginMutation } from '../../../../shared/api/queries/auth';
 import { useAuth } from '../../../../shared/lib/auth/AuthContext';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 export function LoginForm() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setIsAuthenticated } = useAuth();
   const loginMutation = useLoginMutation();
+
+  const returnUrl = searchParams.get('returnUrl');
 
   const {
     register,
@@ -32,6 +35,12 @@ export function LoginForm() {
         message: t('auth.login.title'),
         color: 'green',
       });
+      
+      // If returnUrl is provided, redirect there
+      if (returnUrl) {
+        navigate(returnUrl);
+        return;
+      }
       
       // Redirect to organization creation if user doesn't have one
       if (!response.user.organizations || response.user.organizations.length === 0) {

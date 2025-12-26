@@ -325,6 +325,10 @@
       "title": "You've Been Invited!",
       "subtitle": "You have been invited to join an organization",
       "logged_in_note": "Review the invitation details and accept to join the organization.",
+      "auth_required_note": "To accept this invitation, please sign up for a new account or log in to your existing account.",
+      "signup_button": "Create Account",
+      "login_button": "Log In to Existing Account",
+      "or_divider": "or",
       "organization": "Organization",
       "description": "Description",
       "role": "Role",
@@ -342,6 +346,13 @@
       "processed_title": "Invitation Processed",
       "redirecting_message": "Redirecting...",
       "invalid_invitation": "Invalid invitation link"
+    },
+    "signup": {
+      "title": "Create Your Account",
+      "subtitle": "Complete your registration to accept the invitation",
+      "back_button": "Back",
+      "submit_button": "Create Account & Join",
+      "success_message": "Account created and invitation accepted!"
     }
   },
   "apps": {

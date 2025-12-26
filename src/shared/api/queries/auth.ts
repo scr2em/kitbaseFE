@@ -37,12 +37,15 @@ export function useInitiateSignupMutation() {
   });
 }
 
-export function useCompleteSignupMutation() {
+export function useCompleteSignupMutation(isInvitation: boolean = false) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: SignupCompleteRequest) => {
-      const response = await apiClient.auth.completeSignup(data);
+      const response = await apiClient.auth.completeSignup(
+        data,
+        { invitation: isInvitation }
+      );
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {

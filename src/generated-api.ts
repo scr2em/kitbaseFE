@@ -177,7 +177,7 @@ export interface CreateOrganizationRequest {
   logoUrl?: string;
 }
 
-/** Request to update an organization */  
+/** Request to update an organization */
 export interface UpdateOrganizationRequest {
   /**
    * Organization name
@@ -1072,38 +1072,29 @@ export class Api<
       }),
 
     /**
-     * @description Invalidates any existing signup tokens for the email and sends a new verification email. Always generates a new token, even if an old one exists.
-     *
-     * @tags Authentication
-     * @name ResendSignupVerification
-     * @summary Resend verification email
-     * @request POST:/auth/signup/resend
-     */
-    resendSignupVerification: (
-      data: SignupResendRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<SignupResendResponse, ErrorResponse>({
-        path: `/auth/signup/resend`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Completes the signup process by verifying the token and creating the user account. Automatically logs in the user and returns JWT tokens.
+     * @description Completes the signup process in two possible ways: **Regular Signup (invitation=false or omitted):** - Verifies the signup token sent via email - Creates user account with 'user' role - Automatically logs in the user and returns JWT tokens **Invitation-Based Signup (invitation=true):** - Verifies the invitation token sent via email - Creates user account with 'user' role - Automatically adds user to the organization with the role specified in the invitation - Automatically logs in the user and returns JWT tokens - Email is pre-verified via the invitation (no separate verification needed)
      *
      * @tags Authentication
      * @name CompleteSignup
-     * @summary Complete signup with verification token
+     * @summary Complete signup with verification token or invitation
      * @request POST:/auth/signup/complete
      */
-    completeSignup: (data: SignupCompleteRequest, params: RequestParams = {}) =>
+    completeSignup: (
+      data: SignupCompleteRequest,
+      query?: {
+        /**
+         * Set to true for invitation-based signup. When true, the token in the request body
+         * is treated as an invitation token rather than a signup verification token.
+         * @default false
+         */
+        invitation?: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<AuthResponse, ErrorResponse>({
         path: `/auth/signup/complete`,
         method: "POST",
+        query: query,
         body: data,
         type: ContentType.Json,
         format: "json",

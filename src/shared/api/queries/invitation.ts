@@ -52,3 +52,21 @@ export function useRevokeInvitationMutation() {
   });
 }
 
+export function useAcceptInvitationByTokenMutation() {
+  return useMutation({
+    mutationFn: async (token: string) => {
+      const response = await apiClient.invitations.acceptInvitationByToken(token);
+      return response.data;
+    },
+  });
+}
+
+export function useRejectInvitationByTokenMutation() {
+  return useMutation({
+    mutationFn: async (token: string) => {
+      const response = await apiClient.invitations.rejectInvitationByToken(token);
+      return response.data;
+    },
+  });
+}
+
