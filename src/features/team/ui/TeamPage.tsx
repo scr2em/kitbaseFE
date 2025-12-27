@@ -9,14 +9,17 @@ import {
   ScrollArea,
   ActionIcon,
   Menu,
+  Modal,
+  Select,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, UserPlus, MoreVertical, Trash2, Building } from 'lucide-react';
+import { AlertCircle, UserPlus, MoreVertical, Trash2, Building, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
-import { useOrganizationMembersQuery, useRemoveMemberMutation } from '../../../shared/api/queries/organization';
+import { useOrganizationMembersQuery, useRemoveMemberMutation, useUpdateMemberRoleMutation } from '../../../shared/api/queries/organization';
+import { useRolesQuery } from '../../../shared/api/queries/role';
 import { InviteUserModal } from '../../invitation';
 import { useShowBackendError, usePermissions, useCurrentOrganization } from '../../../shared/hooks';
 import { useCurrentUserQuery } from '../../../shared/api/queries/user';
@@ -25,6 +28,14 @@ export function TeamPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [inviteModalOpened, setInviteModalOpened] = useState(false);
+  const [changeRoleModal, setChangeRoleModal] = useState<{
+    opened: boolean;
+    memberId: string;
+    memberName: string;
+    currentRoleId: string;
+  }>({ opened: false, memberId: '', memberName: '', currentRoleId: '' });
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();
   const { data: currentUser } = useCurrentUserQuery();
   const {
@@ -35,10 +46,12 @@ export function TeamPage() {
     isLoading,
     isError,
   } = useOrganizationMembersQuery();
+  const { data: roles } = useRolesQuery();
   
   const removeMemberMutation = useRemoveMemberMutation();
+  const updateMemberRoleMutation = useUpdateMemberRoleMutation();
   const { showError } = useShowBackendError();
-  const { canInviteMember, canRemoveMember } = usePermissions();
+  const { canInviteMember, canRemoveMember, canUpdateMemberRole } = usePermissions();
 
 
   const handleDeleteMember = (memberId: string, memberName: string) => {
@@ -64,6 +77,35 @@ export function TeamPage() {
         }
       },
     });
+  };
+
+  const handleOpenChangeRoleModal = (memberId: string, memberName: string, currentRoleId: string) => {
+    setSelectedRoleId(currentRoleId);
+    setChangeRoleModal({ opened: true, memberId, memberName, currentRoleId });
+  };
+
+  const handleCloseChangeRoleModal = () => {
+    setChangeRoleModal({ opened: false, memberId: '', memberName: '', currentRoleId: '' });
+    setSelectedRoleId(null);
+  };
+
+  const handleChangeRole = async () => {
+    if (!selectedRoleId || selectedRoleId === changeRoleModal.currentRoleId) return;
+    
+    try {
+      await updateMemberRoleMutation.mutateAsync({
+        membershipId: changeRoleModal.memberId,
+        roleId: selectedRoleId,
+      });
+      notifications.show({
+        title: t('common.success'),
+        message: t('team.change_role.success_message'),
+        color: 'green',
+      });
+      handleCloseChangeRoleModal();
+    } catch (error) {
+      showError(error);
+    }
   };
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -247,7 +289,7 @@ export function TeamPage() {
                       </p>
                     </Table.Td>
                     <Table.Td>
-                      {canRemoveMember && (
+                      {(canRemoveMember || canUpdateMemberRole) && (
                         <Menu shadow="md" width={200} position="bottom-end">
                           <Menu.Target>
                             <ActionIcon variant="subtle" color="gray">
@@ -255,14 +297,29 @@ export function TeamPage() {
                             </ActionIcon>
                           </Menu.Target>
                           <Menu.Dropdown>
-                            <Menu.Item
-                              color="red"
-                              leftSection={<Trash2 size={16} />}
-                              onClick={() => handleDeleteMember(member.id, `${member.user.firstName} ${member.user.lastName}`)}
-                              disabled={member.user.id === currentUser?.id}
-                            >
-                              {t('team.delete.menu_item')}
-                            </Menu.Item>
+                            {canUpdateMemberRole && (
+                              <Menu.Item
+                                leftSection={<Shield size={16} />}
+                                onClick={() => handleOpenChangeRoleModal(
+                                  member.id,
+                                  `${member.user.firstName} ${member.user.lastName}`,
+                                  member.role.id
+                                )}
+                                disabled={member.user.id === currentUser?.id}
+                              >
+                                {t('team.change_role.menu_item')}
+                              </Menu.Item>
+                            )}
+                            {canRemoveMember && (
+                              <Menu.Item
+                                color="red"
+                                leftSection={<Trash2 size={16} />}
+                                onClick={() => handleDeleteMember(member.id, `${member.user.firstName} ${member.user.lastName}`)}
+                                disabled={member.user.id === currentUser?.id}
+                              >
+                                {t('team.delete.menu_item')}
+                              </Menu.Item>
+                            )}
                           </Menu.Dropdown>
                         </Menu>
                       )}
@@ -297,6 +354,41 @@ export function TeamPage() {
         opened={inviteModalOpened}
         onClose={() => setInviteModalOpened(false)}
       />
+
+      <Modal
+        opened={changeRoleModal.opened}
+        onClose={handleCloseChangeRoleModal}
+        title={t('team.change_role.modal_title')}
+        centered
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-gray-600">
+            {t('team.change_role.description', { name: changeRoleModal.memberName })}
+          </p>
+          <Select
+            label={t('team.change_role.role_label')}
+            placeholder={t('team.change_role.role_placeholder')}
+            value={selectedRoleId}
+            onChange={setSelectedRoleId}
+            data={roles?.map((role) => ({
+              value: role.id,
+              label: role.name,
+            })) || []}
+          />
+          <div className="flex justify-end gap-3 mt-2">
+            <Button variant="subtle" onClick={handleCloseChangeRoleModal}>
+              {t('team.change_role.cancel_button')}
+            </Button>
+            <Button
+              onClick={handleChangeRole}
+              loading={updateMemberRoleMutation.isPending}
+              disabled={!selectedRoleId || selectedRoleId === changeRoleModal.currentRoleId}
+            >
+              {t('team.change_role.submit_button')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

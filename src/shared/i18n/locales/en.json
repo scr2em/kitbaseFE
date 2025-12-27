@@ -227,6 +227,16 @@
       "success_message": "Team member removed successfully",
       "menu_item": "Remove from team"
     },
+    "change_role": {
+      "menu_item": "Change role",
+      "modal_title": "Change Member Role",
+      "description": "Select a new role for {{name}}",
+      "role_label": "Role",
+      "role_placeholder": "Select a role",
+      "submit_button": "Update Role",
+      "cancel_button": "Cancel",
+      "success_message": "Member role updated successfully"
+    },
     "table": {
       "member": "Member",
       "email": "Email",

@@ -84,3 +84,18 @@ export function useRemoveMemberMutation() {
   });
 }
 
+export function useUpdateMemberRoleMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ membershipId, roleId }: { membershipId: string; roleId: string }) => {
+      const response = await apiClient.members.updateMemberRole(membershipId, { roleId });
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate members query to refetch the teams page
+      queryClient.invalidateQueries({ queryKey: ORGANIZATION_MEMBERS_QUERY_KEY });
+    },
+  });
+}
+
