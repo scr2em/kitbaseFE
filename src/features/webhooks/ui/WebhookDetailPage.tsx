@@ -26,13 +26,14 @@ import {
   useDeleteWebhookMutation,
   useTestWebhookMutation,
 } from '../../../shared/api/queries/webhooks';
-import { useShowBackendError } from '../../../shared/hooks';
+import { useShowBackendError, usePageTitle } from '../../../shared/hooks';
 import { updateWebhookSchema, webhookEventTypes, type UpdateWebhookFormData } from '../model/schema';
 import { ControlledTextInput } from '../../../shared/controlled-form-fields';
 import { WebhookDeliveriesSection } from './WebhookDeliveriesSection';
 
 export function WebhookDetailPage() {
   const { t } = useTranslation();
+  usePageTitle(t('webhooks.detail.page_title'));
   const { webhookId } = useParams<{ webhookId: string }>();
   const navigate = useNavigate();
 

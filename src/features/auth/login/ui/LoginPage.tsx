@@ -1,9 +1,11 @@
 import { Paper } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { usePageTitle } from '../../../../shared/hooks';
 import { LoginForm } from './LoginForm';
 
 export function LoginPage() {
   const { t } = useTranslation();
+  usePageTitle(t('auth.login.page_title'));
 
   return (
     <Paper withBorder shadow="xl" p="xl" radius="lg">

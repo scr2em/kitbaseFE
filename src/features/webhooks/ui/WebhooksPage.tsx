@@ -18,10 +18,11 @@ import {
   useWebhooksInfiniteQuery,
   useDeleteWebhookMutation,
 } from '../../../shared/api/queries/webhooks';
-import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 
 export function WebhooksPage() {
   const { t } = useTranslation();
+  usePageTitle(t('webhooks.page_title'));
   const navigate = useNavigate();
 
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();

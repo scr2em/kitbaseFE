@@ -16,12 +16,13 @@ import {
   useGetOrganizationQuery,
   useUpdateOrganizationMutation,
 } from '../../../../shared/api/queries/organization';
-import { useShowBackendError, usePermissions, useCurrentOrganization } from '../../../../shared/hooks';
+import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../../shared/hooks';
 import { updateOrganizationSchema, type UpdateOrganizationFormData } from '../model/schema';
 import { ControlledTextInput, ControlledTextArea } from '../../../../shared/controlled-form-fields';
 
 export function OrganizationPage() {
   const { t } = useTranslation();
+  usePageTitle(t('organization.view.page_title'));
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();

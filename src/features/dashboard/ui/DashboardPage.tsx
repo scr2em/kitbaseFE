@@ -16,11 +16,12 @@ import {
   Folder,
 } from 'lucide-react';
 import { useCurrentUserQuery } from '../../../shared/api/queries/user';
-import { useCurrentOrganization } from '../../../shared/hooks';
+import { useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 import { useNavigate } from 'react-router';
 
 export function DashboardPage() {
   const { t } = useTranslation();
+  usePageTitle(t('dashboard.page_title'));
   const { data: user, isLoading } = useCurrentUserQuery();
   const { currentOrganization, hasOrganizations } = useCurrentOrganization();
   const navigate = useNavigate();

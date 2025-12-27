@@ -19,13 +19,14 @@ import {
   useChannelsInfiniteQuery,
   useDeleteChannelMutation,
 } from '../../../shared/api/queries/channels';
-import { useShowBackendError, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 import { CreateChannelModal } from './CreateChannelModal';
 import { UpdateChannelModal } from './UpdateChannelModal';
 import type { ChannelResponse } from '../../../generated-api';
 
 export function ChannelsPage() {
   const { t } = useTranslation();
+  usePageTitle(t('channels.page_title'));
   const navigate = useNavigate();
   const [createModalOpened, setCreateModalOpened] = useState(false);
   const [updateModalData, setUpdateModalData] = useState<{

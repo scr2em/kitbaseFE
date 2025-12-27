@@ -21,11 +21,12 @@ import { modals } from '@mantine/modals';
 import { useOrganizationMembersQuery, useRemoveMemberMutation, useUpdateMemberRoleMutation } from '../../../shared/api/queries/organization';
 import { useRolesQuery } from '../../../shared/api/queries/role';
 import { InviteUserModal } from '../../invitation';
-import { useShowBackendError, usePermissions, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 import { useCurrentUserQuery } from '../../../shared/api/queries/user';
 
 export function TeamPage() {
   const { t } = useTranslation();
+  usePageTitle(t('team.page_title'));
   const navigate = useNavigate();
   const [inviteModalOpened, setInviteModalOpened] = useState(false);
   const [changeRoleModal, setChangeRoleModal] = useState<{

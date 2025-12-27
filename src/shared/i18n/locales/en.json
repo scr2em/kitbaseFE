@@ -1,6 +1,7 @@
 {
   "auth": {
     "login": {
+      "page_title": "Login",
       "title": "Welcome Back",
       "subtitle": "Sign in to your account",
       "email_label": "Email",
@@ -53,6 +54,7 @@
       }
     },
     "signup": {
+      "page_title": "Sign Up",
       "title": "Create Account",
       "subtitle": "Sign up to get started",
       "email_label": "Email",
@@ -95,6 +97,7 @@
     "logout": "Logout"
   },
   "dashboard": {
+    "page_title": "Dashboard",
     "title": "Dashboard",
     "welcome": "Welcome, {{name}}!",
     "welcome_subtitle": "Here's what's happening with your business today",
@@ -133,6 +136,7 @@
       "error_generic": "Failed to create organization. Please try again."
     },
     "view": {
+      "page_title": "Organization",
       "title": "Organization Settings",
       "subtitle": "View and manage your organization details",
       "name_label": "Organization Name",
@@ -214,6 +218,7 @@
     }
   },
   "team": {
+    "page_title": "Team",
     "title": "Team Members",
     "subtitle": "Manage your organization's team ({{count}} members)",
     "invite_member": "Invite Member",
@@ -383,6 +388,7 @@
     }
   },
   "apps": {
+    "page_title": "Apps",
     "title": "Mobile Applications",
     "subtitle": "Manage your mobile applications ({{count}} apps)",
     "create_button": "Create App",
@@ -584,6 +590,7 @@
     }
   },
   "channels": {
+    "page_title": "Channels",
     "title": "Channels",
     "subtitle": "Manage distribution channels ({{count}} channels)",
     "create_button": "Create Channel",
@@ -641,6 +648,7 @@
     }
   },
   "webhooks": {
+    "page_title": "Webhooks",
     "title": "Webhooks",
     "subtitle": "Manage webhook subscriptions ({{count}} webhooks)",
     "create_button": "Create Webhook",
@@ -703,6 +711,10 @@
       "submit_button": "Create Webhook",
       "cancel_button": "Cancel",
       "success_message": "Webhook created successfully"
+    },
+    "detail": {
+      "page_title": "Webhook Details",
+      "back_button": "Back to Webhooks"
     },
     "update": {
       "section_title": "Webhook Configuration",
@@ -774,6 +786,7 @@
     "days_ago": "{{count}}d ago"
   },
   "landing": {
+    "page_title": "Home",
     "hero": {
       "title": "Deploy Mobile Apps with Confidence",
       "subtitle": "Streamline your mobile app deployment process with powerful build management, channel distribution, and team collaboration tools.",

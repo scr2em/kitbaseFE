@@ -1,11 +1,13 @@
 import { Paper } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
+import { usePageTitle } from '../../../../shared/hooks';
 import { InitiateSignupForm } from './InitiateSignupForm';
 import { CompleteSignupForm } from './CompleteSignupForm';
 
 export function SignupPage() {
   const { t } = useTranslation();
+  usePageTitle(t('auth.signup.page_title'));
   const [searchParams] = useSearchParams();
   
   const token = searchParams.get('token');

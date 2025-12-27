@@ -20,9 +20,11 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useState } from 'react';
+import { usePageTitle } from '../../../shared/hooks';
 
 export function LandingPage() {
   const { t } = useTranslation();
+  usePageTitle(t('landing.page_title'));
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [opened, setOpened] = useState(false);
 

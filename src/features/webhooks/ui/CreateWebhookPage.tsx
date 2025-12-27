@@ -11,12 +11,13 @@ import { ArrowLeft, Webhook } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateWebhookMutation } from '../../../shared/api/queries/webhooks';
-import { useShowBackendError } from '../../../shared/hooks';
+import { useShowBackendError, usePageTitle } from '../../../shared/hooks';
 import { createWebhookSchema, webhookEventTypes, type CreateWebhookFormData } from '../model/schema';
 import { ControlledTextInput } from '../../../shared/controlled-form-fields';
 
 export function CreateWebhookPage() {
   const { t } = useTranslation();
+  usePageTitle(t('webhooks.create.page_title'));
   const navigate = useNavigate();
   const createWebhookMutation = useCreateWebhookMutation();
   const { showError } = useShowBackendError();

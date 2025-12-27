@@ -17,13 +17,14 @@ import {
   useMobileAppsQuery,
   useDeleteMobileAppMutation,
 } from '../../../shared/api/queries';
-import { useShowBackendError, usePermissions, useCurrentOrganization } from '../../../shared/hooks';
+import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 import { CreateAppModal } from './CreateAppModal';
 import { EditAppModal } from './EditAppModal';
 import type { MobileApplicationResponse } from '../../../generated-api';
 
 export function AppsPage() {
   const { t } = useTranslation();
+  usePageTitle(t('apps.page_title'));
   const navigate = useNavigate();
   const [createModalOpened, setCreateModalOpened] = useState(false);
   const [editingApp, setEditingApp] = useState<MobileApplicationResponse | null>(null);
