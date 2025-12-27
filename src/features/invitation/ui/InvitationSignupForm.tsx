@@ -12,11 +12,12 @@ import { invitationSignupSchema, type InvitationSignupFormData } from '../model/
 import { useCompleteSignupMutation } from '../../../shared/api/queries/auth';
 import { useAuth } from '../../../shared/lib/auth/AuthContext';
 import { useShowBackendError } from '../../../shared/hooks';
+import type { AuthResponse } from '../../../generated-api';
 
 interface InvitationSignupFormProps {
   token: string;
   onBack: () => void;
-  onSuccess: () => void;
+  onSuccess: (authResponse: AuthResponse) => void;
 }
 
 export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSignupFormProps) {
@@ -35,7 +36,7 @@ export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSig
 
   const onSubmit = async (data: InvitationSignupFormData) => {
     try {
-      await completeSignupMutation.mutateAsync({
+      const response = await completeSignupMutation.mutateAsync({
         token,
         password: data.password,
         firstName: data.firstName,
@@ -50,7 +51,7 @@ export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSig
         color: 'green',
       });
 
-      onSuccess();
+      onSuccess(response);
     } catch (error) {
       showError(error);
     }

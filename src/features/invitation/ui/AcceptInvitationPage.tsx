@@ -8,6 +8,7 @@ import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
 import { useAuth } from '../../../shared/lib/auth/AuthContext';
 import { InvitationSignupForm } from './InvitationSignupForm';
+import type { AuthResponse } from '../../../generated-api';
 
 type ViewState = 'options' | 'signup';
 
@@ -36,7 +37,7 @@ export function AcceptInvitationPage() {
     }
 
     try {
-      await acceptMutation.mutateAsync(token);
+      const response = await acceptMutation.mutateAsync(token);
       notifications.show({
         title: t('common.success'),
         message: t('invitation.accept.success_message'),
@@ -45,7 +46,9 @@ export function AcceptInvitationPage() {
       });
       setIsProcessed(true);
       setTimeout(() => {
-        navigate('/dashboard');
+        const subdomain = response.organization.subdomain;
+        const url = `http://${subdomain}.${import.meta.env.VITE_APP_DOMAIN}/dashboard`;
+        window.open(url, '_self');
       }, 2000);
     } catch (error) {
       showBackendError.showError(error);
@@ -84,7 +87,7 @@ export function AcceptInvitationPage() {
     navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
   };
 
-  const handleSignupSuccess = () => {
+  const handleSignupSuccess = (authResponse: AuthResponse) => {
     notifications.show({
       title: t('common.success'),
       message: t('invitation.accept.success_message'),
@@ -92,9 +95,14 @@ export function AcceptInvitationPage() {
       icon: <CheckCircle size={18} />,
     });
     setIsProcessed(true);
-    setTimeout(() => {
+    
+    const firstOrg = authResponse.user.organizations[0];
+    if (firstOrg) {
+      const url = `http://${firstOrg.organization.subdomain}.${import.meta.env.VITE_APP_DOMAIN}/dashboard`;
+      window.open(url, '_self');
+    } else {
       navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   // No token provided - show error
