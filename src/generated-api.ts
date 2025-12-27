@@ -2330,5 +2330,23 @@ export class Api<
         format: "json",
         ...params,
       }),
+
+    /**
+     * @description Sends a test "Hello World" payload to the webhook endpoint and returns the delivery result. Requires webhook.update permission.
+     *
+     * @tags Webhooks
+     * @name TestWebhook
+     * @summary Test a webhook
+     * @request POST:/webhooks/{webhookId}/test
+     * @secure
+     */
+    testWebhook: (webhookId: string, params: RequestParams = {}) =>
+      this.request<WebhookDeliveryResponse, ErrorResponse>({
+        path: `/webhooks/${webhookId}/test`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
   };
 }

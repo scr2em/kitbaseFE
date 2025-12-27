@@ -24,6 +24,7 @@ import {
   Check,
   X,
   Clock,
+  Zap,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +34,7 @@ import {
   useUpdateWebhookMutation,
   useDeleteWebhookMutation,
   useWebhookDeliveriesInfiniteQuery,
+  useTestWebhookMutation,
 } from '../../../shared/api/queries/webhooks';
 import { useShowBackendError } from '../../../shared/hooks';
 import { updateWebhookSchema, webhookEventTypes, type UpdateWebhookFormData } from '../model/schema';
@@ -49,6 +51,7 @@ export function WebhookDetailPage() {
   const { data: webhook, isLoading, isError } = useWebhookQuery(webhookId || '');
   const updateWebhookMutation = useUpdateWebhookMutation(webhookId || '');
   const deleteWebhookMutation = useDeleteWebhookMutation();
+  const testWebhookMutation = useTestWebhookMutation(webhookId || '');
   const { showError } = useShowBackendError();
 
   const {
@@ -146,6 +149,30 @@ export function WebhookDetailPage() {
     openDeliveryModal();
   };
 
+  const handleTestWebhook = async () => {
+    try {
+      const result = await testWebhookMutation.mutateAsync();
+      if (result.success) {
+        notifications.show({
+          title: t('common.success'),
+          message: t('webhooks.test.success_message'),
+          color: 'green',
+        });
+      } else {
+        notifications.show({
+          title: t('common.warning'),
+          message: t('webhooks.test.failed_message'),
+          color: 'red',
+        });
+      }
+      // Show the delivery details
+      setSelectedDelivery(result);
+      openDeliveryModal();
+    } catch (error) {
+      showError(error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="h-[calc(100vh-120px)] flex items-center justify-center">
@@ -206,14 +233,24 @@ export function WebhookDetailPage() {
             </p>
           </div>
         </div>
-        <Button
-          variant="subtle"
-          color="red"
-          leftSection={<Trash2 size={16} />}
-          onClick={handleDelete}
-        >
-          {t('webhooks.delete.menu_item')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="light"
+            leftSection={<Zap size={16} />}
+            onClick={handleTestWebhook}
+            loading={testWebhookMutation.isPending}
+          >
+            {t('webhooks.test.button')}
+          </Button>
+          <Button
+            variant="subtle"
+            color="red"
+            leftSection={<Trash2 size={16} />}
+            onClick={handleDelete}
+          >
+            {t('webhooks.delete.menu_item')}
+          </Button>
+        </div>
       </div>
 
       {/* Update Form */}

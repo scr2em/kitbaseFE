@@ -711,6 +711,11 @@
       "success_message": "Webhook deleted successfully",
       "menu_item": "Delete webhook"
     },
+    "test": {
+      "button": "Send Test",
+      "success_message": "Test webhook delivered successfully!",
+      "failed_message": "Test webhook delivery failed. Check the details below."
+    },
     "deliveries": {
       "title": "Recent Deliveries",
       "subtitle": "View the history of webhook delivery attempts",

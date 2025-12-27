@@ -101,3 +101,18 @@ export function useDeleteWebhookMutation() {
   });
 }
 
+export function useTestWebhookMutation(webhookId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.webhooks.testWebhook(webhookId);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate deliveries to show the new test delivery
+      queryClient.invalidateQueries({ queryKey: [...WEBHOOKS_QUERY_KEY, webhookId, 'deliveries'] });
+    },
+  });
+}
+

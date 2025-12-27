@@ -58,5 +58,6 @@ export {
   useCreateWebhookMutation,
   useUpdateWebhookMutation,
   useDeleteWebhookMutation,
+  useTestWebhookMutation,
   WEBHOOKS_QUERY_KEY,
 } from './webhooks';

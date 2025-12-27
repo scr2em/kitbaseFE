@@ -3381,3 +3381,33 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+
+  /webhooks/{webhookId}/test:
+    post:
+      operationId: testWebhook
+      summary: Test a webhook
+      description: Sends a test "Hello World" payload to the webhook endpoint and returns the delivery result. Requires webhook.update permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      responses:
+        '200':
+          description: Test delivery result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookDeliveryResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
