@@ -13,6 +13,7 @@
 /** Permission code enum representing all available permissions in the system */
 export type PermissionCode =
   | "organization.update"
+  | "organization.view"
   | "member.view"
   | "member.invite"
   | "member.remove"
@@ -26,7 +27,25 @@ export type PermissionCode =
   | "channel.update"
   | "channel.delete"
   | "analytics.view"
-  | "support.operations";
+  | "support.operations"
+  | "webhook.view"
+  | "webhook.create"
+  | "webhook.update"
+  | "webhook.delete";
+
+/** Event types that can trigger webhook deliveries */
+export type WebhookEventTypeEnum =
+  | "invitation_received"
+  | "build_completed"
+  | "member_joined"
+  | "member_removed";
+
+/** Type of notification */
+export type NotificationTypeEnum =
+  | "invitation_received"
+  | "build_completed"
+  | "member_joined"
+  | "member_removed";
 
 /** Organization membership status */
 export type MembershipStatusEnum = "active" | "inactive";
@@ -40,6 +59,146 @@ export type InvitationStatusEnum =
 
 /** User account status */
 export type UserStatusEnum = "active" | "inactive" | "pending" | "suspended";
+
+/** Request to create a new webhook subscription */
+export interface CreateWebhookRequest {
+  /**
+   * Human-readable name for the webhook
+   * @minLength 1
+   * @maxLength 255
+   */
+  name: string;
+  /**
+   * The URL to send webhook payloads to
+   * @format uri
+   * @maxLength 2048
+   */
+  url: string;
+  /**
+   * Optional secret for HMAC signature verification
+   * @maxLength 255
+   */
+  secret?: string;
+  /**
+   * List of events this webhook should receive
+   * @minItems 1
+   */
+  events: WebhookEventTypeEnum[];
+  /**
+   * Whether the webhook is enabled
+   * @default true
+   */
+  enabled?: boolean;
+}
+
+/** Request to update an existing webhook subscription */
+export interface UpdateWebhookRequest {
+  /**
+   * Human-readable name for the webhook
+   * @minLength 1
+   * @maxLength 255
+   */
+  name?: string;
+  /**
+   * The URL to send webhook payloads to
+   * @format uri
+   * @maxLength 2048
+   */
+  url?: string;
+  /**
+   * Secret for HMAC signature verification (send empty string to clear)
+   * @maxLength 255
+   */
+  secret?: string;
+  /**
+   * List of events this webhook should receive
+   * @minItems 1
+   */
+  events?: WebhookEventTypeEnum[];
+  /** Whether the webhook is enabled */
+  enabled?: boolean;
+}
+
+/** Webhook subscription details */
+export interface WebhookResponse {
+  /** Unique identifier for the webhook */
+  id: string;
+  /** Human-readable name for the webhook */
+  name: string;
+  /** The URL webhook payloads are sent to */
+  url: string;
+  /** List of events this webhook receives */
+  events: WebhookEventTypeEnum[];
+  /** Whether the webhook is enabled */
+  enabled: boolean;
+  /**
+   * Timestamp of last successful delivery
+   * @format date-time
+   */
+  lastSuccessAt?: string;
+  /**
+   * Timestamp of last failed delivery
+   * @format date-time
+   */
+  lastFailureAt?: string;
+  /** Number of consecutive failures */
+  failureCount?: number;
+  /**
+   * When the webhook was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the webhook was last updated
+   * @format date-time
+   */
+  updatedAt?: string;
+}
+
+/** Webhook delivery record */
+export interface WebhookDeliveryResponse {
+  /** Unique identifier for the delivery */
+  id: string;
+  /** ID of the webhook subscription */
+  webhookId: string;
+  /** Type of event that triggered the delivery */
+  eventType: string;
+  /** HTTP status code of the response */
+  statusCode?: number;
+  /** Whether the delivery was successful */
+  success: boolean;
+  /** The payload that was sent */
+  requestPayload?: Record<string, any>;
+  /** Response body from the webhook endpoint (truncated) */
+  responseBody?: string;
+  /** Duration of the request in milliseconds */
+  durationMs?: number;
+  /** Error message if the delivery failed */
+  errorMessage?: string;
+  /**
+   * When the delivery was attempted
+   * @format date-time
+   */
+  createdAt: string;
+}
+
+/** Paginated list of webhooks */
+export interface PaginatedWebhookResponse {
+  data: WebhookResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+/** Paginated list of webhook deliveries */
+export interface PaginatedWebhookDeliveryResponse {
+  data: WebhookDeliveryResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
 
 /** Request to register a new user */
 export interface UserRegistrationRequest {
@@ -168,6 +327,8 @@ export interface SignupCompleteRequest {
 export interface CreateOrganizationRequest {
   /** Organization name */
   name: string;
+  /** Organization subdomain (unique identifier used in URLs) */
+  subdomain: string;
   /** Organization description */
   description?: string;
   /**
@@ -199,7 +360,13 @@ export interface CreateInvitationRequest {
    * @format email
    */
   email: string;
-  /** Role name (e.g., developer, admin, analyst, support) */
+  /** Role Id */
+  role: string;
+}
+
+/** Request to update an invitation */
+export interface UpdateInvitationRequest {
+  /** New role id */
   role: string;
 }
 
@@ -424,11 +591,6 @@ export interface InvitationResponse {
    * @format date-time
    */
   createdAt: string;
-  /**
-   * When the invitation expires
-   * @format date-time
-   */
-  expiresAt?: string;
 }
 
 /** Invitation status information */
@@ -448,10 +610,10 @@ export interface OrganizationMemberResponse {
   /** Role information (roles are now global across all organizations) */
   role: RoleResponse;
   /**
-   * When the member joined
+   * When the member enabled their account
    * @format date-time
    */
-  joinedAt: string;
+  enabledAt: string;
 }
 
 /** Paginated organization member response */
@@ -708,6 +870,43 @@ export interface PaginatedAuditLogResponse {
   /** Number of items per page */
   size: number;
   /** Total number of audit log entries */
+  totalElements: number;
+  /** Total number of pages */
+  totalPages: number;
+}
+
+/** Notification information */
+export interface NotificationResponse {
+  /** Notification ID */
+  id: string;
+  /** Type of notification */
+  type: NotificationTypeEnum;
+  /** Notification title */
+  title: string;
+  /** Notification message body */
+  message?: string;
+  /** Whether the notification has been read */
+  isRead: boolean;
+  /** ID of the related resource (invitation_id, build_id, etc.) */
+  resourceId?: string;
+  /**
+   * When the notification was created
+   * @format date-time
+   */
+  createdAt: string;
+}
+
+/** Paginated notification response with unread count */
+export interface PaginatedNotificationResponse {
+  /** Array of notifications for this page */
+  data: NotificationResponse[];
+  /** Total number of unread notifications */
+  unreadCount: number;
+  /** Current page number */
+  page: number;
+  /** Number of items per page */
+  size: number;
+  /** Total number of notifications */
   totalElements: number;
   /** Total number of pages */
   totalPages: number;
@@ -1318,6 +1517,59 @@ export class Api<
       }),
 
     /**
+     * @description Retrieve an invitation by ID or token. Must belong to authenticated user. Use query parameter 'type' to specify lookup method: - type=id (default): lookup by invitation ID - type=token: lookup by invitation token
+     *
+     * @tags Invitations
+     * @name GetInvitation
+     * @summary Get invitation by ID or token
+     * @request GET:/invitations/{identifier}
+     * @secure
+     */
+    getInvitation: (
+      identifier: string,
+      query?: {
+        /**
+         * Lookup method (id or token)
+         * @default "id"
+         */
+        type?: "id" | "token";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<InvitationResponse, ErrorResponse>({
+        path: `/invitations/${identifier}`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update the role of a pending invitation. Only pending invitations can be updated. Requires member.invite permission.
+     *
+     * @tags Invitations
+     * @name UpdateInvitation
+     * @summary Update invitation role
+     * @request PATCH:/invitations/{invitationId}
+     * @secure
+     */
+    updateInvitation: (
+      invitationId: string,
+      data: UpdateInvitationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<InvitationResponse, ErrorResponse>({
+        path: `/invitations/${invitationId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cancel or reject an invitation. Requires authentication. Updates invitation status to 'canceled' but keeps the user account.
      *
      * @tags Invitations
@@ -1858,6 +2110,220 @@ export class Api<
     ) =>
       this.request<PaginatedAuditLogResponse, ErrorResponse>({
         path: `/audit-logs`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  notifications = {
+    /**
+     * @description Get paginated list of notifications for the authenticated user with unread count.
+     *
+     * @tags Notifications
+     * @name GetNotifications
+     * @summary Get user notifications
+     * @request GET:/notifications
+     * @secure
+     */
+    getNotifications: (
+      query?: {
+        /**
+         * Page number (0-indexed)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Page size
+         * @default 20
+         */
+        size?: number;
+        /**
+         * If true, only return unread notifications
+         * @default false
+         */
+        unreadOnly?: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedNotificationResponse, ErrorResponse>({
+        path: `/notifications`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Mark a single notification as read.
+     *
+     * @tags Notifications
+     * @name MarkNotificationAsRead
+     * @summary Mark notification as read
+     * @request PATCH:/notifications/{notificationId}/read
+     * @secure
+     */
+    markNotificationAsRead: (
+      notificationId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<NotificationResponse, ErrorResponse>({
+        path: `/notifications/${notificationId}/read`,
+        method: "PATCH",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Mark all notifications for the authenticated user as read.
+     *
+     * @tags Notifications
+     * @name MarkAllNotificationsAsRead
+     * @summary Mark all notifications as read
+     * @request PATCH:/notifications/read-all
+     * @secure
+     */
+    markAllNotificationsAsRead: (params: RequestParams = {}) =>
+      this.request<void, ErrorResponse>({
+        path: `/notifications/read-all`,
+        method: "PATCH",
+        secure: true,
+        ...params,
+      }),
+  };
+  webhooks = {
+    /**
+     * @description List all webhook subscriptions for the current organization. Requires webhook.view permission.
+     *
+     * @tags Webhooks
+     * @name ListWebhooks
+     * @summary List webhooks
+     * @request GET:/webhooks
+     * @secure
+     */
+    listWebhooks: (
+      query?: {
+        /** @default 0 */
+        page?: number;
+        /** @default 20 */
+        size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedWebhookResponse, ErrorResponse>({
+        path: `/webhooks`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new webhook subscription for the current organization. Requires webhook.create permission.
+     *
+     * @tags Webhooks
+     * @name CreateWebhook
+     * @summary Create webhook
+     * @request POST:/webhooks
+     * @secure
+     */
+    createWebhook: (data: CreateWebhookRequest, params: RequestParams = {}) =>
+      this.request<WebhookResponse, ErrorResponse>({
+        path: `/webhooks`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get details of a specific webhook subscription. Requires webhook.view permission.
+     *
+     * @tags Webhooks
+     * @name GetWebhook
+     * @summary Get webhook details
+     * @request GET:/webhooks/{webhookId}
+     * @secure
+     */
+    getWebhook: (webhookId: string, params: RequestParams = {}) =>
+      this.request<WebhookResponse, ErrorResponse>({
+        path: `/webhooks/${webhookId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update an existing webhook subscription. Requires webhook.update permission.
+     *
+     * @tags Webhooks
+     * @name UpdateWebhook
+     * @summary Update webhook
+     * @request PATCH:/webhooks/{webhookId}
+     * @secure
+     */
+    updateWebhook: (
+      webhookId: string,
+      data: UpdateWebhookRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<WebhookResponse, ErrorResponse>({
+        path: `/webhooks/${webhookId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete a webhook subscription. Requires webhook.delete permission.
+     *
+     * @tags Webhooks
+     * @name DeleteWebhook
+     * @summary Delete webhook
+     * @request DELETE:/webhooks/{webhookId}
+     * @secure
+     */
+    deleteWebhook: (webhookId: string, params: RequestParams = {}) =>
+      this.request<void, ErrorResponse>({
+        path: `/webhooks/${webhookId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description List delivery attempts for a specific webhook. Requires webhook.view permission.
+     *
+     * @tags Webhooks
+     * @name ListWebhookDeliveries
+     * @summary List webhook deliveries
+     * @request GET:/webhooks/{webhookId}/deliveries
+     * @secure
+     */
+    listWebhookDeliveries: (
+      webhookId: string,
+      query?: {
+        /** @default 0 */
+        page?: number;
+        /** @default 20 */
+        size?: number;
+        /** Filter by success status */
+        success?: boolean;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedWebhookDeliveryResponse, ErrorResponse>({
+        path: `/webhooks/${webhookId}/deliveries`,
         method: "GET",
         query: query,
         secure: true,

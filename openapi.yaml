@@ -44,6 +44,10 @@ tags:
     description: API key management for build uploads
   - name: Audit Logs
     description: Audit log and activity tracking operations
+  - name: Notifications
+    description: User notification management
+  - name: Webhooks
+    description: Webhook subscription management
 
 components:
   schemas:
@@ -62,6 +66,217 @@ components:
       type: string
       enum: [active, inactive]
       description: Organization membership status
+
+    NotificationTypeEnum:
+      type: string
+      enum: [invitation_received, build_completed, member_joined, member_removed]
+      description: Type of notification
+
+    # Webhook Event Types - events that can trigger webhooks
+    WebhookEventTypeEnum:
+      type: string
+      enum: [invitation_received, build_completed, member_joined, member_removed]
+      description: Event types that can trigger webhook deliveries
+
+    # Webhook Request DTOs
+    CreateWebhookRequest:
+      type: object
+      description: Request to create a new webhook subscription
+      required:
+        - name
+        - url
+        - events
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Human-readable name for the webhook
+        url:
+          type: string
+          format: uri
+          maxLength: 2048
+          description: The URL to send webhook payloads to
+        secret:
+          type: string
+          maxLength: 255
+          description: Optional secret for HMAC signature verification
+        events:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/WebhookEventTypeEnum'
+          description: List of events this webhook should receive
+        enabled:
+          type: boolean
+          default: true
+          description: Whether the webhook is enabled
+
+    UpdateWebhookRequest:
+      type: object
+      description: Request to update an existing webhook subscription
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Human-readable name for the webhook
+        url:
+          type: string
+          format: uri
+          maxLength: 2048
+          description: The URL to send webhook payloads to
+        secret:
+          type: string
+          maxLength: 255
+          description: Secret for HMAC signature verification (send empty string to clear)
+        events:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/WebhookEventTypeEnum'
+          description: List of events this webhook should receive
+        enabled:
+          type: boolean
+          description: Whether the webhook is enabled
+
+    # Webhook Response DTOs
+    WebhookResponse:
+      type: object
+      description: Webhook subscription details
+      required:
+        - id
+        - name
+        - url
+        - events
+        - enabled
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the webhook
+        name:
+          type: string
+          description: Human-readable name for the webhook
+        url:
+          type: string
+          description: The URL webhook payloads are sent to
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEventTypeEnum'
+          description: List of events this webhook receives
+        enabled:
+          type: boolean
+          description: Whether the webhook is enabled
+        lastSuccessAt:
+          type: string
+          format: date-time
+          description: Timestamp of last successful delivery
+        lastFailureAt:
+          type: string
+          format: date-time
+          description: Timestamp of last failed delivery
+        failureCount:
+          type: integer
+          description: Number of consecutive failures
+        createdAt:
+          type: string
+          format: date-time
+          description: When the webhook was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the webhook was last updated
+
+    WebhookDeliveryResponse:
+      type: object
+      description: Webhook delivery record
+      required:
+        - id
+        - webhookId
+        - eventType
+        - success
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the delivery
+        webhookId:
+          type: string
+          description: ID of the webhook subscription
+        eventType:
+          type: string
+          description: Type of event that triggered the delivery
+        statusCode:
+          type: integer
+          description: HTTP status code of the response
+        success:
+          type: boolean
+          description: Whether the delivery was successful
+        requestPayload:
+          type: object
+          additionalProperties: true
+          description: The payload that was sent
+        responseBody:
+          type: string
+          description: Response body from the webhook endpoint (truncated)
+        durationMs:
+          type: integer
+          description: Duration of the request in milliseconds
+        errorMessage:
+          type: string
+          description: Error message if the delivery failed
+        createdAt:
+          type: string
+          format: date-time
+          description: When the delivery was attempted
+
+    PaginatedWebhookResponse:
+      type: object
+      description: Paginated list of webhooks
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+
+    PaginatedWebhookDeliveryResponse:
+      type: object
+      description: Paginated list of webhook deliveries
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookDeliveryResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
 
     # Request DTOs
     UserRegistrationRequest:
@@ -232,10 +447,14 @@ components:
       description: Request to create a new organization
       required:
         - name
+        - subdomain
       properties:
         name:
           type: string
           description: Organization name
+        subdomain:
+          type: string
+          description: Organization subdomain (unique identifier used in URLs)
         description:
           type: string
           description: Organization description
@@ -273,7 +492,17 @@ components:
           description: Email of the invited user
         role:
           type: string
-          description: Role name (e.g., developer, admin, analyst, support)
+          description: Role Id
+
+    UpdateInvitationRequest:
+      type: object
+      description: Request to update an invitation
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          description: New role id
 
     AddOrganizationMemberRequest:
       type: object
@@ -559,6 +788,7 @@ components:
       description: Permission code enum representing all available permissions in the system
       enum:
         - organization.update
+        - organization.view
         - member.view
         - member.invite
         - member.remove
@@ -573,6 +803,10 @@ components:
         - channel.delete
         - analytics.view
         - support.operations
+        - webhook.view
+        - webhook.create
+        - webhook.update
+        - webhook.delete
 
     RoleWithPermissionsResponse:
       type: object
@@ -627,10 +861,6 @@ components:
           type: string
           format: date-time
           description: When the invitation was created
-        expiresAt:
-          type: string
-          format: date-time
-          description: When the invitation expires
 
     InvitationStatusResponse:
       type: object
@@ -652,7 +882,7 @@ components:
         - id
         - user
         - role
-        - joinedAt
+        - enabledAt
       properties:
         id:
           type: string
@@ -661,10 +891,10 @@ components:
           $ref: '#/components/schemas/UserResponse'
         role:
           $ref: '#/components/schemas/RoleResponse'
-        joinedAt:
+        enabledAt:
           type: string
           format: date-time
-          description: When the member joined
+          description: When the member enabled their account
 
     PaginatedOrganizationMemberResponse:
       type: object
@@ -1082,6 +1312,70 @@ components:
         totalElements:
           type: integer
           description: Total number of audit log entries
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    NotificationResponse:
+      type: object
+      description: Notification information
+      required:
+        - id
+        - type
+        - title
+        - isRead
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Notification ID
+        type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        title:
+          type: string
+          description: Notification title
+        message:
+          type: string
+          description: Notification message body
+        isRead:
+          type: boolean
+          description: Whether the notification has been read
+        resourceId:
+          type: string
+          description: ID of the related resource (invitation_id, build_id, etc.)
+        createdAt:
+          type: string
+          format: date-time
+          description: When the notification was created
+
+    PaginatedNotificationResponse:
+      type: object
+      description: Paginated notification response with unread count
+      required:
+        - data
+        - unreadCount
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationResponse'
+          description: Array of notifications for this page
+        unreadCount:
+          type: integer
+          description: Total number of unread notifications
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of notifications
         totalPages:
           type: integer
           description: Total number of pages
@@ -1881,6 +2175,109 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Invalid token
+
+  /invitations/{identifier}:
+    get:
+      operationId: getInvitation
+      summary: Get invitation by ID or token
+      description: |
+        Retrieve an invitation by ID or token. Must belong to authenticated user.
+        Use query parameter 'type' to specify lookup method:
+        - type=id (default): lookup by invitation ID
+        - type=token: lookup by invitation token
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          description: Invitation ID or token
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          description: Lookup method (id or token)
+          schema:
+            type: string
+            enum: [id, token]
+            default: id
+      responses:
+        '200':
+          description: Invitation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Invitation not addressed to user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /invitations/{invitationId}:
+    patch:
+      operationId: updateInvitation
+      summary: Update invitation role
+      description: |
+        Update the role of a pending invitation. Only pending invitations can be updated.
+        Requires member.invite permission.
+      tags:
+        - Invitations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invitationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Invitation ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInvitationRequest'
+      responses:
+        '200':
+          description: Invitation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          description: Bad request (e.g., invitation not pending, invalid role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notPending:
+                  summary: Invitation not pending
+                  value:
+                    error:
+                      code: INV_007
+                      message: Cannot update invitation that is not in pending status
+                ownerRole:
+                  summary: Cannot assign owner role
+                  value:
+                    error:
+                      code: VAL_001
+                      message: Cannot assign 'owner' role via invitation
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 
   /invitations/{invitationId}/cancel:
     get:
@@ -2702,3 +3099,285 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+
+  /notifications:
+    get:
+      operationId: getNotifications
+      summary: Get user notifications
+      description: Get paginated list of notifications for the authenticated user with unread count.
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-indexed)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Page size
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: If true, only return unread notifications
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /notifications/{notificationId}/read:
+    patch:
+      operationId: markNotificationAsRead
+      summary: Mark notification as read
+      description: Mark a single notification as read.
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Notification ID
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsAsRead
+      summary: Mark all notifications as read
+      description: Mark all notifications for the authenticated user as read.
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: All notifications marked as read
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # Webhook Management
+  /webhooks:
+    get:
+      operationId: listWebhooks
+      summary: List webhooks
+      description: List all webhook subscriptions for the current organization. Requires webhook.view permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWebhookResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    post:
+      operationId: createWebhook
+      summary: Create webhook
+      description: Create a new webhook subscription for the current organization. Requires webhook.create permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookRequest'
+      responses:
+        '201':
+          description: Webhook created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /webhooks/{webhookId}:
+    get:
+      operationId: getWebhook
+      summary: Get webhook details
+      description: Get details of a specific webhook subscription. Requires webhook.view permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      responses:
+        '200':
+          description: Webhook details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    patch:
+      operationId: updateWebhook
+      summary: Update webhook
+      description: Update an existing webhook subscription. Requires webhook.update permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWebhookRequest'
+      responses:
+        '200':
+          description: Webhook updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    delete:
+      operationId: deleteWebhook
+      summary: Delete webhook
+      description: Delete a webhook subscription. Requires webhook.delete permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+      responses:
+        '204':
+          description: Webhook deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /webhooks/{webhookId}/deliveries:
+    get:
+      operationId: listWebhookDeliveries
+      summary: List webhook deliveries
+      description: List delivery attempts for a specific webhook. Requires webhook.view permission.
+      tags:
+        - Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webhook ID
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: success
+          in: query
+          schema:
+            type: boolean
+          description: Filter by success status
+      responses:
+        '200':
+          description: List of webhook deliveries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWebhookDeliveryResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'

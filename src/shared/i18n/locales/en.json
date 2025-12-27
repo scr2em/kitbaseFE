@@ -629,6 +629,20 @@
       "menu_item": "Delete channel"
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "mark_as_read": "Mark as read",
+    "mark_all_as_read": "Mark all as read",
+    "accept_invitation": "Accept invitation",
+    "reject_invitation": "Decline invitation",
+    "empty": "No notifications yet",
+    "error_loading": "Failed to load notifications",
+    "end_of_list": "You're all caught up!",
+    "just_now": "Just now",
+    "minutes_ago": "{{count}}m ago",
+    "hours_ago": "{{count}}h ago",
+    "days_ago": "{{count}}d ago"
+  },
   "landing": {
     "hero": {
       "title": "Deploy Mobile Apps with Confidence",

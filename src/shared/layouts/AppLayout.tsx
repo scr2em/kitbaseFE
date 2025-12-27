@@ -9,7 +9,6 @@ import {
   Settings,
   User,
   LogOut,
-  Bell,
   Menu as MenuIcon,
   Folder,
   Radio,
@@ -21,6 +20,7 @@ import { useAuth } from '../lib/auth/AuthContext';
 import { useCurrentUserQuery } from '../api/queries/user';
 import { usePermissions, useCurrentOrganization } from '../hooks';
 import { CreateOrganizationModal } from '../../features/organization/create-organization';
+import { NotificationDropdown } from '../components/NotificationDropdown';
 
 export function AppLayout() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
@@ -144,9 +144,7 @@ export function AppLayout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <ActionIcon variant="light" size="lg" radius="md">
-              <Bell size={20} />
-            </ActionIcon>
+            <NotificationDropdown />
 
             <Menu shadow="md" width={200}>
               <Menu.Target>
