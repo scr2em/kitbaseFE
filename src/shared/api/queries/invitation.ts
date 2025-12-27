@@ -1,9 +1,20 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../client';
 import { type CreateInvitationRequest } from '../../../generated-api';
 import { ORGANIZATION_MEMBERS_QUERY_KEY } from './organization';
 
 export const INVITATIONS_QUERY_KEY = ['invitations'];
+
+export function useInvitationQuery(invitationId: string | undefined) {
+  return useQuery({
+    queryKey: [...INVITATIONS_QUERY_KEY, invitationId],
+    queryFn: async () => {
+      const response = await apiClient.invitations.getInvitation(invitationId!, { type: 'id' });
+      return response.data;
+    },
+    enabled: !!invitationId,
+  });
+}
 
 export function useCreateInvitationMutation() {
   const queryClient = useQueryClient();

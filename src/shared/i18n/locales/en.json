@@ -192,6 +192,7 @@
     "builds": "Builds",
     "team": "Team",
     "channels": "Channels",
+    "webhooks": "Webhooks",
     "roles": "Roles",
     "analytics": "Analytics",
     "organization": "Organization",
@@ -629,12 +630,126 @@
       "menu_item": "Delete channel"
     }
   },
+  "webhooks": {
+    "title": "Webhooks",
+    "subtitle": "Manage webhook subscriptions ({{count}} webhooks)",
+    "create_button": "Create Webhook",
+    "create_first_webhook": "Create Your First Webhook",
+    "no_webhooks": "No webhooks configured yet",
+    "no_organization_title": "No Organization",
+    "no_organization_message": "You need to be part of an organization to manage webhooks.",
+    "error_loading": "Failed to load webhooks. Please try again.",
+    "load_more": "Load More",
+    "loading_more": "Loading...",
+    "view_details": "View Details",
+    "validation": {
+      "name_required": "Webhook name is required",
+      "url_required": "Webhook URL is required",
+      "url_invalid": "Please enter a valid URL",
+      "events_required": "At least one event must be selected"
+    },
+    "table": {
+      "name": "Name",
+      "url": "Endpoint URL",
+      "events": "Events",
+      "status": "Status",
+      "last_delivery": "Last Delivery",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "delivery": {
+      "success": "Success",
+      "failed": "Failed",
+      "never": "No deliveries yet"
+    },
+    "toggle": {
+      "enabled_message": "Webhook enabled successfully",
+      "disabled_message": "Webhook disabled successfully"
+    },
+    "events": {
+      "invitation_received": "Triggered when a team member receives an invitation",
+      "build_completed": "Triggered when a build is completed",
+      "member_joined": "Triggered when a new member joins the organization",
+      "member_removed": "Triggered when a member is removed from the organization"
+    },
+    "create": {
+      "page_title": "Create Webhook",
+      "page_subtitle": "Configure a new webhook to receive event notifications",
+      "name_label": "Webhook Name",
+      "name_placeholder": "e.g., Build Notifications",
+      "url_label": "Endpoint URL",
+      "url_placeholder": "https://example.com/webhooks/kitbase",
+      "url_description": "The URL where webhook payloads will be sent via POST request",
+      "secret_label": "Secret (Optional)",
+      "secret_placeholder": "Enter a secret for HMAC signature verification",
+      "secret_description": "Used to sign webhook payloads for verification",
+      "events_label": "Events",
+      "events_description": "Select the events you want to receive notifications for",
+      "enabled_label": "Enable Webhook",
+      "enabled_description": "When disabled, webhook deliveries will be paused",
+      "submit_button": "Create Webhook",
+      "cancel_button": "Cancel",
+      "success_message": "Webhook created successfully"
+    },
+    "update": {
+      "section_title": "Webhook Configuration",
+      "secret_label": "New Secret (Optional)",
+      "secret_placeholder": "Leave empty to keep current secret",
+      "secret_description": "Enter a new secret to update, or leave empty to keep the current one",
+      "submit_button": "Save Changes",
+      "cancel_button": "Discard Changes",
+      "success_message": "Webhook updated successfully"
+    },
+    "delete": {
+      "title": "Delete Webhook",
+      "confirmation": "Are you sure you want to delete '{{name}}'? This action cannot be undone and you will stop receiving notifications.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success_message": "Webhook deleted successfully",
+      "menu_item": "Delete webhook"
+    },
+    "deliveries": {
+      "title": "Recent Deliveries",
+      "subtitle": "View the history of webhook delivery attempts",
+      "no_deliveries": "No delivery attempts yet",
+      "view_details": "View Details",
+      "table": {
+        "status": "Status",
+        "event": "Event",
+        "status_code": "Status Code",
+        "duration": "Duration",
+        "timestamp": "Timestamp",
+        "actions": "Actions"
+      },
+      "status": {
+        "success": "Success",
+        "failed": "Failed"
+      },
+      "modal_title": "Delivery Details",
+      "modal": {
+        "status": "Status",
+        "event_type": "Event Type",
+        "status_code": "HTTP Status Code",
+        "duration": "Duration",
+        "timestamp": "Timestamp",
+        "error": "Error Message",
+        "request_payload": "Request Payload",
+        "response_body": "Response Body"
+      }
+    }
+  },
   "notifications": {
     "title": "Notifications",
     "mark_as_read": "Mark as read",
     "mark_all_as_read": "Mark all as read",
     "accept_invitation": "Accept invitation",
     "reject_invitation": "Decline invitation",
+    "invitation_accepted": "Invitation accepted",
+    "invitation_declined": "Invitation declined",
+    "invitation_expired": "Invitation expired",
     "empty": "No notifications yet",
     "error_loading": "Failed to load notifications",
     "end_of_list": "You're all caught up!",

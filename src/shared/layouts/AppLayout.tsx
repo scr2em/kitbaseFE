@@ -12,6 +12,7 @@ import {
   Menu as MenuIcon,
   Folder,
   Radio,
+  Webhook,
   Plus,
   ChevronDown,
   Check,
@@ -71,6 +72,12 @@ export function AppLayout() {
       label: t('navigation.channels'),
       path: '/channels',
       permission: null, // Channels are accessible to all organization members
+    },
+    {
+      icon: Webhook,
+      label: t('navigation.webhooks'),
+      path: '/webhooks',
+      permission: permissions.canViewWebhook,
     },
     {
       icon: Users,

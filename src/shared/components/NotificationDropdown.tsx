@@ -10,7 +10,7 @@ import {
   useMarkAllNotificationsAsReadMutation,
   NOTIFICATIONS_QUERY_KEY,
 } from '../api/queries/notifications';
-import { useAcceptInvitationMutation, useCancelInvitationMutation } from '../api/queries/invitation';
+import { useAcceptInvitationMutation, useCancelInvitationMutation, useInvitationQuery, INVITATIONS_QUERY_KEY } from '../api/queries/invitation';
 import { useQueryClient } from '@tanstack/react-query';
 import type { NotificationResponse } from '../../generated-api';
 
@@ -124,6 +124,7 @@ function InvitationReceivedNotificationItem({
   isRejectingInvitation,
 }: InvitationNotificationItemProps) {
   const { t } = useTranslation();
+  const { data: invitation, isLoading: isLoadingInvitation } = useInvitationQuery(notification.resourceId);
 
   const icon = (
     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -131,34 +132,79 @@ function InvitationReceivedNotificationItem({
     </div>
   );
 
-  const actions = notification.resourceId ? (
-    <div className="flex items-center gap-2 mt-1">
-      <Button
-        variant="filled"
-        size="xs"
-        color="green"
-        leftSection={<UserCheck size={14} />}
-        onClick={() => onAcceptInvitation(notification.resourceId!)}
-        loading={isAcceptingInvitation}
-        disabled={isRejectingInvitation}
-      >
-        {t('notifications.accept_invitation')}
-      </Button>
-      <Button
-        variant="outline"
-        size="xs"
-        color="red"
-        leftSection={<UserX size={14} />}
-        onClick={() => onRejectInvitation(notification.resourceId!)}
-        loading={isRejectingInvitation}
-        disabled={isAcceptingInvitation}
-      >
-        {t('notifications.reject_invitation')}
-      </Button>
-    </div>
-  ) : null;
+  const renderActions = () => {
+    if (!notification.resourceId) return null;
 
-  return <NotificationWrapper notification={notification} icon={icon} actions={actions} />;
+    if (isLoadingInvitation) {
+      return (
+        <div className="flex items-center gap-2 mt-2">
+          <Loader size="xs" />
+        </div>
+      );
+    }
+
+    const invitationStatus = invitation?.status?.status;
+
+    if (invitationStatus === 'accepted') {
+      return (
+        <div className="flex items-center gap-1 mt-2 text-sm text-green-600">
+          <Check size={14} />
+          <span>{t('notifications.invitation_accepted')}</span>
+        </div>
+      );
+    }
+
+    if (invitationStatus === 'canceled') {
+      return (
+        <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
+          <UserX size={14} />
+          <span>{t('notifications.invitation_declined')}</span>
+        </div>
+      );
+    }
+
+    if (invitationStatus === 'expired') {
+      return (
+        <div className="flex items-center gap-1 mt-2 text-sm text-amber-600">
+          <span>{t('notifications.invitation_expired')}</span>
+        </div>
+      );
+    }
+
+    // Show action buttons only for pending invitations
+    if (invitationStatus === 'pending') {
+      return (
+        <div className="flex items-center gap-2 mt-2">
+          <Button
+            variant="filled"
+            size="xs"
+            color="green"
+            leftSection={<UserCheck size={14} />}
+            onClick={() => onAcceptInvitation(notification.resourceId!)}
+            loading={isAcceptingInvitation}
+            disabled={isRejectingInvitation}
+          >
+            {t('notifications.accept_invitation')}
+          </Button>
+          <Button
+            variant="outline"
+            size="xs"
+            color="red"
+            leftSection={<UserX size={14} />}
+            onClick={() => onRejectInvitation(notification.resourceId!)}
+            loading={isRejectingInvitation}
+            disabled={isAcceptingInvitation}
+          >
+            {t('notifications.reject_invitation')}
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return <NotificationWrapper notification={notification} icon={icon} actions={renderActions()} />;
 }
 
 // ============================================
@@ -296,6 +342,7 @@ export function NotificationDropdown() {
     acceptInvitationMutation.mutate(invitationId, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: INVITATIONS_QUERY_KEY });
       },
     });
   };
@@ -304,6 +351,7 @@ export function NotificationDropdown() {
     rejectInvitationMutation.mutate(invitationId, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: INVITATIONS_QUERY_KEY });
       },
     });
   };

@@ -19,6 +19,7 @@ import {
 } from '../../features/apps';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { ChannelsPage } from '../../features/channels';
+import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { LandingPage } from '../../features/landing';
 import { ProtectedRoute, PublicRoute } from '../../shared/lib/router';
 import { AppLayout, AuthLayout } from '../../shared/layouts';
@@ -90,6 +91,9 @@ const routes: RouteObject[] = [
           },
           { path: '/team', element: <TeamPage /> },
           { path: '/channels', element: <ChannelsPage /> },
+          { path: '/webhooks', element: <WebhooksPage /> },
+          { path: '/webhooks/create', element: <CreateWebhookPage /> },
+          { path: '/webhooks/:webhookId', element: <WebhookDetailPage /> },
           { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },
           { path: '/organization', element: <OrganizationPage /> },
           { path: '/settings', element: <div>Settings Page (Coming Soon)</div> },
