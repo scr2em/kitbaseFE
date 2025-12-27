@@ -22,7 +22,7 @@ import { ChannelsPage } from '../../features/channels';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { LandingPage } from '../../features/landing';
 import { ProtectedRoute, PublicRoute } from '../../shared/lib/router';
-import { AppLayout, AuthLayout } from '../../shared/layouts';
+import { AppLayout, AuthLayout, OrganizationLayout } from '../../shared/layouts';
 import { AppProviders } from '../providers/AppProviders';
 
 function RootLayout() {
@@ -89,13 +89,20 @@ const routes: RouteObject[] = [
               { path: 'api-keys', element: <ApiKeysPage /> },
             ],
           },
-          { path: '/team', element: <TeamPage /> },
           { path: '/channels', element: <ChannelsPage /> },
-          { path: '/webhooks', element: <WebhooksPage /> },
-          { path: '/webhooks/create', element: <CreateWebhookPage /> },
-          { path: '/webhooks/:webhookId', element: <WebhookDetailPage /> },
           { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },
-          { path: '/organization', element: <OrganizationPage /> },
+          {
+            path: '/organization',
+            element: <OrganizationLayout />,
+            children: [
+              { index: true, element: <Navigate to="info" replace /> },
+              { path: 'info', element: <OrganizationPage /> },
+              { path: 'team', element: <TeamPage /> },
+              { path: 'webhooks', element: <WebhooksPage /> },
+              { path: 'webhooks/create', element: <CreateWebhookPage /> },
+              { path: 'webhooks/:webhookId', element: <WebhookDetailPage /> },
+            ],
+          },
           { path: '/settings', element: <div>Settings Page (Coming Soon)</div> },
           { path: '/profile', element: <div>Profile Page (Coming Soon)</div> },
         ],

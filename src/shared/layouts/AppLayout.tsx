@@ -5,14 +5,12 @@ import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Building,
-  Users,
   Settings,
   User,
   LogOut,
   Menu as MenuIcon,
   Folder,
   Radio,
-  Webhook,
   Plus,
   ChevronDown,
   Check,
@@ -54,47 +52,58 @@ export function AppLayout() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  const navigationItems = [
+  const navigationCategories = [
     {
-      icon: LayoutDashboard,
-      label: t('navigation.dashboard'),
-      path: '/dashboard',
-      permission: null, // Dashboard is accessible to all
+      id: 'general',
+      label: t('navigation.categories.general'),
+      items: [
+        {
+          icon: LayoutDashboard,
+          label: t('navigation.dashboard'),
+          path: '/dashboard',
+          permission: null, // Dashboard is accessible to all
+        },
+      ],
     },
     {
-      icon: Folder,
-      label: t('navigation.apps'),
-      path: '/apps',
-      permission: permissions.canReadApp,
+      id: 'product',
+      label: t('navigation.categories.product'),
+      items: [
+        {
+          icon: Folder,
+          label: t('navigation.apps'),
+          path: '/apps',
+          permission: permissions.canReadApp,
+        },
+        {
+          icon: Radio,
+          label: t('navigation.channels'),
+          path: '/channels',
+          permission: null, // Channels are accessible to all organization members
+        },
+      ],
     },
     {
-      icon: Radio,
-      label: t('navigation.channels'),
-      path: '/channels',
-      permission: null, // Channels are accessible to all organization members
-    },
-    {
-      icon: Webhook,
-      label: t('navigation.webhooks'),
-      path: '/webhooks',
-      permission: permissions.canViewWebhook,
-    },
-    {
-      icon: Users,
-      label: t('navigation.team'),
-      path: '/team',
-      permission: permissions.canViewMember,
-    },
-    {
-      icon: Building,
-      label: t('navigation.organization'),
-      path: '/organization',
-      permission: null, // Organization view is accessible to all members
+      id: 'administration',
+      label: t('navigation.categories.administration'),
+      items: [
+        {
+          icon: Building,
+          label: t('navigation.organization'),
+          path: '/organization',
+          permission: null, // Organization view is accessible to all members
+        },
+      ],
     },
   ];
 
-  // Filter navigation items based on user permissions
-  const visibleNavigationItems = navigationItems.filter((item) => item.permission === null || item.permission);
+  // Filter navigation categories and their items based on user permissions
+  const visibleNavigationCategories = navigationCategories
+    .map((category) => ({
+      ...category,
+      items: category.items.filter((item) => item.permission === null || item.permission),
+    }))
+    .filter((category) => category.items.length > 0);
 
   // Add create organization button if user doesn't have organizations
   const createOrgItem = !hasOrganizations ? {
@@ -199,23 +208,32 @@ export function AppLayout() {
 
       <AppShell.Navbar p="md">
         <AppShell.Section grow component={ScrollArea}>
-          <div>
-            {visibleNavigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              
-              return (
-                <NavLink
-                  key={item.path}
-                  label={item.label}
-                  leftSection={<Icon size={20} />}
-                  active={isActive}
-                  onClick={() => navigate(item.path)}
-                  mb="xs"
-                  style={{ borderRadius: 'var(--mantine-radius-md)' }}
-                />
-              );
-            })}
+          <div className="flex flex-col gap-4">
+            {visibleNavigationCategories.map((category) => (
+              <div key={category.id}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 px-3 mb-2">
+                  {category.label}
+                </p>
+                <div>
+                  {category.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                    
+                    return (
+                      <NavLink
+                        key={item.path}
+                        label={item.label}
+                        leftSection={<Icon size={20} />}
+                        active={isActive}
+                        onClick={() => navigate(item.path)}
+                        mb="xs"
+                        style={{ borderRadius: 'var(--mantine-radius-md)' }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
             
             {/* Create Organization Button */}
             {createOrgItem && (

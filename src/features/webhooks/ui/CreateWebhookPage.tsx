@@ -68,7 +68,7 @@ export function CreateWebhookPage() {
         message: t('webhooks.create.success_message'),
         color: 'green',
       });
-      navigate('/webhooks');
+      navigate('/organization/webhooks');
     } catch (error) {
       showError(error);
     }
@@ -79,7 +79,7 @@ export function CreateWebhookPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => navigate('/webhooks')}
+          onClick={() => navigate('/organization/webhooks')}
           className="p-1.5 -ml-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft size={18} />
@@ -191,7 +191,7 @@ export function CreateWebhookPage() {
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
               <Button
                 variant="subtle"
-                onClick={() => navigate('/webhooks')}
+                onClick={() => navigate('/organization/webhooks')}
               >
                 {t('webhooks.create.cancel_button')}
               </Button>

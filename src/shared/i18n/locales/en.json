@@ -201,7 +201,17 @@
     "organization_info": "Current Organization",
     "switch_organization": "Switch Organization",
     "create_new_organization": "Create New Organization",
-    "no_organizations": "No organizations yet"
+    "no_organizations": "No organizations yet",
+    "categories": {
+      "general": "General",
+      "product": "Product",
+      "administration": "Administration"
+    },
+    "organization_menu": {
+      "info": "Info",
+      "team": "Team",
+      "webhooks": "Webhooks"
+    }
   },
   "team": {
     "title": "Team Members",

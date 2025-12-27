@@ -134,7 +134,7 @@ export function WebhooksPage() {
             leftSection={<Plus size={18} />}
             variant="gradient"
             gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
-            onClick={() => navigate('/webhooks/create')}
+            onClick={() => navigate('/organization/webhooks/create')}
           >
             {t('webhooks.create_button')}
           </Button>
@@ -151,7 +151,7 @@ export function WebhooksPage() {
                 </p>
                 <Button
                   leftSection={<Plus size={18} />}
-                  onClick={() => navigate('/webhooks/create')}
+                  onClick={() => navigate('/organization/webhooks/create')}
                 >
                   {t('webhooks.create_first_webhook')}
                 </Button>
@@ -264,7 +264,7 @@ export function WebhooksPage() {
                             <Menu.Dropdown>
                               <Menu.Item
                                 leftSection={<Eye size={16} />}
-                                onClick={() => navigate(`/webhooks/${webhook.id}`)}
+                                onClick={() => navigate(`/organization/webhooks/${webhook.id}`)}
                               >
                                 {t('webhooks.view_details')}
                               </Menu.Item>

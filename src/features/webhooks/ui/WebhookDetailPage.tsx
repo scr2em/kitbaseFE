@@ -116,7 +116,7 @@ export function WebhookDetailPage() {
             message: t('webhooks.delete.success_message'),
             color: 'green',
           });
-          navigate('/webhooks');
+          navigate('/organization/webhooks');
         } catch (error) {
           showError(error);
         }
@@ -173,7 +173,7 @@ export function WebhookDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/webhooks')}
+            onClick={() => navigate('/organization/webhooks')}
             className="p-1.5 -ml-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           >
             <ArrowLeft size={18} />
