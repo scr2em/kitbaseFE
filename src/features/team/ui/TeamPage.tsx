@@ -281,7 +281,7 @@ export function TeamPage() {
                     </Table.Td>
                     <Table.Td>
                       <p className="text-sm">
-                        {new Date(member.joinedAt).toLocaleDateString('en-US', {
+                        {new Date(member.user.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
