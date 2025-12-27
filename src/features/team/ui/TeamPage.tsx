@@ -13,7 +13,7 @@ import {
   Select,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, UserPlus, MoreVertical, Trash2, Building, Shield } from 'lucide-react';
+import { AlertCircle, UserPlus, MoreVertical, Trash2, Building, Shield, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
@@ -45,6 +45,8 @@ export function TeamPage() {
     isFetchingNextPage,
     isLoading,
     isError,
+    refetch,
+    isFetching,
   } = useOrganizationMembersQuery();
   const { data: roles } = useRolesQuery();
   
@@ -204,16 +206,27 @@ export function TeamPage() {
               {t('team.subtitle', { count: totalMembers })}
             </p>
           </div>
-          {canInviteMember && (
-            <Button
-              leftSection={<UserPlus size={18} />}
-              variant="gradient"
-              gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
-              onClick={() => setInviteModalOpened(true)}
+          <div className="flex gap-2">
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={() => refetch()}
+              loading={isFetching && !isLoading}
+              aria-label={t('team.refetch')}
             >
-              {t('team.invite_member')}
-            </Button>
-          )}
+              <RefreshCw size={18} />
+            </ActionIcon>
+            {canInviteMember && (
+              <Button
+                leftSection={<UserPlus size={18} />}
+                variant="gradient"
+                gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
+                onClick={() => setInviteModalOpened(true)}
+              >
+                {t('team.invite_member')}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Members Table */}

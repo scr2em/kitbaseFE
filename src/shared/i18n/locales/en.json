@@ -206,6 +206,7 @@
     "title": "Team Members",
     "subtitle": "Manage your organization's team ({{count}} members)",
     "invite_member": "Invite Member",
+    "refetch": "Refresh list",
     "no_organization_title": "No Organization",
     "no_organization_message": "You need to be part of an organization to view team members.",
     "error_loading": "Failed to load team members. Please try again.",
