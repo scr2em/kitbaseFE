@@ -35,7 +35,7 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading }: Crea
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={t('apps.detail.api_keys.create.modal_title')}
+      title={t('projects.detail.api_keys.create.modal_title')}
       size="md"
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -43,8 +43,8 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading }: Crea
           <ControlledTextInput
             control={form.control}
             name="name"
-            label={t('apps.detail.api_keys.create.name_label')}
-            placeholder={t('apps.detail.api_keys.create.name_placeholder')}
+            label={t('projects.detail.api_keys.create.name_label')}
+            placeholder={t('projects.detail.api_keys.create.name_placeholder')}
             required
           />
 
@@ -54,10 +54,11 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading }: Crea
             fullWidth
             mt="md"
           >
-            {t('apps.detail.api_keys.create.submit_button')}
+            {t('projects.detail.api_keys.create.submit_button')}
           </Button>
         </div>
       </form>
     </Modal>
   );
 }
+

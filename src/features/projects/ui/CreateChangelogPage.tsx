@@ -9,17 +9,17 @@ import { changelogSchema, type ChangelogFormData } from '../model/changelog-sche
 import { ControlledTextInput, ControlledCheckbox } from '../../../shared/controlled-form-fields';
 import { TipTapEditor } from '../../../shared/components/TipTapEditor';
 import { useCreateChangelogMutation } from '../../../shared/api/queries/changelog';
-import { useMobileAppQuery } from '../../../shared/api/queries';
+import { useProjectQuery } from '../../../shared/api/queries';
 import { useShowBackendError } from '../../../shared/hooks';
 
 export function CreateChangelogPage() {
   const { t } = useTranslation();
-  const { bundleId } = useParams<{ bundleId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const navigate = useNavigate();
   const { showError } = useShowBackendError();
   const createChangelogMutation = useCreateChangelogMutation();
   
-  const { data: app, isLoading: isLoadingApp, isError: isAppError } = useMobileAppQuery(bundleId || '');
+  const { data: project, isLoading: isLoadingProject, isError: isProjectError } = useProjectQuery(projectKey || '');
 
   const form = useForm<ChangelogFormData>({
     resolver: zodResolver(changelogSchema),
@@ -33,7 +33,7 @@ export function CreateChangelogPage() {
   const handleSubmit = async (data: ChangelogFormData) => {
     try {
       await createChangelogMutation.mutateAsync({
-        bundleId: bundleId || '',
+        projectKey: projectKey || '',
         version: data.version,
         markdown: data.markdown,
         is_published: data.is_published,
@@ -41,21 +41,21 @@ export function CreateChangelogPage() {
 
       notifications.show({
         title: t('common.success'),
-        message: t('apps.detail.changelog.create.success_message'),
+        message: t('projects.detail.changelog.create.success_message'),
         color: 'green',
       });
 
-      navigate(`/apps/${bundleId}/changelog`);
+      navigate(`/projects/${projectKey}/changelog`);
     } catch (error) {
       showError(error);
     }
   };
 
   const handleCancel = () => {
-    navigate(`/apps/${bundleId}/changelog`);
+    navigate(`/projects/${projectKey}/changelog`);
   };
 
-  if (isLoadingApp) {
+  if (isLoadingProject) {
     return (
       <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
@@ -63,14 +63,14 @@ export function CreateChangelogPage() {
     );
   }
 
-  if (isAppError || !app) {
+  if (isProjectError || !project) {
     return (
       <Alert
         icon={<AlertCircle size={16} />}
         title={t('common.error')}
         color="red"
       >
-        {t('apps.detail.error_loading')}
+        {t('projects.detail.error_loading')}
       </Alert>
     );
   }
@@ -87,13 +87,13 @@ export function CreateChangelogPage() {
               leftSection={<ArrowLeft size={16} />}
               onClick={handleCancel}
             >
-              {t('apps.detail.changelog.create.back_button')}
+              {t('projects.detail.changelog.create.back_button')}
             </Button>
             <div>
               <h2 className="text-2xl font-semibold">
-                {t('apps.detail.changelog.create.page_title')}
+                {t('projects.detail.changelog.create.page_title')}
               </h2>
-              <p className="text-sm text-gray-500">{app.name}</p>
+              <p className="text-sm text-gray-500">{project.name}</p>
             </div>
           </div>
         </div>
@@ -105,18 +105,18 @@ export function CreateChangelogPage() {
               <ControlledTextInput
                 control={form.control}
                 name="version"
-                label={t('apps.detail.changelog.create.version_label')}
-                placeholder={t('apps.detail.changelog.create.version_placeholder')}
-                description={t('apps.detail.changelog.create.version_description')}
+                label={t('projects.detail.changelog.create.version_label')}
+                placeholder={t('projects.detail.changelog.create.version_placeholder')}
+                description={t('projects.detail.changelog.create.version_description')}
                 required
               />
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('apps.detail.changelog.create.markdown_label')} <span className="text-red-500">*</span>
+                  {t('projects.detail.changelog.create.markdown_label')} <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
-                  {t('apps.detail.changelog.create.markdown_description')}
+                  {t('projects.detail.changelog.create.markdown_description')}
                 </p>
                 <Controller
                   control={form.control}
@@ -141,8 +141,8 @@ export function CreateChangelogPage() {
               <ControlledCheckbox
                 control={form.control}
                 name="is_published"
-                label={t('apps.detail.changelog.create.published_label')}
-                description={t('apps.detail.changelog.create.published_description')}
+                label={t('projects.detail.changelog.create.published_label')}
+                description={t('projects.detail.changelog.create.published_description')}
               />
 
               <div className="flex justify-end gap-3 pt-4 ">
@@ -150,13 +150,13 @@ export function CreateChangelogPage() {
                   variant="outline"
                   onClick={handleCancel}
                 >
-                  {t('apps.detail.changelog.create.cancel_button')}
+                  {t('projects.detail.changelog.create.cancel_button')}
                 </Button>
                 <Button
                   type="submit"
                   loading={createChangelogMutation.isPending}
                 >
-                  {t('apps.detail.changelog.create.submit_button')}
+                  {t('projects.detail.changelog.create.submit_button')}
                 </Button>
               </div>
             </div>

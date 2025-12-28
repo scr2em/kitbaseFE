@@ -1,34 +1,34 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import type { Changelog, ChangelogListResponse } from '../../../features/apps/model/changelog-schema';
+import type { Changelog, ChangelogListResponse } from '../../../features/projects/model/changelog-schema';
 
 export const CHANGELOG_QUERY_KEY = ['changelogs'];
 
-export function useChangelogsQuery(bundleId: string, page: number = 0, size: number = 10) {
+export function useChangelogsQuery(projectKey: string, page: number = 0, size: number = 10) {
   return useQuery({
-    queryKey: [...CHANGELOG_QUERY_KEY, bundleId, page, size],
+    queryKey: [...CHANGELOG_QUERY_KEY, projectKey, page, size],
     queryFn: async () => {
       const response = await axios.get<ChangelogListResponse>(
-        `/api/mobile-apps/${bundleId}/changelogs`,
+        `/api/projects/${projectKey}/changelogs`,
         { params: { page, size } }
       );
       return response.data;
     },
     staleTime: 30 * 1000,
-    enabled: !!bundleId,
+    enabled: !!projectKey,
   });
 }
 
-export function useChangelogQuery(bundleId: string, id: string) {
+export function useChangelogQuery(projectKey: string, id: string) {
   return useQuery({
-    queryKey: [...CHANGELOG_QUERY_KEY, bundleId, id],
+    queryKey: [...CHANGELOG_QUERY_KEY, projectKey, id],
     queryFn: async () => {
       const response = await axios.get<Changelog>(
-        `/api/mobile-apps/${bundleId}/changelogs/${id}`
+        `/api/projects/${projectKey}/changelogs/${id}`
       );
       return response.data;
     },
-    enabled: !!bundleId && !!id,
+    enabled: !!projectKey && !!id,
   });
 }
 
@@ -37,25 +37,25 @@ export function useCreateChangelogMutation() {
 
   return useMutation({
     mutationFn: async ({
-      bundleId,
+      projectKey,
       version,
       markdown,
       is_published,
     }: {
-      bundleId: string;
+      projectKey: string;
       version: string;
       markdown: string;
       is_published: boolean;
     }) => {
       const response = await axios.post<Changelog>(
-        `/api/mobile-apps/${bundleId}/changelogs`,
+        `/api/projects/${projectKey}/changelogs`,
         { version, markdown, is_published }
       );
       return response.data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: [...CHANGELOG_QUERY_KEY, variables.bundleId],
+        queryKey: [...CHANGELOG_QUERY_KEY, variables.projectKey],
       });
     },
   });
@@ -66,27 +66,27 @@ export function useUpdateChangelogMutation() {
 
   return useMutation({
     mutationFn: async ({
-      bundleId,
+      projectKey,
       id,
       version,
       markdown,
       is_published,
     }: {
-      bundleId: string;
+      projectKey: string;
       id: string;
       version: string;
       markdown: string;
       is_published: boolean;
     }) => {
       const response = await axios.put<Changelog>(
-        `/api/mobile-apps/${bundleId}/changelogs/${id}`,
+        `/api/projects/${projectKey}/changelogs/${id}`,
         { version, markdown, is_published }
       );
       return response.data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: [...CHANGELOG_QUERY_KEY, variables.bundleId],
+        queryKey: [...CHANGELOG_QUERY_KEY, variables.projectKey],
       });
     },
   });
@@ -96,14 +96,13 @@ export function useDeleteChangelogMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ bundleId, id }: { bundleId: string; id: string }) => {
-      await axios.delete(`/api/mobile-apps/${bundleId}/changelogs/${id}`);
+    mutationFn: async ({ projectKey, id }: { projectKey: string; id: string }) => {
+      await axios.delete(`/api/projects/${projectKey}/changelogs/${id}`);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: [...CHANGELOG_QUERY_KEY, variables.bundleId],
+        queryKey: [...CHANGELOG_QUERY_KEY, variables.projectKey],
       });
     },
   });
 }
-

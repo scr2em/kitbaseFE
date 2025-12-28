@@ -34,8 +34,8 @@ tags:
     description: User management operation
   - name: Roles & Permissions
     description: Role and permission management operations
-  - name: Mobile Applications
-    description: Mobile application management operations
+  - name: Projects
+    description: Project management operations
   - name: Channels
     description: Channel management operations
   - name: Builds
@@ -528,35 +528,35 @@ components:
           type: string
           description: New role ID
 
-    CreateMobileApplicationRequest:
+    CreateProjectRequest:
       type: object
-      description: Request to create a new mobile application
+      description: Request to create a new project
       required:
-        - bundleId
+        - projectKey
         - name
       properties:
-        bundleId:
+        projectKey:
           type: string
-          description: Unique bundle identifier for the mobile application (e.g., com.example.app)
+          description: Unique project key identifier (e.g., com.example.app)
         name:
           type: string
-          description: Mobile application name
+          description: Project name
         description:
           type: string
-          description: Mobile application description
+          description: Project description
 
-    UpdateMobileApplicationRequest:
+    UpdateProjectRequest:
       type: object
-      description: Request to update a mobile application
+      description: Request to update a project
       required:
         - name
       properties:
         name:
           type: string
-          description: Mobile application name
+          description: Project name
         description:
           type: string
-          description: Mobile application description
+          description: Project description
 
     UpdateUserRequest:
       type: object
@@ -793,10 +793,10 @@ components:
         - member.invite
         - member.remove
         - member.update_role
-        - app.read
-        - app.create
-        - app.update
-        - app.delete
+        - project.read
+        - project.create
+        - project.update
+        - project.delete
         - channel.read
         - channel.create
         - channel.update
@@ -875,6 +875,92 @@ components:
         status:
           $ref: '#/components/schemas/InvitationStatusEnum'
 
+    PendingInvitationSummary:
+      type: object
+      description: Minimal pending invitation information for member list
+      required:
+        - id
+        - email
+        - role
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Invitation ID
+        email:
+          type: string
+          format: email
+          description: Email of the invited user
+        role:
+          $ref: '#/components/schemas/RoleResponse'
+        invitedBy:
+          $ref: '#/components/schemas/UserResponse'
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: When the invitation was created
+
+    MembersData:
+      type: object
+      description: Paginated members data
+      required:
+        - data
+        - total
+        - count
+        - itemsPerPage
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationMemberResponse'
+          description: Array of members for this page
+        total:
+          type: integer
+          description: Total number of members across all pages
+        count:
+          type: integer
+          description: Number of members in this page
+        itemsPerPage:
+          type: integer
+          description: Maximum items per page
+
+    InvitationsData:
+      type: object
+      description: Paginated pending invitations data
+      required:
+        - data
+        - total
+        - count
+        - itemsPerPage
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingInvitationSummary'
+          description: Array of pending invitations for this page
+        total:
+          type: integer
+          description: Total number of pending invitations across all pages
+        count:
+          type: integer
+          description: Number of invitations in this page
+        itemsPerPage:
+          type: integer
+          description: Maximum items per page
+
+    MembersAndInvitationsResponse:
+      type: object
+      description: Combined response with members and pending invitations
+      required:
+        - members
+        - invitations
+      properties:
+        members:
+          $ref: '#/components/schemas/MembersData'
+        invitations:
+          $ref: '#/components/schemas/InvitationsData'
+
     OrganizationMemberResponse:
       type: object
       description: Organization member information
@@ -920,12 +1006,12 @@ components:
           type: integer
           description: Maximum items per page
 
-    MobileApplicationResponse:
+    ProjectResponse:
       type: object
-      description: Mobile application information
+      description: Project information
       required:
         - id
-        - bundleId
+        - projectKey
         - organizationId
         - name
         - createdBy
@@ -933,30 +1019,30 @@ components:
       properties:
         id:
           type: string
-          description: Mobile application ID
-        bundleId:
+          description: Project ID
+        projectKey:
           type: string
-          description: Bundle identifier for the mobile application
+          description: Unique project key identifier
         organizationId:
           type: string
-          description: Organization ID that owns this application
+          description: Organization ID that owns this project
         name:
           type: string
-          description: Mobile application name
+          description: Project name
         description:
           type: string
-          description: Mobile application description
+          description: Project description
         createdBy:
           type: string
-          description: User ID who created the application
+          description: User ID who created the project
         createdAt:
           type: string
           format: date-time
-          description: When the application was created
+          description: When the project was created
         updatedAt:
           type: string
           format: date-time
-          description: When the application was last updated
+          description: When the project was last updated
 
     BuildResponse:
       type: object
@@ -964,7 +1050,7 @@ components:
       required:
         - id
         - organizationId
-        - bundleId
+        - projectKey
         - commitHash
         - branchName
         - buildSize
@@ -979,9 +1065,9 @@ components:
         organizationId:
           type: string
           description: Organization ID
-        bundleId:
+        projectKey:
           type: string
-          description: Bundle identifier for the mobile application
+          description: Project key identifier
         commitHash:
           type: string
           description: Git commit hash (unique identifier)
@@ -1110,7 +1196,7 @@ components:
         - id
         - name
         - keyPrefix
-        - bundleId
+        - projectKey
         - organizationId
         - createdBy
         - createdAt
@@ -1127,9 +1213,9 @@ components:
         keyPrefix:
           type: string
           description: Masked key display (e.g., "flyw...xyz")
-        bundleId:
+        projectKey:
           type: string
-          description: Bundle ID this key is for
+          description: Project key this API key is for
         organizationId:
           type: string
           description: Organization ID
@@ -1249,10 +1335,10 @@ components:
           description: ID of the organization
         action:
           type: string
-          description: Action performed (e.g., MOBILE_APP_CREATED, BUILD_UPLOADED)
+          description: Action performed (e.g., PROJECT_CREATED, BUILD_UPLOADED)
         resourceType:
           type: string
-          description: Type of resource affected (e.g., MOBILE_APPLICATION, BUILD)
+          description: Type of resource affected (e.g., PROJECT, BUILD)
         resourceId:
           type: string
           description: ID of the affected resource
@@ -2341,11 +2427,11 @@ paths:
             default: 20
       responses:
         '200':
-          description: Members retrieved successfully
+          description: Members and pending invitations retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedOrganizationMemberResponse'
+                $ref: '#/components/schemas/MembersAndInvitationsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2416,37 +2502,37 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /apps:
+  /projects:
     get:
-      operationId: listApplications
-      summary: List applications
-      description: List all mobile applications for the organization. Organization context determined by subdomain. Any member can view.
+      operationId: listProjects
+      summary: List projects
+      description: List all projects for the organization. Organization context determined by subdomain. Any member can view.
       tags:
-        - Mobile Applications
+        - Projects
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
       responses:
         '200':
-          description: Mobile applications retrieved successfully
+          description: Projects retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MobileApplicationResponse'
+                  $ref: '#/components/schemas/ProjectResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
     
     post:
-      operationId: createApplication
-      summary: Create application
-      description: Create a new mobile application. Organization context determined by subdomain. Requires Developer+ role.
+      operationId: createProject
+      summary: Create project
+      description: Create a new project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
-        - Mobile Applications
+        - Projects
       security:
         - BearerAuth: []
       parameters:
@@ -2456,14 +2542,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateMobileApplicationRequest'
+              $ref: '#/components/schemas/CreateProjectRequest'
       responses:
         '201':
-          description: Mobile application created successfully
+          description: Project created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MobileApplicationResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -2473,30 +2559,30 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /apps/{appId}:
+  /projects/{projectKey}:
     get:
-      operationId: getApplication
-      summary: Get application details
-      description: Get mobile application details. Organization context determined by subdomain. Any member can view.
+      operationId: getProject
+      summary: Get project details
+      description: Get project details. Organization context determined by subdomain. Any member can view.
       tags:
-        - Mobile Applications
+        - Projects
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: appId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Application ID
+          description: Project key identifier
       responses:
         '200':
-          description: Mobile application retrieved successfully
+          description: Project retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MobileApplicationResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2505,34 +2591,34 @@ paths:
           $ref: '#/components/responses/NotFoundError'
     
     patch:
-      operationId: updateApplication
-      summary: Update application
-      description: Update mobile application. Organization context determined by subdomain. Requires Developer+ role.
+      operationId: updateProject
+      summary: Update project
+      description: Update project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
-        - Mobile Applications
+        - Projects
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: appId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Application ID
+          description: Project key identifier
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateMobileApplicationRequest'
+              $ref: '#/components/schemas/UpdateProjectRequest'
       responses:
         '200':
-          description: Mobile application updated successfully
+          description: Project updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MobileApplicationResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -2543,24 +2629,24 @@ paths:
           $ref: '#/components/responses/NotFoundError'
     
     delete:
-      operationId: deleteApplication
-      summary: Delete application
-      description: Delete mobile application. Organization context determined by subdomain. Requires Developer+ role.
+      operationId: deleteProject
+      summary: Delete project
+      description: Delete project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
-        - Mobile Applications
+        - Projects
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: appId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Application ID
+          description: Project key identifier
       responses:
         '204':
-          description: Mobile application deleted successfully
+          description: Project deleted successfully
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -2568,7 +2654,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /{bundleId}/builds:
+  /projects/{projectKey}/builds:
     get:
       operationId: getBuilds
       summary: Get builds with pagination and sorting
@@ -2579,12 +2665,12 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: bundleId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Bundle ID of the mobile application
+          description: Project key identifier
         - name: page
           in: query
           required: false
@@ -2705,7 +2791,7 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /{bundleId}/api-keys:
+  /projects/{projectKey}/api-keys:
     get:
       operationId: getApiKeys
       summary: Get API keys with pagination and sorting
@@ -2716,12 +2802,12 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: bundleId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Bundle ID of the mobile application
+          description: Project key identifier
         - name: page
           in: query
           required: false
@@ -2774,12 +2860,12 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: bundleId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Bundle ID of the mobile application
+          description: Project key identifier
       requestBody:
         required: true
         content:
@@ -2802,7 +2888,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /{bundleId}/api-keys/{keyId}:
+  /projects/{projectKey}/api-keys/{keyId}:
     delete:
       operationId: deleteApiKey
       summary: Delete an API key
@@ -2813,12 +2899,12 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: bundleId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Bundle ID of the mobile application
+          description: Project key identifier
         - name: keyId
           in: path
           required: true
@@ -3039,13 +3125,13 @@ paths:
           required: false
           schema:
             type: string
-          description: Filter by action (e.g., MOBILE_APP_CREATED)
+          description: Filter by action (e.g., PROJECT_CREATED)
         - name: resourceType
           in: query
           required: false
           schema:
             type: string
-          description: Filter by resource type (e.g., MOBILE_APPLICATION)
+          description: Filter by resource type (e.g., PROJECT)
         - name: userId
           in: query
           required: false

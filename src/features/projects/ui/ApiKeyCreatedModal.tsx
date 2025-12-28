@@ -16,7 +16,7 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
     <Modal
       opened={opened}
       onClose={onClose}
-      title={t('apps.detail.api_keys.created.modal_title')}
+      title={t('projects.detail.api_keys.created.modal_title')}
       size="md"
       closeOnClickOutside={false}
       closeOnEscape={false}
@@ -25,14 +25,14 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
         <Alert
           icon={<AlertTriangle size={20} />}
           color="yellow"
-          title={t('apps.detail.api_keys.created.warning_title')}
+          title={t('projects.detail.api_keys.created.warning_title')}
         >
-          {t('apps.detail.api_keys.created.warning_message')}
+          {t('projects.detail.api_keys.created.warning_message')}
         </Alert>
 
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium">
-            {t('apps.detail.api_keys.created.key_name')}
+            {t('projects.detail.api_keys.created.key_name')}
           </p>
           <p className="text-sm text-gray-500">
             {keyName}
@@ -42,7 +42,7 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
         <div className="flex flex-col gap-1">
           <div className="flex justify-between items-center">
             <p className="text-sm font-medium">
-              {t('apps.detail.api_keys.created.key_label')}
+              {t('projects.detail.api_keys.created.key_label')}
             </p>
             <CopyButton value={apiKey}>
               {({ copied, copy }) => (
@@ -52,7 +52,7 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
                   color={copied ? 'green' : 'blue'}
                   size="xs"
                 >
-                  {copied ? t('apps.detail.api_keys.created.copied') : t('apps.detail.api_keys.created.copy_button')}
+                  {copied ? t('projects.detail.api_keys.created.copied') : t('projects.detail.api_keys.created.copy_button')}
                 </Button>
               )}
             </CopyButton>
@@ -64,10 +64,11 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
 
         <div className="flex justify-end">
           <Button onClick={onClose}>
-            {t('apps.detail.api_keys.created.confirm_button')}
+            {t('projects.detail.api_keys.created.confirm_button')}
           </Button>
         </div>
       </div>
     </Modal>
   );
 }
+

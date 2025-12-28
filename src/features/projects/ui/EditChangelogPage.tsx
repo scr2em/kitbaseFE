@@ -9,19 +9,19 @@ import { changelogSchema, type ChangelogFormData } from '../model/changelog-sche
 import { ControlledTextInput, ControlledCheckbox } from '../../../shared/controlled-form-fields';
 import { TipTapEditor } from '../../../shared/components/TipTapEditor';
 import { useUpdateChangelogMutation, useChangelogQuery } from '../../../shared/api/queries/changelog';
-import { useMobileAppQuery } from '../../../shared/api/queries';
+import { useProjectQuery } from '../../../shared/api/queries';
 import { useShowBackendError } from '../../../shared/hooks';
 
 export function EditChangelogPage() {
   const { t } = useTranslation();
-  const { bundleId, changelogId } = useParams<{ bundleId: string; changelogId: string }>();
+  const { projectKey, changelogId } = useParams<{ projectKey: string; changelogId: string }>();
   const navigate = useNavigate();
   const { showError } = useShowBackendError();
   const updateChangelogMutation = useUpdateChangelogMutation();
   
-  const { data: app, isLoading: isLoadingApp, isError: isAppError } = useMobileAppQuery(bundleId || '');
+  const { data: project, isLoading: isLoadingProject, isError: isProjectError } = useProjectQuery(projectKey || '');
   const { data: changelog, isLoading: isLoadingChangelog, isError: isChangelogError } = useChangelogQuery(
-    bundleId || '',
+    projectKey || '',
     changelogId || ''
   );
 
@@ -37,7 +37,7 @@ export function EditChangelogPage() {
   const handleSubmit = async (data: ChangelogFormData) => {
     try {
       await updateChangelogMutation.mutateAsync({
-        bundleId: bundleId || '',
+        projectKey: projectKey || '',
         id: changelogId || '',
         version: data.version,
         markdown: data.markdown,
@@ -46,21 +46,21 @@ export function EditChangelogPage() {
 
       notifications.show({
         title: t('common.success'),
-        message: t('apps.detail.changelog.edit.success_message'),
+        message: t('projects.detail.changelog.edit.success_message'),
         color: 'green',
       });
 
-      navigate(`/apps/${bundleId}/changelog`);
+      navigate(`/projects/${projectKey}/changelog`);
     } catch (error) {
       showError(error);
     }
   };
 
   const handleCancel = () => {
-    navigate(`/apps/${bundleId}/changelog`);
+    navigate(`/projects/${projectKey}/changelog`);
   };
 
-  if (isLoadingApp || isLoadingChangelog) {
+  if (isLoadingProject || isLoadingChangelog) {
     return (
       <div className="h-[calc(100vh-120px)] flex items-center justify-center">
         <Loader size="lg" />
@@ -68,14 +68,14 @@ export function EditChangelogPage() {
     );
   }
 
-  if (isAppError || !app || isChangelogError || !changelog) {
+  if (isProjectError || !project || isChangelogError || !changelog) {
     return (
       <Alert
         icon={<AlertCircle size={16} />}
         title={t('common.error')}
         color="red"
       >
-        {t('apps.detail.changelog.error_loading')}
+        {t('projects.detail.changelog.error_loading')}
       </Alert>
     );
   }
@@ -92,13 +92,13 @@ export function EditChangelogPage() {
               leftSection={<ArrowLeft size={16} />}
               onClick={handleCancel}
             >
-              {t('apps.detail.changelog.edit.back_button')}
+              {t('projects.detail.changelog.edit.back_button')}
             </Button>
             <div>
               <h2 className="text-2xl font-semibold">
-                {t('apps.detail.changelog.edit.page_title')}
+                {t('projects.detail.changelog.edit.page_title')}
               </h2>
-              <p className="text-sm text-gray-500">{app.name} - v{changelog.version}</p>
+              <p className="text-sm text-gray-500">{project.name} - v{changelog.version}</p>
             </div>
           </div>
         </div>
@@ -110,18 +110,18 @@ export function EditChangelogPage() {
               <ControlledTextInput
                 control={form.control}
                 name="version"
-                label={t('apps.detail.changelog.edit.version_label')}
-                placeholder={t('apps.detail.changelog.edit.version_placeholder')}
-                description={t('apps.detail.changelog.edit.version_description')}
+                label={t('projects.detail.changelog.edit.version_label')}
+                placeholder={t('projects.detail.changelog.edit.version_placeholder')}
+                description={t('projects.detail.changelog.edit.version_description')}
                 required
               />
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('apps.detail.changelog.edit.markdown_label')} <span className="text-red-500">*</span>
+                  {t('projects.detail.changelog.edit.markdown_label')} <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
-                  {t('apps.detail.changelog.edit.markdown_description')}
+                  {t('projects.detail.changelog.edit.markdown_description')}
                 </p>
                 <Controller
                   control={form.control}
@@ -147,8 +147,8 @@ export function EditChangelogPage() {
               <ControlledCheckbox
                 control={form.control}
                 name="is_published"
-                label={t('apps.detail.changelog.edit.published_label')}
-                description={t('apps.detail.changelog.edit.published_description')}
+                label={t('projects.detail.changelog.edit.published_label')}
+                description={t('projects.detail.changelog.edit.published_description')}
               />
 
               <div className="flex justify-end gap-3 pt-4 ">
@@ -156,13 +156,13 @@ export function EditChangelogPage() {
                   variant="outline"
                   onClick={handleCancel}
                 >
-                  {t('apps.detail.changelog.edit.cancel_button')}
+                  {t('projects.detail.changelog.edit.cancel_button')}
                 </Button>
                 <Button
                   type="submit"
                   loading={updateChangelogMutation.isPending}
                 >
-                  {t('apps.detail.changelog.edit.submit_button')}
+                  {t('projects.detail.changelog.edit.submit_button')}
                 </Button>
               </div>
             </div>

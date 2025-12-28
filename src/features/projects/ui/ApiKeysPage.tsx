@@ -21,7 +21,7 @@ import { ApiKeyCreatedModal } from './ApiKeyCreatedModal';
 
 export function ApiKeysPage() {
   const { t } = useTranslation();
-  const { bundleId } = useParams<{ bundleId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const [createModalOpened, setCreateModalOpened] = useState(false);
   const [createdKeyData, setCreatedKeyData] = useState<{ key: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,7 +29,7 @@ export function ApiKeysPage() {
 
   const pageSize = 10;
   const { data, isLoading, isError } = useApiKeysQuery(
-    bundleId || '',
+    projectKey || '',
     currentPage - 1, // API uses 0-based pagination
     pageSize
   );
@@ -42,7 +42,7 @@ export function ApiKeysPage() {
   const handleCreateKey = async (name: string) => {
     try {
       const result = await createApiKeyMutation.mutateAsync({
-        bundleId: bundleId || '',
+        projectKey: projectKey || '',
         name,
       });
       
@@ -60,21 +60,21 @@ export function ApiKeysPage() {
 
   const handleDeleteKey = (keyId: string, keyName: string) => {
     modals.openConfirmModal({
-      title: t('apps.detail.api_keys.delete.title'),
+      title: t('projects.detail.api_keys.delete.title'),
       children: (
         <p className="text-sm">
-          {t('apps.detail.api_keys.delete.confirmation', { name: keyName })}
+          {t('projects.detail.api_keys.delete.confirmation', { name: keyName })}
         </p>
       ),
       labels: {
-        confirm: t('apps.detail.api_keys.delete.confirm'),
-        cancel: t('apps.detail.api_keys.delete.cancel'),
+        confirm: t('projects.detail.api_keys.delete.confirm'),
+        cancel: t('projects.detail.api_keys.delete.cancel'),
       },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
           await deleteApiKeyMutation.mutateAsync({
-            bundleId: bundleId || '',
+            projectKey: projectKey || '',
             keyId,
           });
           
@@ -85,7 +85,7 @@ export function ApiKeysPage() {
           
           notifications.show({
             title: t('common.success'),
-            message: t('apps.detail.api_keys.delete.success_message'),
+            message: t('projects.detail.api_keys.delete.success_message'),
             color: 'green',
           });
         } catch (error) {
@@ -119,7 +119,7 @@ export function ApiKeysPage() {
         title={t('common.error')}
         color="red"
       >
-        {t('apps.detail.api_keys.error_loading')}
+        {t('projects.detail.api_keys.error_loading')}
       </Alert>
     );
   }
@@ -131,16 +131,16 @@ export function ApiKeysPage() {
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-xl font-semibold">{t('apps.detail.api_keys.title')}</h3>
+            <h3 className="text-xl font-semibold">{t('projects.detail.api_keys.title')}</h3>
             <p className="text-sm text-gray-500">
-              {t('apps.detail.api_keys.subtitle')}
+              {t('projects.detail.api_keys.subtitle')}
             </p>
           </div>
           <Button
             leftSection={<Key size={16} />}
             onClick={() => setCreateModalOpened(true)}
           >
-            {t('apps.detail.api_keys.create_button')}
+            {t('projects.detail.api_keys.create_button')}
           </Button>
         </div>
 
@@ -150,10 +150,10 @@ export function ApiKeysPage() {
               <Key size={48} strokeWidth={1.5} className="opacity-50" />
               <div>
                 <p className="text-lg font-medium">
-                  {t('apps.detail.api_keys.no_keys')}
+                  {t('projects.detail.api_keys.no_keys')}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {t('apps.detail.api_keys.create_first_key')}
+                  {t('projects.detail.api_keys.create_first_key')}
                 </p>
               </div>
             </div>
@@ -164,11 +164,11 @@ export function ApiKeysPage() {
               <Table highlightOnHover>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>{t('apps.detail.api_keys.table.name')}</Table.Th>
-                    <Table.Th>{t('apps.detail.api_keys.table.key_prefix')}</Table.Th>
-                    <Table.Th>{t('apps.detail.api_keys.table.created_at')}</Table.Th>
-                    <Table.Th>{t('apps.detail.api_keys.table.last_used')}</Table.Th>
-                    <Table.Th>{t('apps.detail.api_keys.table.actions')}</Table.Th>
+                    <Table.Th>{t('projects.detail.api_keys.table.name')}</Table.Th>
+                    <Table.Th>{t('projects.detail.api_keys.table.key_prefix')}</Table.Th>
+                    <Table.Th>{t('projects.detail.api_keys.table.created_at')}</Table.Th>
+                    <Table.Th>{t('projects.detail.api_keys.table.last_used')}</Table.Th>
+                    <Table.Th>{t('projects.detail.api_keys.table.actions')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -191,7 +191,7 @@ export function ApiKeysPage() {
                         <p className={`text-sm ${key.lastUsedAt ? '' : 'text-gray-500'}`}>
                           {key.lastUsedAt
                             ? formatDate(key.lastUsedAt)
-                            : t('apps.detail.api_keys.table.never_used')}
+                            : t('projects.detail.api_keys.table.never_used')}
                         </p>
                       </Table.Td>
                       <Table.Td>
@@ -208,7 +208,7 @@ export function ApiKeysPage() {
                               leftSection={<Trash2 size={16} />}
                               onClick={() => handleDeleteKey(key.id, key.name)}
                             >
-                              {t('apps.detail.api_keys.delete.menu_item')}
+                              {t('projects.detail.api_keys.delete.menu_item')}
                             </Menu.Item>
                           </Menu.Dropdown>
                         </Menu>
@@ -252,3 +252,4 @@ export function ApiKeysPage() {
     </div>
   );
 }
+

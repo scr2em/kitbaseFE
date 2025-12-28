@@ -169,7 +169,7 @@
     "first_name_required": "First name is required",
     "last_name_required": "Last name is required",
     "organization_name_required": "Organization name is required",
-    "app_name_required": "App name is required",
+    "project_name_required": "Project name is required",
     "subdomain_required": "Subdomain is required",
     "subdomain_min_length": "Subdomain must be at least 3 characters",
     "subdomain_max_length": "Subdomain must be at most 63 characters",
@@ -190,7 +190,7 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
-    "apps": "Apps",
+    "projects": "Projects",
     "live_updates": "Live Updates",
     "bundles": "Bundles",
     "builds": "Builds",
@@ -333,7 +333,7 @@
       "user": "User Management",
       "deployment": "Deployment",
       "billing": "Billing",
-      "mobile_app": "Mobile Applications",
+      "project": "Projects",
       "build": "Build Management",
       "api_key": "API Key Management",
       "channel": "Channel Management"
@@ -387,58 +387,58 @@
       "success_message": "Account created and invitation accepted!"
     }
   },
-  "apps": {
-    "page_title": "Apps",
-    "title": "Mobile Applications",
-    "subtitle": "Manage your mobile applications ({{count}} apps)",
-    "create_button": "Create App",
-    "create_first_app": "Create Your First App",
-    "no_apps": "No applications yet",
+  "projects": {
+    "page_title": "Projects",
+    "title": "Projects",
+    "subtitle": "Manage your projects ({{count}} projects)",
+    "create_button": "Create Project",
+    "create_first_project": "Create Your First Project",
+    "no_projects": "No projects yet",
     "no_organization_title": "No Organization",
-    "no_organization_message": "You need to be part of an organization to manage apps.",
-    "error_loading": "Failed to load applications. Please try again.",
+    "no_organization_message": "You need to be part of an organization to manage projects.",
+    "error_loading": "Failed to load projects. Please try again.",
     "created_at": "Created on {{date}}",
     "create": {
-      "modal_title": "Create Mobile Application",
-      "bundle_id_label": "Bundle ID",
-      "bundle_id_placeholder": "com.example.app",
-      "name_label": "App Name",
-      "name_placeholder": "Enter app name",
+      "modal_title": "Create Project",
+      "project_key_label": "Project Key",
+      "project_key_placeholder": "com.example.app",
+      "name_label": "Project Name",
+      "name_placeholder": "Enter project name",
       "description_label": "Description (Optional)",
-      "description_placeholder": "Describe your application",
-      "submit_button": "Create Application",
-      "success_message": "Application created successfully",
+      "description_placeholder": "Describe your project",
+      "submit_button": "Create Project",
+      "success_message": "Project created successfully",
       "validation": {
-        "bundle_id_required": "Bundle ID is required",
-        "bundle_id_invalid": "Bundle ID must be in format: com.example.app",
-        "name_required": "App name is required"
+        "project_key_required": "Project key is required",
+        "project_key_invalid": "Project key must be in format: com.example.app",
+        "name_required": "Project name is required"
       }
     },
     "edit": {
-      "modal_title": "Edit Application",
-      "name_label": "App Name",
-      "name_placeholder": "Enter app name",
+      "modal_title": "Edit Project",
+      "name_label": "Project Name",
+      "name_placeholder": "Enter project name",
       "description_label": "Description (Optional)",
-      "description_placeholder": "Describe your application",
+      "description_placeholder": "Describe your project",
       "submit_button": "Save Changes",
-      "success_message": "Application updated successfully",
-      "menu_item": "Edit app"
+      "success_message": "Project updated successfully",
+      "menu_item": "Edit project"
     },
     "delete": {
-      "title": "Delete Application",
+      "title": "Delete Project",
       "confirmation": "Are you sure you want to delete '{{name}}'? This action cannot be undone and all associated data will be lost.",
       "confirm": "Delete",
       "cancel": "Cancel",
-      "success_message": "Application deleted successfully",
-      "menu_item": "Delete app"
+      "success_message": "Project deleted successfully",
+      "menu_item": "Delete project"
     },
     "detail": {
-      "back_to_apps": "Back to Apps",
-      "error_loading": "Failed to load application details. Please try again.",
+      "back_to_projects": "Back to Projects",
+      "error_loading": "Failed to load project details. Please try again.",
       "description_title": "Description",
       "no_description": "No description provided",
-      "details_title": "Application Details",
-      "bundle_id": "Bundle ID",
+      "details_title": "Project Details",
+      "project_key": "Project Key",
       "created_at": "Created At",
       "updated_at": "Last Updated",
       "nav": {
@@ -454,7 +454,7 @@
       },
       "builds": {
         "title": "Builds",
-        "subtitle": "View and manage your application builds",
+        "subtitle": "View and manage your project builds",
         "coming_soon": "Builds management coming soon",
         "no_builds": "No builds uploaded yet",
         "create_first_build": "Upload your first build using the API",
@@ -846,4 +846,3 @@
     }
   }
 }
-

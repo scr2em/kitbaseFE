@@ -12,13 +12,13 @@ export {
   INVITATIONS_QUERY_KEY 
 } from './invitation';
 export {
-  useMobileAppsQuery,
-  useMobileAppQuery,
-  useCreateMobileAppMutation,
-  useDeleteMobileAppMutation,
-  useUpdateMobileAppMutation,
-  MOBILE_APPS_QUERY_KEY,
-} from './mobile-app';
+  useProjectsQuery,
+  useProjectQuery,
+  useCreateProjectMutation,
+  useDeleteProjectMutation,
+  useUpdateProjectMutation,
+  PROJECTS_QUERY_KEY,
+} from './projects';
 export {
   useApiKeysQuery,
   useCreateApiKeyMutation,

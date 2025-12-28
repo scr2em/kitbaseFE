@@ -14,42 +14,42 @@ import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import {
-  useMobileAppsQuery,
-  useDeleteMobileAppMutation,
+  useProjectsQuery,
+  useDeleteProjectMutation,
 } from '../../../shared/api/queries';
 import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
-import { CreateAppModal } from './CreateAppModal';
-import { EditAppModal } from './EditAppModal';
-import type { MobileApplicationResponse } from '../../../generated-api';
+import { CreateProjectModal } from './CreateProjectModal';
+import { EditProjectModal } from './EditProjectModal';
+import type { ProjectResponse } from '../../../generated-api';
 
-export function AppsPage() {
+export function ProjectsPage() {
   const { t } = useTranslation();
-  usePageTitle(t('apps.page_title'));
+  usePageTitle(t('projects.page_title'));
   const navigate = useNavigate();
   const [createModalOpened, setCreateModalOpened] = useState(false);
-  const [editingApp, setEditingApp] = useState<MobileApplicationResponse | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectResponse | null>(null);
   const { hasOrganizations, isLoading: isLoadingUser } = useCurrentOrganization();
-  const { data: apps, isLoading, isError } = useMobileAppsQuery();
-  const deleteAppMutation = useDeleteMobileAppMutation();
+  const { data: projects, isLoading, isError } = useProjectsQuery();
+  const deleteProjectMutation = useDeleteProjectMutation();
   const { showError } = useShowBackendError();
-  const { canCreateApp, canDeleteApp, canUpdateApp } = usePermissions();
+  const { canCreateProject, canDeleteProject, canUpdateProject } = usePermissions();
 
-  const handleDeleteApp = (appId: string, appName: string) => {
+  const handleDeleteProject = (projectKey: string, projectName: string) => {
     modals.openConfirmModal({
-      title: t('apps.delete.title'),
+      title: t('projects.delete.title'),
       children: (
         <p className="text-sm">
-          {t('apps.delete.confirmation', { name: appName })}
+          {t('projects.delete.confirmation', { name: projectName })}
         </p>
       ),
-      labels: { confirm: t('apps.delete.confirm'), cancel: t('apps.delete.cancel') },
+      labels: { confirm: t('projects.delete.confirm'), cancel: t('projects.delete.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          await deleteAppMutation.mutateAsync(appId);
+          await deleteProjectMutation.mutateAsync(projectKey);
           notifications.show({
             title: t('common.success'),
-            message: t('apps.delete.success_message'),
+            message: t('projects.delete.success_message'),
             color: 'green',
           });
         } catch (error) {
@@ -73,10 +73,10 @@ export function AppsPage() {
         <div className="flex flex-col gap-4">
           <Alert
             icon={<AlertCircle size={16} />}
-            title={t('apps.no_organization_title')}
+            title={t('projects.no_organization_title')}
             color="yellow"
           >
-            {t('apps.no_organization_message')}
+            {t('projects.no_organization_message')}
           </Alert>
           <Button
             leftSection={<Building size={16} />}
@@ -100,13 +100,13 @@ export function AppsPage() {
           title={t('common.error')}
           color="red"
         >
-          {t('apps.error_loading')}
+          {t('projects.error_loading')}
         </Alert>
       </div>
     );
   }
 
-  const appsList = apps || [];
+  const projectsList = projects || [];
 
   return (
     <div>
@@ -115,39 +115,39 @@ export function AppsPage() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold mb-2">
-              {t('apps.title')}
+              {t('projects.title')}
             </h1>
             <p className="text-lg text-gray-500">
-              {t('apps.subtitle', { count: appsList.length })}
+              {t('projects.subtitle', { count: projectsList.length })}
             </p>
           </div>
-          {canCreateApp && (
+          {canCreateProject && (
             <Button
               leftSection={<Plus size={18} />}
               variant="gradient"
               gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
               onClick={() => setCreateModalOpened(true)}
             >
-              {t('apps.create_button')}
+              {t('projects.create_button')}
             </Button>
           )}
         </div>
 
-        {/* Apps Grid */}
-        {appsList.length === 0 ? (
+        {/* Projects Grid */}
+        {projectsList.length === 0 ? (
           <Card withBorder p="xl" radius="md">
             <div className="flex justify-center">
               <div className="flex flex-col items-center gap-4">
                 <Package size={48} strokeWidth={1.5} className="text-gray-400" />
                 <p className="text-lg text-gray-500">
-                  {t('apps.no_apps')}
+                  {t('projects.no_projects')}
                 </p>
-                {canCreateApp && (
+                {canCreateProject && (
                   <Button
                     leftSection={<Plus size={18} />}
                     onClick={() => setCreateModalOpened(true)}
                   >
-                    {t('apps.create_first_app')}
+                    {t('projects.create_first_project')}
                   </Button>
                 )}
               </div>
@@ -155,14 +155,14 @@ export function AppsPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {appsList.map((app) => (
+            {projectsList.map((project) => (
               <Card
-                key={app.id}
+                key={project.id}
                 withBorder
                 radius="md"
                 padding="lg"
                 className="relative cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(`/apps/${app.bundleId}`)}
+                onClick={() => navigate(`/projects/${project.projectKey}`)}
               >
                 <div className="flex flex-col gap-4">
                   {/* Card Header */}
@@ -171,15 +171,15 @@ export function AppsPage() {
                       <div className="flex gap-2 items-center mb-1">
                         <Package size={20} strokeWidth={2} />
                         <p className="font-semibold text-lg leading-tight">
-                          {app.name}
+                          {project.name}
                         </p>
                       </div>
                       <Badge variant="light" color="blue" size="sm">
-                        {app.bundleId}
+                        {project.projectKey}
                       </Badge>
                     </div>
                     
-                    {(canUpdateApp || canDeleteApp) && (
+                    {(canUpdateProject || canDeleteProject) && (
                       <Menu shadow="md" width={200} position="bottom-end">
                         <Menu.Target>
                           <ActionIcon 
@@ -191,27 +191,27 @@ export function AppsPage() {
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                          {canUpdateApp && (
+                          {canUpdateProject && (
                             <Menu.Item
                               leftSection={<Pencil size={16} />}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setEditingApp(app);
+                                setEditingProject(project);
                               }}
                             >
-                              {t('apps.edit.menu_item')}
+                              {t('projects.edit.menu_item')}
                             </Menu.Item>
                           )}
-                          {canDeleteApp && (
+                          {canDeleteProject && (
                             <Menu.Item
                               color="red"
                               leftSection={<Trash2 size={16} />}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteApp(app.id, app.name);
+                                handleDeleteProject(project.projectKey, project.name);
                               }}
                             >
-                              {t('apps.delete.menu_item')}
+                              {t('projects.delete.menu_item')}
                             </Menu.Item>
                           )}
                         </Menu.Dropdown>
@@ -220,17 +220,17 @@ export function AppsPage() {
                   </div>
 
                   {/* Description */}
-                  {app.description && (
+                  {project.description && (
                     <p className="text-sm text-gray-500 min-h-[40px]">
-                      {app.description}
+                      {project.description}
                     </p>
                   )}
 
                   {/* Metadata */}
                   <div className="pt-3 border-t border-gray-200">
                     <p className="text-xs text-gray-500">
-                      {t('apps.created_at', {
-                        date: new Date(app.createdAt).toLocaleDateString('en-US', {
+                      {t('projects.created_at', {
+                        date: new Date(project.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
@@ -245,18 +245,19 @@ export function AppsPage() {
         )}
       </div>
 
-      <CreateAppModal
+      <CreateProjectModal
         opened={createModalOpened}
         onClose={() => setCreateModalOpened(false)}
       />
 
-      {editingApp && (
-        <EditAppModal
+      {editingProject && (
+        <EditProjectModal
           opened={true}
-          onClose={() => setEditingApp(null)}
-          app={editingApp}
+          onClose={() => setEditingProject(null)}
+          project={editingProject}
         />
       )}
     </div>
   );
 }
+

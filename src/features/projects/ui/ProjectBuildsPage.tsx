@@ -19,15 +19,15 @@ import { useBuildsQuery, useDeleteBuildMutation } from '../../../shared/api/quer
 import { useShowBackendError } from '../../../shared/hooks';
 import type { BuildResponse } from '../../../generated-api';
 
-export function AppBuildsPage() {
+export function ProjectBuildsPage() {
   const { t } = useTranslation();
-  const { bundleId } = useParams<{ bundleId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
 
   const pageSize = 10;
   const { data, isLoading, isError } = useBuildsQuery(
-    bundleId || '',
+    projectKey || '',
     currentPage - 1, // API uses 0-based pagination
     pageSize
   );
@@ -38,15 +38,15 @@ export function AppBuildsPage() {
 
   const handleDeleteBuild = (buildId: string) => {
     modals.openConfirmModal({
-      title: t('apps.detail.builds.delete.title'),
+      title: t('projects.detail.builds.delete.title'),
       children: (
         <p className="text-sm">
-          {t('apps.detail.builds.delete.confirmation')}
+          {t('projects.detail.builds.delete.confirmation')}
         </p>
       ),
       labels: {
-        confirm: t('apps.detail.builds.delete.confirm'),
-        cancel: t('apps.detail.builds.delete.cancel'),
+        confirm: t('projects.detail.builds.delete.confirm'),
+        cancel: t('projects.detail.builds.delete.cancel'),
       },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
@@ -62,7 +62,7 @@ export function AppBuildsPage() {
           
           notifications.show({
             title: t('common.success'),
-            message: t('apps.detail.builds.delete.success_message'),
+            message: t('projects.detail.builds.delete.success_message'),
             color: 'green',
           });
         } catch (error) {
@@ -109,7 +109,7 @@ export function AppBuildsPage() {
         title={t('common.error')}
         color="red"
       >
-        {t('apps.detail.builds.error_loading')}
+        {t('projects.detail.builds.error_loading')}
       </Alert>
     );
   }
@@ -120,9 +120,9 @@ export function AppBuildsPage() {
     <div>
       <div className="flex flex-col gap-4">
         <div>
-          <h3 className="text-xl font-semibold">{t('apps.detail.builds.title')}</h3>
+          <h3 className="text-xl font-semibold">{t('projects.detail.builds.title')}</h3>
           <p className="text-sm text-gray-500">
-            {t('apps.detail.builds.subtitle')}
+            {t('projects.detail.builds.subtitle')}
           </p>
         </div>
 
@@ -132,10 +132,10 @@ export function AppBuildsPage() {
               <Package size={48} strokeWidth={1.5} className="opacity-50" />
               <div>
                 <p className="text-lg font-medium">
-                  {t('apps.detail.builds.no_builds')}
+                  {t('projects.detail.builds.no_builds')}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {t('apps.detail.builds.create_first_build')}
+                  {t('projects.detail.builds.create_first_build')}
                 </p>
               </div>
             </div>
@@ -146,12 +146,12 @@ export function AppBuildsPage() {
               <Table highlightOnHover>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>{t('apps.detail.builds.table.commit')}</Table.Th>
-                    <Table.Th>{t('apps.detail.builds.table.branch')}</Table.Th>
-                    <Table.Th>{t('apps.detail.builds.table.version')}</Table.Th>
-                    <Table.Th>{t('apps.detail.builds.table.size')}</Table.Th>
-                    <Table.Th>{t('apps.detail.builds.table.uploaded_at')}</Table.Th>
-                    <Table.Th>{t('apps.detail.builds.table.actions')}</Table.Th>
+                    <Table.Th>{t('projects.detail.builds.table.commit')}</Table.Th>
+                    <Table.Th>{t('projects.detail.builds.table.branch')}</Table.Th>
+                    <Table.Th>{t('projects.detail.builds.table.version')}</Table.Th>
+                    <Table.Th>{t('projects.detail.builds.table.size')}</Table.Th>
+                    <Table.Th>{t('projects.detail.builds.table.uploaded_at')}</Table.Th>
+                    <Table.Th>{t('projects.detail.builds.table.actions')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -199,7 +199,7 @@ export function AppBuildsPage() {
                               leftSection={<Trash2 size={16} />}
                               onClick={() => handleDeleteBuild(build.id)}
                             >
-                              {t('apps.detail.builds.delete.menu_item')}
+                              {t('projects.detail.builds.delete.menu_item')}
                             </Menu.Item>
                           </Menu.Dropdown>
                         </Menu>
@@ -226,3 +226,4 @@ export function AppBuildsPage() {
     </div>
   );
 }
+

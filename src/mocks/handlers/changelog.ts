@@ -6,7 +6,7 @@ interface Changelog {
   version: string;
   markdown: string;
   is_published: boolean;
-  bundleId: string;
+  projectKey: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,36 +19,36 @@ function generateId(): string {
   return nanoid();
 }
 
-// Helper to get changelogs for a specific app
-function getChangelogsForApp(bundleId: string): Changelog[] {
+// Helper to get changelogs for a specific project
+function getChangelogsForProject(projectKey: string): Changelog[] {
   return Array.from(changelogs.values())
-    .filter((c) => c.bundleId === bundleId)
+    .filter((c) => c.projectKey === projectKey)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-// Helper to check if version exists for app
-function versionExistsForApp(bundleId: string, version: string, excludeId?: string): boolean {
+// Helper to check if version exists for project
+function versionExistsForProject(projectKey: string, version: string, excludeId?: string): boolean {
   return Array.from(changelogs.values()).some(
-    (c) => c.bundleId === bundleId && c.version === version && c.id !== excludeId
+    (c) => c.projectKey === projectKey && c.version === version && c.id !== excludeId
   );
 }
 
 export const changelogHandlers = [
-  // List changelogs for an app
-  http.get('/api/mobile-apps/:bundleId/changelogs', async ({ params, request }) => {
+  // List changelogs for a project
+  http.get('/api/projects/:projectKey/changelogs', async ({ params, request }) => {
     await delay(300);
     
-    const { bundleId } = params;
+    const { projectKey } = params;
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '0', 10);
     const size = parseInt(url.searchParams.get('size') || '10', 10);
     
-    const appChangelogs = getChangelogsForApp(bundleId as string);
-    const totalElements = appChangelogs.length;
+    const projectChangelogs = getChangelogsForProject(projectKey as string);
+    const totalElements = projectChangelogs.length;
     const totalPages = Math.ceil(totalElements / size);
     const start = page * size;
     const end = start + size;
-    const data = appChangelogs.slice(start, end);
+    const data = projectChangelogs.slice(start, end);
     
     return HttpResponse.json({
       data,
@@ -60,7 +60,7 @@ export const changelogHandlers = [
   }),
 
   // Get single changelog
-  http.get('/api/mobile-apps/:bundleId/changelogs/:id', async ({ params }) => {
+  http.get('/api/projects/:projectKey/changelogs/:id', async ({ params }) => {
     await delay(200);
     
     const { id } = params;
@@ -77,14 +77,14 @@ export const changelogHandlers = [
   }),
 
   // Create changelog
-  http.post('/api/mobile-apps/:bundleId/changelogs', async ({ params, request }) => {
+  http.post('/api/projects/:projectKey/changelogs', async ({ params, request }) => {
     await delay(400);
     
-    const { bundleId } = params;
+    const { projectKey } = params;
     const body = await request.json() as { version: string; markdown: string; is_published?: boolean };
     
     // Check for duplicate version
-    if (versionExistsForApp(bundleId as string, body.version)) {
+    if (versionExistsForProject(projectKey as string, body.version)) {
       return HttpResponse.json(
         { message: 'A changelog for this version already exists' },
         { status: 409 }
@@ -97,7 +97,7 @@ export const changelogHandlers = [
       version: body.version,
       markdown: body.markdown,
       is_published: body.is_published ?? false,
-      bundleId: bundleId as string,
+      projectKey: projectKey as string,
       createdAt: now,
       updatedAt: now,
     };
@@ -108,10 +108,10 @@ export const changelogHandlers = [
   }),
 
   // Update changelog
-  http.put('/api/mobile-apps/:bundleId/changelogs/:id', async ({ params, request }) => {
+  http.put('/api/projects/:projectKey/changelogs/:id', async ({ params, request }) => {
     await delay(400);
     
-    const { bundleId, id } = params;
+    const { projectKey, id } = params;
     const body = await request.json() as { version: string; markdown: string; is_published?: boolean };
     
     const existing = changelogs.get(id as string);
@@ -123,7 +123,7 @@ export const changelogHandlers = [
     }
     
     // Check for duplicate version (excluding current)
-    if (versionExistsForApp(bundleId as string, body.version, id as string)) {
+    if (versionExistsForProject(projectKey as string, body.version, id as string)) {
       return HttpResponse.json(
         { message: 'A changelog for this version already exists' },
         { status: 409 }
@@ -144,7 +144,7 @@ export const changelogHandlers = [
   }),
 
   // Delete changelog
-  http.delete('/api/mobile-apps/:bundleId/changelogs/:id', async ({ params }) => {
+  http.delete('/api/projects/:projectKey/changelogs/:id', async ({ params }) => {
     await delay(300);
     
     const { id } = params;
@@ -161,4 +161,3 @@ export const changelogHandlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 ];
-

@@ -18,10 +18,10 @@ export type PermissionCode =
   | "member.invite"
   | "member.remove"
   | "member.update_role"
-  | "app.read"
-  | "app.create"
-  | "app.update"
-  | "app.delete"
+  | "project.read"
+  | "project.create"
+  | "project.update"
+  | "project.delete"
   | "channel.read"
   | "channel.create"
   | "channel.update"
@@ -384,21 +384,21 @@ export interface UpdateMemberRoleRequest {
   roleId: string;
 }
 
-/** Request to create a new mobile application */
-export interface CreateMobileApplicationRequest {
-  /** Unique bundle identifier for the mobile application (e.g., com.example.app) */
-  bundleId: string;
-  /** Mobile application name */
+/** Request to create a new project */
+export interface CreateProjectRequest {
+  /** Unique project key identifier (e.g., com.example.app) */
+  projectKey: string;
+  /** Project name */
   name: string;
-  /** Mobile application description */
+  /** Project description */
   description?: string;
 }
 
-/** Request to update a mobile application */
-export interface UpdateMobileApplicationRequest {
-  /** Mobile application name */
+/** Request to update a project */
+export interface UpdateProjectRequest {
+  /** Project name */
   name: string;
-  /** Mobile application description */
+  /** Project description */
   description?: string;
 }
 
@@ -601,6 +601,58 @@ export interface InvitationStatusResponse {
   status: InvitationStatusEnum;
 }
 
+/** Minimal pending invitation information for member list */
+export interface PendingInvitationSummary {
+  /** Invitation ID */
+  id: string;
+  /**
+   * Email of the invited user
+   * @format email
+   */
+  email: string;
+  /** Role information (roles are now global across all organizations) */
+  role: RoleResponse;
+  /** User information */
+  invitedBy?: UserResponse | null;
+  /**
+   * When the invitation was created
+   * @format date-time
+   */
+  createdAt: string;
+}
+
+/** Paginated members data */
+export interface MembersData {
+  /** Array of members for this page */
+  data: OrganizationMemberResponse[];
+  /** Total number of members across all pages */
+  total: number;
+  /** Number of members in this page */
+  count: number;
+  /** Maximum items per page */
+  itemsPerPage: number;
+}
+
+/** Paginated pending invitations data */
+export interface InvitationsData {
+  /** Array of pending invitations for this page */
+  data: PendingInvitationSummary[];
+  /** Total number of pending invitations across all pages */
+  total: number;
+  /** Number of invitations in this page */
+  count: number;
+  /** Maximum items per page */
+  itemsPerPage: number;
+}
+
+/** Combined response with members and pending invitations */
+export interface MembersAndInvitationsResponse {
+  /** Paginated members data */
+  members: MembersData;
+  /** Paginated pending invitations data */
+  invitations: InvitationsData;
+}
+
 /** Organization member information */
 export interface OrganizationMemberResponse {
   /** Member ID */
@@ -628,27 +680,27 @@ export interface PaginatedOrganizationMemberResponse {
   itemsPerPage: number;
 }
 
-/** Mobile application information */
-export interface MobileApplicationResponse {
-  /** Mobile application ID */
+/** Project information */
+export interface ProjectResponse {
+  /** Project ID */
   id: string;
-  /** Bundle identifier for the mobile application */
-  bundleId: string;
-  /** Organization ID that owns this application */
+  /** Unique project key identifier */
+  projectKey: string;
+  /** Organization ID that owns this project */
   organizationId: string;
-  /** Mobile application name */
+  /** Project name */
   name: string;
-  /** Mobile application description */
+  /** Project description */
   description?: string;
-  /** User ID who created the application */
+  /** User ID who created the project */
   createdBy: string;
   /**
-   * When the application was created
+   * When the project was created
    * @format date-time
    */
   createdAt: string;
   /**
-   * When the application was last updated
+   * When the project was last updated
    * @format date-time
    */
   updatedAt?: string;
@@ -660,8 +712,8 @@ export interface BuildResponse {
   id: string;
   /** Organization ID */
   organizationId: string;
-  /** Bundle identifier for the mobile application */
-  bundleId: string;
+  /** Project key identifier */
+  projectKey: string;
   /** Git commit hash (unique identifier) */
   commitHash: string;
   /** Git branch name */
@@ -751,8 +803,8 @@ export interface ApiKeyResponse {
   key?: string;
   /** Masked key display (e.g., "flyw...xyz") */
   keyPrefix: string;
-  /** Bundle ID this key is for */
-  bundleId: string;
+  /** Project key this API key is for */
+  projectKey: string;
   /** Organization ID */
   organizationId: string;
   /** User ID who created the key */
@@ -830,9 +882,9 @@ export interface AuditLogResponse {
   userId?: string;
   /** ID of the organization */
   organizationId?: string;
-  /** Action performed (e.g., MOBILE_APP_CREATED, BUILD_UPLOADED) */
+  /** Action performed (e.g., PROJECT_CREATED, BUILD_UPLOADED) */
   action: string;
-  /** Type of resource affected (e.g., MOBILE_APPLICATION, BUILD) */
+  /** Type of resource affected (e.g., PROJECT, BUILD) */
   resourceType?: string;
   /** ID of the affected resource */
   resourceId?: string;
@@ -1615,7 +1667,7 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<PaginatedOrganizationMemberResponse, ErrorResponse>({
+      this.request<MembersAndInvitationsResponse, ErrorResponse>({
         path: `/members`,
         method: "GET",
         query: query,
@@ -1665,19 +1717,19 @@ export class Api<
         ...params,
       }),
   };
-  apps = {
+  projects = {
     /**
-     * @description List all mobile applications for the organization. Organization context determined by subdomain. Any member can view.
+     * @description List all projects for the organization. Organization context determined by subdomain. Any member can view.
      *
-     * @tags Mobile Applications
-     * @name ListApplications
-     * @summary List applications
-     * @request GET:/apps
+     * @tags Projects
+     * @name ListProjects
+     * @summary List projects
+     * @request GET:/projects
      * @secure
      */
-    listApplications: (params: RequestParams = {}) =>
-      this.request<MobileApplicationResponse[], ErrorResponse>({
-        path: `/apps`,
+    listProjects: (params: RequestParams = {}) =>
+      this.request<ProjectResponse[], ErrorResponse>({
+        path: `/projects`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1685,20 +1737,17 @@ export class Api<
       }),
 
     /**
-     * @description Create a new mobile application. Organization context determined by subdomain. Requires Developer+ role.
+     * @description Create a new project. Organization context determined by subdomain. Requires Developer+ role.
      *
-     * @tags Mobile Applications
-     * @name CreateApplication
-     * @summary Create application
-     * @request POST:/apps
+     * @tags Projects
+     * @name CreateProject
+     * @summary Create project
+     * @request POST:/projects
      * @secure
      */
-    createApplication: (
-      data: CreateMobileApplicationRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/apps`,
+    createProject: (data: CreateProjectRequest, params: RequestParams = {}) =>
+      this.request<ProjectResponse, ErrorResponse>({
+        path: `/projects`,
         method: "POST",
         body: data,
         secure: true,
@@ -1708,17 +1757,17 @@ export class Api<
       }),
 
     /**
-     * @description Get mobile application details. Organization context determined by subdomain. Any member can view.
+     * @description Get project details. Organization context determined by subdomain. Any member can view.
      *
-     * @tags Mobile Applications
-     * @name GetApplication
-     * @summary Get application details
-     * @request GET:/apps/{appId}
+     * @tags Projects
+     * @name GetProject
+     * @summary Get project details
+     * @request GET:/projects/{projectKey}
      * @secure
      */
-    getApplication: (appId: string, params: RequestParams = {}) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/apps/${appId}`,
+    getProject: (projectKey: string, params: RequestParams = {}) =>
+      this.request<ProjectResponse, ErrorResponse>({
+        path: `/projects/${projectKey}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -1726,21 +1775,21 @@ export class Api<
       }),
 
     /**
-     * @description Update mobile application. Organization context determined by subdomain. Requires Developer+ role.
+     * @description Update project. Organization context determined by subdomain. Requires Developer+ role.
      *
-     * @tags Mobile Applications
-     * @name UpdateApplication
-     * @summary Update application
-     * @request PATCH:/apps/{appId}
+     * @tags Projects
+     * @name UpdateProject
+     * @summary Update project
+     * @request PATCH:/projects/{projectKey}
      * @secure
      */
-    updateApplication: (
-      appId: string,
-      data: UpdateMobileApplicationRequest,
+    updateProject: (
+      projectKey: string,
+      data: UpdateProjectRequest,
       params: RequestParams = {},
     ) =>
-      this.request<MobileApplicationResponse, ErrorResponse>({
-        path: `/apps/${appId}`,
+      this.request<ProjectResponse, ErrorResponse>({
+        path: `/projects/${projectKey}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -1750,34 +1799,33 @@ export class Api<
       }),
 
     /**
-     * @description Delete mobile application. Organization context determined by subdomain. Requires Developer+ role.
+     * @description Delete project. Organization context determined by subdomain. Requires Developer+ role.
      *
-     * @tags Mobile Applications
-     * @name DeleteApplication
-     * @summary Delete application
-     * @request DELETE:/apps/{appId}
+     * @tags Projects
+     * @name DeleteProject
+     * @summary Delete project
+     * @request DELETE:/projects/{projectKey}
      * @secure
      */
-    deleteApplication: (appId: string, params: RequestParams = {}) =>
+    deleteProject: (projectKey: string, params: RequestParams = {}) =>
       this.request<void, ErrorResponse>({
-        path: `/apps/${appId}`,
+        path: `/projects/${projectKey}`,
         method: "DELETE",
         secure: true,
         ...params,
       }),
-  };
-  bundleId = {
+
     /**
      * @description Organization context determined by subdomain.
      *
      * @tags Builds
      * @name GetBuilds
      * @summary Get builds with pagination and sorting
-     * @request GET:/{bundleId}/builds
+     * @request GET:/projects/{projectKey}/builds
      * @secure
      */
     getBuilds: (
-      bundleId: string,
+      projectKey: string,
       query?: {
         /**
          * Page number (default 0)
@@ -1798,7 +1846,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<PaginatedBuildResponse, ErrorResponse>({
-        path: `/${bundleId}/builds`,
+        path: `/projects/${projectKey}/builds`,
         method: "GET",
         query: query,
         secure: true,
@@ -1812,11 +1860,11 @@ export class Api<
      * @tags API Keys
      * @name GetApiKeys
      * @summary Get API keys with pagination and sorting
-     * @request GET:/{bundleId}/api-keys
+     * @request GET:/projects/{projectKey}/api-keys
      * @secure
      */
     getApiKeys: (
-      bundleId: string,
+      projectKey: string,
       query?: {
         /**
          * Page number (default 0)
@@ -1837,7 +1885,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<PaginatedApiKeyResponse, ErrorResponse>({
-        path: `/${bundleId}/api-keys`,
+        path: `/projects/${projectKey}/api-keys`,
         method: "GET",
         query: query,
         secure: true,
@@ -1851,16 +1899,16 @@ export class Api<
      * @tags API Keys
      * @name CreateApiKey
      * @summary Create a new API key
-     * @request POST:/{bundleId}/api-keys
+     * @request POST:/projects/{projectKey}/api-keys
      * @secure
      */
     createApiKey: (
-      bundleId: string,
+      projectKey: string,
       data: CreateApiKeyRequest,
       params: RequestParams = {},
     ) =>
       this.request<ApiKeyResponse, ErrorResponse>({
-        path: `/${bundleId}/api-keys`,
+        path: `/projects/${projectKey}/api-keys`,
         method: "POST",
         body: data,
         secure: true,
@@ -1875,16 +1923,16 @@ export class Api<
      * @tags API Keys
      * @name DeleteApiKey
      * @summary Delete an API key
-     * @request DELETE:/{bundleId}/api-keys/{keyId}
+     * @request DELETE:/projects/{projectKey}/api-keys/{keyId}
      * @secure
      */
     deleteApiKey: (
-      bundleId: string,
+      projectKey: string,
       keyId: string,
       params: RequestParams = {},
     ) =>
       this.request<void, ErrorResponse>({
-        path: `/${bundleId}/api-keys/${keyId}`,
+        path: `/projects/${projectKey}/api-keys/${keyId}`,
         method: "DELETE",
         secure: true,
         ...params,
@@ -2074,9 +2122,9 @@ export class Api<
      */
     getAuditLogs: (
       query?: {
-        /** Filter by action (e.g., MOBILE_APP_CREATED) */
+        /** Filter by action (e.g., PROJECT_CREATED) */
         action?: string;
-        /** Filter by resource type (e.g., MOBILE_APPLICATION) */
+        /** Filter by resource type (e.g., PROJECT) */
         resourceType?: string;
         /** Filter by user ID */
         userId?: string;

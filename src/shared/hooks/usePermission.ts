@@ -6,14 +6,14 @@ import type { PermissionCode } from '../../generated-api';
  * @returns Object with permission checker function and individual permission flags
  * 
  * @example
- * const { hasPermission, canCreateApp, canUpdateOrganization } = usePermissions();
+ * const { hasPermission, canCreateProject, canUpdateOrganization } = usePermissions();
  * 
- * if (canCreateApp) {
+ * if (canCreateProject) {
  *   // Show create button
  * }
  * 
  * // Or dynamically check
- * if (hasPermission('app.delete')) {
+ * if (hasPermission('project.delete')) {
  *   // Show delete button
  * }
  */
@@ -34,11 +34,11 @@ export function usePermissions() {
     canInviteMember: hasPermission('member.invite'),
     canRemoveMember: hasPermission('member.remove'),
     canUpdateMemberRole: hasPermission('member.update_role'),
-    // App permissions
-    canReadApp: hasPermission('app.read'),
-    canCreateApp: hasPermission('app.create'),
-    canUpdateApp: hasPermission('app.update'),
-    canDeleteApp: hasPermission('app.delete'),
+    // Project permissions
+    canReadProject: hasPermission('project.read'),
+    canCreateProject: hasPermission('project.create'),
+    canUpdateProject: hasPermission('project.update'),
+    canDeleteProject: hasPermission('project.delete'),
     // Channel permissions
     canReadChannel: hasPermission('channel.read'),
     canCreateChannel: hasPermission('channel.create'),

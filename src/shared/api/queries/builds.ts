@@ -4,22 +4,22 @@ import { apiClient } from '../client';
 export const BUILDS_QUERY_KEY = 'builds';
 
 export function useBuildsQuery(
-  bundleId: string,
+  projectKey: string,
   page: number,
   size: number,
   sort: 'asc' | 'desc' = 'desc'
 ) {
   return useQuery({
-    queryKey: [BUILDS_QUERY_KEY, bundleId, page, size, sort],
+    queryKey: [BUILDS_QUERY_KEY, projectKey, page, size, sort],
     queryFn: async () => {
-      const response = await apiClient.bundleId.getBuilds(bundleId, {
+      const response = await apiClient.projects.getBuilds(projectKey, {
         page,
         size,
         sort,
       });
       return response.data;
     },
-    enabled: !!bundleId,
+    enabled: !!projectKey,
   });
 }
 
@@ -36,4 +36,3 @@ export function useDeleteBuildMutation() {
     },
   });
 }
-

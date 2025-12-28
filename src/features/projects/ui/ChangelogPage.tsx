@@ -24,14 +24,14 @@ import type { Changelog } from '../model/changelog-schema';
 
 export function ChangelogPage() {
   const { t } = useTranslation();
-  const { bundleId } = useParams<{ bundleId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
 
   const pageSize = 10;
   const { data, isLoading, isError } = useChangelogsQuery(
-    bundleId || '',
+    projectKey || '',
     currentPage - 1,
     pageSize
   );
@@ -42,21 +42,21 @@ export function ChangelogPage() {
 
   const handleDelete = (changelog: Changelog) => {
     modals.openConfirmModal({
-      title: t('apps.detail.changelog.delete.title'),
+      title: t('projects.detail.changelog.delete.title'),
       children: (
         <p className="text-sm">
-          {t('apps.detail.changelog.delete.confirmation', { version: changelog.version })}
+          {t('projects.detail.changelog.delete.confirmation', { version: changelog.version })}
         </p>
       ),
       labels: {
-        confirm: t('apps.detail.changelog.delete.confirm'),
-        cancel: t('apps.detail.changelog.delete.cancel'),
+        confirm: t('projects.detail.changelog.delete.confirm'),
+        cancel: t('projects.detail.changelog.delete.cancel'),
       },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
           await deleteChangelogMutation.mutateAsync({
-            bundleId: bundleId || '',
+            projectKey: projectKey || '',
             id: changelog.id,
           });
 
@@ -66,7 +66,7 @@ export function ChangelogPage() {
 
           notifications.show({
             title: t('common.success'),
-            message: t('apps.detail.changelog.delete.success_message'),
+            message: t('projects.detail.changelog.delete.success_message'),
             color: 'green',
           });
         } catch (error) {
@@ -100,7 +100,7 @@ export function ChangelogPage() {
         title={t('common.error')}
         color="red"
       >
-        {t('apps.detail.changelog.error_loading')}
+        {t('projects.detail.changelog.error_loading')}
       </Alert>
     );
   }
@@ -112,16 +112,16 @@ export function ChangelogPage() {
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-xl font-semibold">{t('apps.detail.changelog.title')}</h3>
+            <h3 className="text-xl font-semibold">{t('projects.detail.changelog.title')}</h3>
             <p className="text-sm text-gray-500">
-              {t('apps.detail.changelog.subtitle')}
+              {t('projects.detail.changelog.subtitle')}
             </p>
           </div>
           <Button
             leftSection={<FileText size={16} />}
-            onClick={() => navigate(`/apps/${bundleId}/changelog/create`)}
+            onClick={() => navigate(`/projects/${projectKey}/changelog/create`)}
           >
-            {t('apps.detail.changelog.create_button')}
+            {t('projects.detail.changelog.create_button')}
           </Button>
         </div>
 
@@ -131,10 +131,10 @@ export function ChangelogPage() {
               <FileText size={48} strokeWidth={1.5} className="opacity-50" />
               <div>
                 <p className="text-lg font-medium">
-                  {t('apps.detail.changelog.no_changelogs')}
+                  {t('projects.detail.changelog.no_changelogs')}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {t('apps.detail.changelog.create_first')}
+                  {t('projects.detail.changelog.create_first')}
                 </p>
               </div>
             </div>
@@ -145,10 +145,10 @@ export function ChangelogPage() {
               <Table highlightOnHover>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>{t('apps.detail.changelog.table.version')}</Table.Th>
-                    <Table.Th>{t('apps.detail.changelog.table.status')}</Table.Th>
-                    <Table.Th>{t('apps.detail.changelog.table.updated_at')}</Table.Th>
-                    <Table.Th>{t('apps.detail.changelog.table.actions')}</Table.Th>
+                    <Table.Th>{t('projects.detail.changelog.table.version')}</Table.Th>
+                    <Table.Th>{t('projects.detail.changelog.table.status')}</Table.Th>
+                    <Table.Th>{t('projects.detail.changelog.table.updated_at')}</Table.Th>
+                    <Table.Th>{t('projects.detail.changelog.table.actions')}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -164,8 +164,8 @@ export function ChangelogPage() {
                           size="sm"
                         >
                           {changelog.is_published 
-                            ? t('apps.detail.changelog.status.published') 
-                            : t('apps.detail.changelog.status.draft')}
+                            ? t('projects.detail.changelog.status.published') 
+                            : t('projects.detail.changelog.status.draft')}
                         </Badge>
                       </Table.Td>
                       <Table.Td>
@@ -182,16 +182,16 @@ export function ChangelogPage() {
                           <Menu.Dropdown>
                             <Menu.Item
                               leftSection={<Edit size={16} />}
-                              onClick={() => navigate(`/apps/${bundleId}/changelog/${changelog.id}/edit`)}
+                              onClick={() => navigate(`/projects/${projectKey}/changelog/${changelog.id}/edit`)}
                             >
-                              {t('apps.detail.changelog.edit.menu_item')}
+                              {t('projects.detail.changelog.edit.menu_item')}
                             </Menu.Item>
                             <Menu.Item
                               color="red"
                               leftSection={<Trash2 size={16} />}
                               onClick={() => handleDelete(changelog)}
                             >
-                              {t('apps.detail.changelog.delete.menu_item')}
+                              {t('projects.detail.changelog.delete.menu_item')}
                             </Menu.Item>
                           </Menu.Dropdown>
                         </Menu>
@@ -218,3 +218,4 @@ export function ChangelogPage() {
     </div>
   );
 }
+

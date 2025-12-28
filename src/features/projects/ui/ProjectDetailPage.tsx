@@ -13,34 +13,34 @@ import {
   Key, 
   FileText,
 } from 'lucide-react';
-import { useMobileAppQuery } from '../../../shared/api/queries';
+import { useProjectQuery } from '../../../shared/api/queries';
 
-export function AppDetailPage() {
+export function ProjectDetailPage() {
   const { t } = useTranslation();
-  const { bundleId } = useParams<{ bundleId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: app, isLoading, isError } = useMobileAppQuery(bundleId || '');
+  const { data: project, isLoading, isError } = useProjectQuery(projectKey || '');
 
   const navigationItems = [
     {
-      label: t('apps.detail.nav.bundles'),
-      path: `/apps/${bundleId}/bundles`,
+      label: t('projects.detail.nav.bundles'),
+      path: `/projects/${projectKey}/bundles`,
       icon: <Package size={18} />,
     },
     {
-      label: t('apps.detail.nav.builds'),
-      path: `/apps/${bundleId}/builds`,
+      label: t('projects.detail.nav.builds'),
+      path: `/projects/${projectKey}/builds`,
       icon: <Hammer size={18} />,
     },
     {
-      label: t('apps.detail.nav.changelog'),
-      path: `/apps/${bundleId}/changelog`,
+      label: t('projects.detail.nav.changelog'),
+      path: `/projects/${projectKey}/changelog`,
       icon: <FileText size={18} />,
     },
     {
-      label: t('apps.detail.nav.api_keys'),
-      path: `/apps/${bundleId}/api-keys`,
+      label: t('projects.detail.nav.api_keys'),
+      path: `/projects/${projectKey}/api-keys`,
       icon: <Key size={18} />,
     },
   ];
@@ -53,7 +53,7 @@ export function AppDetailPage() {
     );
   }
 
-  if (isError || !app) {
+  if (isError || !project) {
     return (
       <div>
         <Alert
@@ -61,7 +61,7 @@ export function AppDetailPage() {
           title={t('common.error')}
           color="red"
         >
-          {t('apps.detail.error_loading')}
+          {t('projects.detail.error_loading')}
         </Alert>
       </div>
     );
@@ -73,7 +73,7 @@ export function AppDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/apps')}
+            onClick={() => navigate('/projects')}
             className="p-1.5 -ml-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           >
             <ArrowLeft size={18} />
@@ -82,9 +82,9 @@ export function AppDetailPage() {
             <Package size={18} className="text-white" strokeWidth={2} />
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-slate-900">{app.name}</h1>
+            <h1 className="text-xl font-semibold text-slate-900">{project.name}</h1>
             <Badge variant="light" color="gray" size="sm" className="font-mono">
-              {app.bundleId}
+              {project.projectKey}
             </Badge>
           </div>
         </div>
@@ -137,3 +137,4 @@ export function AppDetailPage() {
     </div>
   );
 }
+

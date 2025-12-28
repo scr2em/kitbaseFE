@@ -16,7 +16,7 @@ export interface Changelog {
   version: string;
   markdown: string;
   is_published: boolean;
-  bundleId: string;
+  projectKey: string;
   createdAt: string;
   updatedAt: string;
 }

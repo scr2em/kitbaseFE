@@ -71,9 +71,9 @@ export function AppLayout() {
       items: [
         {
           icon: Folder,
-          label: t('navigation.apps'),
-          path: '/apps',
-          permission: permissions.canReadApp,
+          label: t('navigation.projects'),
+          path: '/projects',
+          permission: permissions.canReadProject,
         },
         {
           icon: Radio,

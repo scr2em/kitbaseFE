@@ -7,16 +7,16 @@ import { CreateOrganizationPage } from '../../features/organization/create-organ
 import { OrganizationPage } from '../../features/organization/view-organization';
 import { TeamPage } from '../../features/team';
 import { 
-  AppsPage, 
-  AppDetailPage, 
+  ProjectsPage, 
+  ProjectDetailPage, 
   BundlesPage, 
-  AppBuildsPage, 
+  ProjectBuildsPage, 
   AccessPage,
   ApiKeysPage,
   ChangelogPage,
   CreateChangelogPage,
   EditChangelogPage,
-} from '../../features/apps';
+} from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { ChannelsPage } from '../../features/channels';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
@@ -74,14 +74,14 @@ const routes: RouteObject[] = [
         ),
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
-          { path: '/apps', element: <AppsPage /> },
+          { path: '/projects', element: <ProjectsPage /> },
           {
-            path: '/apps/:bundleId',
-            element: <AppDetailPage />,
+            path: '/projects/:projectKey',
+            element: <ProjectDetailPage />,
             children: [
               { index: true, element: <Navigate to="bundles" replace /> },
               { path: 'bundles', element: <BundlesPage /> },
-              { path: 'builds', element: <AppBuildsPage /> },
+              { path: 'builds', element: <ProjectBuildsPage /> },
               { path: 'access', element: <AccessPage /> },
               { path: 'changelog', element: <ChangelogPage /> },
               { path: 'changelog/create', element: <CreateChangelogPage /> },
@@ -116,4 +116,3 @@ const routes: RouteObject[] = [
 ];
 
 export const router = createBrowserRouter(routes);
-

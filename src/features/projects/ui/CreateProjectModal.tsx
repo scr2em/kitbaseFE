@@ -3,39 +3,39 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { notifications } from '@mantine/notifications';
-import { createAppSchema, type CreateAppFormData } from '../model/schema';
-import { useCreateMobileAppMutation } from '../../../shared/api/queries';
+import { createProjectSchema, type CreateProjectFormData } from '../model/schema';
+import { useCreateProjectMutation } from '../../../shared/api/queries';
 import {
   ControlledTextInput,
   ControlledTextArea,
 } from '../../../shared/controlled-form-fields';
 import { useShowBackendError } from '../../../shared/hooks';
 
-interface CreateAppModalProps {
+interface CreateProjectModalProps {
   opened: boolean;
   onClose: () => void;
 }
 
-export function CreateAppModal({ opened, onClose }: CreateAppModalProps) {
+export function CreateProjectModal({ opened, onClose }: CreateProjectModalProps) {
   const { t } = useTranslation();
-  const createAppMutation = useCreateMobileAppMutation();
+  const createProjectMutation = useCreateProjectMutation();
   const { showError } = useShowBackendError();
 
-  const form = useForm<CreateAppFormData>({
-    resolver: zodResolver(createAppSchema),
+  const form = useForm<CreateProjectFormData>({
+    resolver: zodResolver(createProjectSchema),
     defaultValues: {
-      bundleId: '',
+      projectKey: '',
       name: '',
       description: '',
     },
   });
 
-  const handleSubmit = async (data: CreateAppFormData) => {
+  const handleSubmit = async (data: CreateProjectFormData) => {
     try {
-      await createAppMutation.mutateAsync(data);
+      await createProjectMutation.mutateAsync(data);
       notifications.show({
         title: t('common.success'),
-        message: t('apps.create.success_message'),
+        message: t('projects.create.success_message'),
         color: 'green',
       });
       form.reset();
@@ -49,7 +49,7 @@ export function CreateAppModal({ opened, onClose }: CreateAppModalProps) {
     <Modal
       opened={opened}
       onClose={onClose}
-      title={t('apps.create.modal_title')}
+      title={t('projects.create.modal_title')}
       size="md"
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -57,37 +57,38 @@ export function CreateAppModal({ opened, onClose }: CreateAppModalProps) {
           <ControlledTextInput
             control={form.control}
             name="name"
-            label={t('apps.create.name_label')}
-            placeholder={t('apps.create.name_placeholder')}
+            label={t('projects.create.name_label')}
+            placeholder={t('projects.create.name_placeholder')}
             required
           />
 
           <ControlledTextInput
             control={form.control}
-            name="bundleId"
-            label={t('apps.create.bundle_id_label')}
-            placeholder={t('apps.create.bundle_id_placeholder')}
+            name="projectKey"
+            label={t('projects.create.project_key_label')}
+            placeholder={t('projects.create.project_key_placeholder')}
             required
           />
 
           <ControlledTextArea
             control={form.control}
             name="description"
-            label={t('apps.create.description_label')}
-            placeholder={t('apps.create.description_placeholder')}
+            label={t('projects.create.description_label')}
+            placeholder={t('projects.create.description_placeholder')}
             minRows={3}
           />
 
           <Button
             type="submit"
-            loading={createAppMutation.isPending}
+            loading={createProjectMutation.isPending}
             fullWidth
             mt="md"
           >
-            {t('apps.create.submit_button')}
+            {t('projects.create.submit_button')}
           </Button>
         </div>
       </form>
     </Modal>
   );
 }
+

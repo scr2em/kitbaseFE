@@ -5,43 +5,43 @@ import { useTranslation } from 'react-i18next';
 import { notifications } from '@mantine/notifications';
 import { z } from 'zod';
 import { ControlledTextInput, ControlledTextArea } from '../../../shared/controlled-form-fields';
-import { useUpdateMobileAppMutation } from '../../../shared/api/queries';
+import { useUpdateProjectMutation } from '../../../shared/api/queries';
 import { useShowBackendError } from '../../../shared/hooks';
 
-const editAppSchema = z.object({
-  name: z.string().min(1, 'validation.app_name_required'),
+const editProjectSchema = z.object({
+  name: z.string().min(1, 'validation.project_name_required'),
   description: z.string().optional(),
 });
 
-type EditAppFormData = z.infer<typeof editAppSchema>;
+type EditProjectFormData = z.infer<typeof editProjectSchema>;
 
-interface EditAppModalProps {
+interface EditProjectModalProps {
   opened: boolean;
   onClose: () => void;
-  app: {
-    id: string;
+  project: {
+    projectKey: string;
     name: string;
     description?: string;
   };
 }
 
-export function EditAppModal({ opened, onClose, app }: EditAppModalProps) {
+export function EditProjectModal({ opened, onClose, project }: EditProjectModalProps) {
   const { t } = useTranslation();
   const { showError } = useShowBackendError();
-  const updateAppMutation = useUpdateMobileAppMutation();
+  const updateProjectMutation = useUpdateProjectMutation();
 
-  const form = useForm<EditAppFormData>({
-    resolver: zodResolver(editAppSchema),
+  const form = useForm<EditProjectFormData>({
+    resolver: zodResolver(editProjectSchema),
     defaultValues: {
-      name: app.name,
-      description: app.description || '',
+      name: project.name,
+      description: project.description || '',
     },
   });
 
-  const handleSubmit = async (data: EditAppFormData) => {
+  const handleSubmit = async (data: EditProjectFormData) => {
     try {
-      await updateAppMutation.mutateAsync({
-        appId: app.id,
+      await updateProjectMutation.mutateAsync({
+        projectKey: project.projectKey,
         data: {
           name: data.name,
           description: data.description,
@@ -50,7 +50,7 @@ export function EditAppModal({ opened, onClose, app }: EditAppModalProps) {
 
       notifications.show({
         title: t('common.success'),
-        message: t('apps.edit.success_message'),
+        message: t('projects.edit.success_message'),
         color: 'green',
       });
 
@@ -69,7 +69,7 @@ export function EditAppModal({ opened, onClose, app }: EditAppModalProps) {
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={t('apps.edit.modal_title')}
+      title={t('projects.edit.modal_title')}
       size="md"
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -77,34 +77,30 @@ export function EditAppModal({ opened, onClose, app }: EditAppModalProps) {
           <ControlledTextInput
             control={form.control}
             name="name"
-            label={t('apps.edit.name_label')}
-            placeholder={t('apps.edit.name_placeholder')}
+            label={t('projects.edit.name_label')}
+            placeholder={t('projects.edit.name_placeholder')}
             required
           />
 
           <ControlledTextArea
             control={form.control}
             name="description"
-            label={t('apps.edit.description_label')}
-            placeholder={t('apps.edit.description_placeholder')}
+            label={t('projects.edit.description_label')}
+            placeholder={t('projects.edit.description_placeholder')}
             rows={3}
           />
 
           <Button
             type="submit"
-            loading={updateAppMutation.isPending}
+            loading={updateProjectMutation.isPending}
             fullWidth
             mt="md"
           >
-            {t('apps.edit.submit_button')}
+            {t('projects.edit.submit_button')}
           </Button>
         </div>
       </form>
     </Modal>
   );
 }
-
-
-
-
 
