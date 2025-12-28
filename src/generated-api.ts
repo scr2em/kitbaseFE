@@ -22,10 +22,10 @@ export type PermissionCode =
   | "project.create"
   | "project.update"
   | "project.delete"
-  | "channel.read"
-  | "channel.create"
-  | "channel.update"
-  | "channel.delete"
+  | "environment.view"
+  | "environment.create"
+  | "environment.update"
+  | "environment.delete"
   | "analytics.view"
   | "support.operations"
   | "webhook.view"
@@ -807,6 +807,37 @@ export interface UpdateEnvironmentRequest {
   description?: string;
 }
 
+/** Request to create a new changelog */
+export interface CreateChangelogRequest {
+  /**
+   * Version string for this changelog (e.g., "1.0.0", "2.3.1")
+   * @minLength 1
+   * @maxLength 100
+   */
+  version: string;
+  /** Changelog content in Markdown format */
+  markdown: string;
+  /**
+   * Whether the changelog is published
+   * @default false
+   */
+  isPublished?: boolean;
+}
+
+/** Request to update a changelog */
+export interface UpdateChangelogRequest {
+  /**
+   * Version string for this changelog
+   * @minLength 1
+   * @maxLength 100
+   */
+  version?: string;
+  /** Changelog content in Markdown format */
+  markdown?: string;
+  /** Whether the changelog is published */
+  isPublished?: boolean;
+}
+
 /** API key information */
 export interface ApiKeyResponse {
   /** Unique identifier for the API key */
@@ -883,6 +914,44 @@ export interface PaginatedEnvironmentResponse {
   /** Number of items per page */
   size: number;
   /** Total number of environments */
+  totalElements: number;
+  /** Total number of pages */
+  totalPages: number;
+}
+
+/** Changelog information */
+export interface ChangelogResponse {
+  /** Changelog ID */
+  id: string;
+  /** Version string for this changelog */
+  version: string;
+  /** Changelog content in Markdown format */
+  markdown: string;
+  /** Whether the changelog is published */
+  isPublished: boolean;
+  /** Project ID */
+  projectId: string;
+  /**
+   * When the changelog was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the changelog was last updated
+   * @format date-time
+   */
+  updatedAt: string;
+}
+
+/** Paginated changelog response */
+export interface PaginatedChangelogResponse {
+  /** List of changelogs */
+  data: ChangelogResponse[];
+  /** Current page number */
+  page: number;
+  /** Number of items per page */
+  size: number;
+  /** Total number of changelogs */
   totalElements: number;
   /** Total number of pages */
   totalPages: number;
@@ -2078,6 +2147,137 @@ export class Api<
     ) =>
       this.request<void, ErrorResponse>({
         path: `/projects/${projectKey}/environments/${environmentId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description List all changelogs for a project. Organization context determined by subdomain.
+     *
+     * @tags Changelogs
+     * @name ListChangelogs
+     * @summary List changelogs
+     * @request GET:/projects/{projectKey}/changelogs
+     * @secure
+     */
+    listChangelogs: (
+      projectKey: string,
+      query?: {
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 10
+         */
+        size?: number;
+        /**
+         * Sort direction by creation date
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedChangelogResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/changelogs`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new changelog in a project. Organization context determined by subdomain.
+     *
+     * @tags Changelogs
+     * @name CreateChangelog
+     * @summary Create changelog
+     * @request POST:/projects/{projectKey}/changelogs
+     * @secure
+     */
+    createChangelog: (
+      projectKey: string,
+      data: CreateChangelogRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChangelogResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/changelogs`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get changelog details. Organization context determined by subdomain.
+     *
+     * @tags Changelogs
+     * @name GetChangelog
+     * @summary Get changelog
+     * @request GET:/projects/{projectKey}/changelogs/{changelogId}
+     * @secure
+     */
+    getChangelog: (
+      projectKey: string,
+      changelogId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChangelogResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/changelogs/${changelogId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update changelog within a project. Organization context determined by subdomain.
+     *
+     * @tags Changelogs
+     * @name UpdateChangelog
+     * @summary Update changelog
+     * @request PUT:/projects/{projectKey}/changelogs/{changelogId}
+     * @secure
+     */
+    updateChangelog: (
+      projectKey: string,
+      changelogId: string,
+      data: UpdateChangelogRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ChangelogResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/changelogs/${changelogId}`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete changelog within a project. Organization context determined by subdomain.
+     *
+     * @tags Changelogs
+     * @name DeleteChangelog
+     * @summary Delete changelog
+     * @request DELETE:/projects/{projectKey}/changelogs/{changelogId}
+     * @secure
+     */
+    deleteChangelog: (
+      projectKey: string,
+      changelogId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/projects/${projectKey}/changelogs/${changelogId}`,
         method: "DELETE",
         secure: true,
         ...params,

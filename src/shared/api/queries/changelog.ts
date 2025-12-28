@@ -1,17 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import type { Changelog, ChangelogListResponse } from '../../../features/projects/model/changelog-schema';
+import { apiClient } from '../client';
+import type { CreateChangelogRequest, UpdateChangelogRequest } from '../../../generated-api';
 
-export const CHANGELOG_QUERY_KEY = ['changelogs'];
+export const getChangelogsQueryKey = (projectKey: string) => ['changelogs', projectKey];
 
 export function useChangelogsQuery(projectKey: string, page: number = 0, size: number = 10) {
   return useQuery({
-    queryKey: [...CHANGELOG_QUERY_KEY, projectKey, page, size],
+    queryKey: [...getChangelogsQueryKey(projectKey), page, size],
     queryFn: async () => {
-      const response = await axios.get<ChangelogListResponse>(
-        `/api/projects/${projectKey}/changelogs`,
-        { params: { page, size } }
-      );
+      const response = await apiClient.projects.listChangelogs(projectKey, {
+        page,
+        size,
+        sort: 'desc',
+      });
       return response.data;
     },
     staleTime: 30 * 1000,
@@ -19,89 +20,60 @@ export function useChangelogsQuery(projectKey: string, page: number = 0, size: n
   });
 }
 
-export function useChangelogQuery(projectKey: string, id: string) {
+export function useChangelogQuery(projectKey: string, changelogId: string) {
   return useQuery({
-    queryKey: [...CHANGELOG_QUERY_KEY, projectKey, id],
+    queryKey: [...getChangelogsQueryKey(projectKey), changelogId],
     queryFn: async () => {
-      const response = await axios.get<Changelog>(
-        `/api/projects/${projectKey}/changelogs/${id}`
-      );
+      const response = await apiClient.projects.getChangelog(projectKey, changelogId);
       return response.data;
     },
-    enabled: !!projectKey && !!id,
+    enabled: !!projectKey && !!changelogId,
   });
 }
 
-export function useCreateChangelogMutation() {
+export function useCreateChangelogMutation(projectKey: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      projectKey,
-      version,
-      markdown,
-      is_published,
-    }: {
-      projectKey: string;
-      version: string;
-      markdown: string;
-      is_published: boolean;
-    }) => {
-      const response = await axios.post<Changelog>(
-        `/api/projects/${projectKey}/changelogs`,
-        { version, markdown, is_published }
-      );
+    mutationFn: async (data: CreateChangelogRequest) => {
+      const response = await apiClient.projects.createChangelog(projectKey, data);
       return response.data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [...CHANGELOG_QUERY_KEY, variables.projectKey],
+        queryKey: getChangelogsQueryKey(projectKey),
       });
     },
   });
 }
 
-export function useUpdateChangelogMutation() {
+export function useUpdateChangelogMutation(projectKey: string, changelogId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      projectKey,
-      id,
-      version,
-      markdown,
-      is_published,
-    }: {
-      projectKey: string;
-      id: string;
-      version: string;
-      markdown: string;
-      is_published: boolean;
-    }) => {
-      const response = await axios.put<Changelog>(
-        `/api/projects/${projectKey}/changelogs/${id}`,
-        { version, markdown, is_published }
-      );
+    mutationFn: async (data: UpdateChangelogRequest) => {
+      const response = await apiClient.projects.updateChangelog(projectKey, changelogId, data);
       return response.data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [...CHANGELOG_QUERY_KEY, variables.projectKey],
+        queryKey: getChangelogsQueryKey(projectKey),
       });
     },
   });
 }
 
-export function useDeleteChangelogMutation() {
+export function useDeleteChangelogMutation(projectKey: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ projectKey, id }: { projectKey: string; id: string }) => {
-      await axios.delete(`/api/projects/${projectKey}/changelogs/${id}`);
+    mutationFn: async (changelogId: string) => {
+      const response = await apiClient.projects.deleteChangelog(projectKey, changelogId);
+      return response.data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [...CHANGELOG_QUERY_KEY, variables.projectKey],
+        queryKey: getChangelogsQueryKey(projectKey),
       });
     },
   });

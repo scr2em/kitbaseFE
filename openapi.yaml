@@ -38,6 +38,8 @@ tags:
     description: Project management operations
   - name: Environments
     description: Environment management operations
+  - name: Changelogs
+    description: Changelog management for projects
   - name: Builds
     description: Build management operations
   - name: API Keys
@@ -806,10 +808,10 @@ components:
         - project.create
         - project.update
         - project.delete
-        - channel.read
-        - channel.create
-        - channel.update
-        - channel.delete
+        - environment.view
+        - environment.create
+        - environment.update
+        - environment.delete
         - analytics.view
         - support.operations
         - webhook.view
@@ -1201,6 +1203,42 @@ components:
           type: string
           description: Environment description
 
+    CreateChangelogRequest:
+      type: object
+      description: Request to create a new changelog
+      required:
+        - version
+        - markdown
+      properties:
+        version:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Version string for this changelog (e.g., "1.0.0", "2.3.1")
+        markdown:
+          type: string
+          description: Changelog content in Markdown format
+        isPublished:
+          type: boolean
+          default: false
+          description: Whether the changelog is published
+
+    UpdateChangelogRequest:
+      type: object
+      description: Request to update a changelog
+      properties:
+        version:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Version string for this changelog
+        markdown:
+          type: string
+          description: Changelog content in Markdown format
+        isPublished:
+          type: boolean
+          description: Whether the changelog is published
+
     ApiKeyResponse:
       type: object
       description: API key information
@@ -1324,6 +1362,70 @@ components:
         totalElements:
           type: integer
           description: Total number of environments
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    ChangelogResponse:
+      type: object
+      description: Changelog information
+      required:
+        - id
+        - version
+        - markdown
+        - isPublished
+        - projectId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Changelog ID
+        version:
+          type: string
+          description: Version string for this changelog
+        markdown:
+          type: string
+          description: Changelog content in Markdown format
+        isPublished:
+          type: boolean
+          description: Whether the changelog is published
+        projectId:
+          type: string
+          description: Project ID
+        createdAt:
+          type: string
+          format: date-time
+          description: When the changelog was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the changelog was last updated
+
+    PaginatedChangelogResponse:
+      type: object
+      description: Paginated changelog response
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogResponse'
+          description: List of changelogs
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of changelogs
         totalPages:
           type: integer
           description: Total number of pages
@@ -3148,6 +3250,228 @@ paths:
       responses:
         '204':
           description: Environment deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /projects/{projectKey}/changelogs:
+    get:
+      operationId: listChangelogs
+      summary: List changelogs
+      description: List all changelogs for a project. Organization context determined by subdomain.
+      tags:
+        - Changelogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-based)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction by creation date
+      responses:
+        '200':
+          description: Changelogs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangelogResponse'
+        '400':
+          description: Bad request (e.g., invalid sort parameter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    post:
+      operationId: createChangelog
+      summary: Create changelog
+      description: Create a new changelog in a project. Organization context determined by subdomain.
+      tags:
+        - Changelogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChangelogRequest'
+      responses:
+        '201':
+          description: Changelog created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /projects/{projectKey}/changelogs/{changelogId}:
+    get:
+      operationId: getChangelog
+      summary: Get changelog
+      description: Get changelog details. Organization context determined by subdomain.
+      tags:
+        - Changelogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: changelogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Changelog ID
+      responses:
+        '200':
+          description: Changelog retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    put:
+      operationId: updateChangelog
+      summary: Update changelog
+      description: Update changelog within a project. Organization context determined by subdomain.
+      tags:
+        - Changelogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: changelogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Changelog ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChangelogRequest'
+      responses:
+        '200':
+          description: Changelog updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+    
+    delete:
+      operationId: deleteChangelog
+      summary: Delete changelog
+      description: Delete changelog within a project. Organization context determined by subdomain.
+      tags:
+        - Changelogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: changelogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Changelog ID
+      responses:
+        '204':
+          description: Changelog deleted successfully
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':

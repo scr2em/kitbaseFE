@@ -17,7 +17,7 @@ export function CreateChangelogPage() {
   const { projectKey } = useParams<{ projectKey: string }>();
   const navigate = useNavigate();
   const { showError } = useShowBackendError();
-  const createChangelogMutation = useCreateChangelogMutation();
+  const createChangelogMutation = useCreateChangelogMutation(projectKey || '');
   
   const { data: project, isLoading: isLoadingProject, isError: isProjectError } = useProjectQuery(projectKey || '');
 
@@ -26,17 +26,16 @@ export function CreateChangelogPage() {
     defaultValues: {
       version: '',
       markdown: '',
-      is_published: false,
+      isPublished: false,
     },
   });
 
   const handleSubmit = async (data: ChangelogFormData) => {
     try {
       await createChangelogMutation.mutateAsync({
-        projectKey: projectKey || '',
         version: data.version,
         markdown: data.markdown,
-        is_published: data.is_published,
+        isPublished: data.isPublished,
       });
 
       notifications.show({
@@ -140,7 +139,7 @@ export function CreateChangelogPage() {
 
               <ControlledCheckbox
                 control={form.control}
-                name="is_published"
+                name="isPublished"
                 label={t('projects.detail.changelog.create.published_label')}
                 description={t('projects.detail.changelog.create.published_description')}
               />
@@ -166,4 +165,3 @@ export function CreateChangelogPage() {
     </div>
   );
 }
-

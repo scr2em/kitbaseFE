@@ -43,7 +43,7 @@ export {
   useCreateChangelogMutation,
   useUpdateChangelogMutation,
   useDeleteChangelogMutation,
-  CHANGELOG_QUERY_KEY,
+  getChangelogsQueryKey,
 } from './changelog';
 export {
   useNotificationsInfiniteQuery,

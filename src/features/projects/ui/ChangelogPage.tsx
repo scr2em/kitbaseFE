@@ -20,7 +20,7 @@ import {
   useDeleteChangelogMutation,
 } from '../../../shared/api/queries/changelog';
 import { useShowBackendError } from '../../../shared/hooks';
-import type { Changelog } from '../model/changelog-schema';
+import type { ChangelogResponse } from '../../../generated-api';
 
 export function ChangelogPage() {
   const { t } = useTranslation();
@@ -35,12 +35,12 @@ export function ChangelogPage() {
     currentPage - 1,
     pageSize
   );
-  const deleteChangelogMutation = useDeleteChangelogMutation();
+  const deleteChangelogMutation = useDeleteChangelogMutation(projectKey || '');
 
   const changelogs = data?.data || [];
   const totalPages = data?.totalPages || 0;
 
-  const handleDelete = (changelog: Changelog) => {
+  const handleDelete = (changelog: ChangelogResponse) => {
     modals.openConfirmModal({
       title: t('projects.detail.changelog.delete.title'),
       children: (
@@ -55,10 +55,7 @@ export function ChangelogPage() {
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          await deleteChangelogMutation.mutateAsync({
-            projectKey: projectKey || '',
-            id: changelog.id,
-          });
+          await deleteChangelogMutation.mutateAsync(changelog.id);
 
           if (changelogs.length === 1 && currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -159,11 +156,11 @@ export function ChangelogPage() {
                       </Table.Td>
                       <Table.Td>
                         <Badge 
-                          color={changelog.is_published ? 'green' : 'gray'} 
+                          color={changelog.isPublished ? 'green' : 'gray'} 
                           variant="light"
                           size="sm"
                         >
-                          {changelog.is_published 
+                          {changelog.isPublished 
                             ? t('projects.detail.changelog.status.published') 
                             : t('projects.detail.changelog.status.draft')}
                         </Badge>
@@ -218,4 +215,3 @@ export function ChangelogPage() {
     </div>
   );
 }
-
