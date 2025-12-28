@@ -5,33 +5,34 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { notifications } from '@mantine/notifications';
 import { ControlledTextInput, ControlledTextArea } from '../../../shared/controlled-form-fields';
 import { useShowBackendError } from '../../../shared/hooks';
-import { useCreateChannelMutation } from '../../../shared/api/queries/channels';
-import { createChannelSchema, type CreateChannelFormData } from '../model/schema';
+import { useCreateEnvironmentMutation } from '../../../shared/api/queries/environments';
+import { createEnvironmentSchema, type CreateEnvironmentFormData } from '../model/schema';
 
-interface CreateChannelModalProps {
+interface CreateEnvironmentModalProps {
   opened: boolean;
   onClose: () => void;
+  projectKey: string;
 }
 
-export function CreateChannelModal({ opened, onClose }: CreateChannelModalProps) {
+export function CreateEnvironmentModal({ opened, onClose, projectKey }: CreateEnvironmentModalProps) {
   const { t } = useTranslation();
-  const createMutation = useCreateChannelMutation();
+  const createMutation = useCreateEnvironmentMutation(projectKey);
   const { showError } = useShowBackendError();
 
-  const { control, handleSubmit, reset } = useForm<CreateChannelFormData>({
-    resolver: zodResolver(createChannelSchema),
+  const { control, handleSubmit, reset } = useForm<CreateEnvironmentFormData>({
+    resolver: zodResolver(createEnvironmentSchema),
     defaultValues: {
       name: '',
       description: '',
     },
   });
 
-  const onSubmit = async (data: CreateChannelFormData) => {
+  const onSubmit = async (data: CreateEnvironmentFormData) => {
     try {
       await createMutation.mutateAsync(data);
       notifications.show({
         title: t('common.success'),
-        message: t('channels.create.success_message'),
+        message: t('environments.create.success_message'),
         color: 'green',
       });
       reset();
@@ -50,7 +51,7 @@ export function CreateChannelModal({ opened, onClose }: CreateChannelModalProps)
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={t('channels.create.modal_title')}
+      title={t('environments.create.modal_title')}
       size="md"
     >
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -58,25 +59,25 @@ export function CreateChannelModal({ opened, onClose }: CreateChannelModalProps)
           <ControlledTextInput
             control={control}
             name="name"
-            label={t('channels.create.name_label')}
-            placeholder={t('channels.create.name_placeholder')}
+            label={t('environments.create.name_label')}
+            placeholder={t('environments.create.name_placeholder')}
             required
           />
           
           <ControlledTextArea
             control={control}
             name="description"
-            label={t('channels.create.description_label')}
-            placeholder={t('channels.create.description_placeholder')}
+            label={t('environments.create.description_label')}
+            placeholder={t('environments.create.description_placeholder')}
             minRows={3}
           />
 
           <div className="flex justify-end gap-3 mt-4">
             <Button variant="subtle" onClick={handleClose}>
-              {t('channels.create.cancel_button')}
+              {t('environments.create.cancel_button')}
             </Button>
             <Button type="submit" loading={createMutation.isPending}>
-              {t('channels.create.submit_button')}
+              {t('environments.create.submit_button')}
             </Button>
           </div>
         </div>
@@ -84,3 +85,4 @@ export function CreateChannelModal({ opened, onClose }: CreateChannelModalProps)
     </Modal>
   );
 }
+

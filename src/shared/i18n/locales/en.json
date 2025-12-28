@@ -195,7 +195,7 @@
     "bundles": "Bundles",
     "builds": "Builds",
     "team": "Team",
-    "channels": "Channels",
+    "environments": "Environments",
     "webhooks": "Webhooks",
     "roles": "Roles",
     "analytics": "Analytics",
@@ -336,7 +336,7 @@
       "project": "Projects",
       "build": "Build Management",
       "api_key": "API Key Management",
-      "channel": "Channel Management"
+      "environment": "Environment Management"
     }
   },
   "invitation": {
@@ -446,7 +446,8 @@
         "builds": "Builds",
         "access": "Access",
         "changelog": "Changelog",
-        "api_keys": "API Keys"
+        "api_keys": "API Keys",
+        "environments": "Environments"
       },
       "bundles": {
         "title": "Bundles",
@@ -589,20 +590,18 @@
       }
     }
   },
-  "channels": {
-    "page_title": "Channels",
-    "title": "Channels",
-    "subtitle": "Manage distribution channels ({{count}} channels)",
-    "create_button": "Create Channel",
-    "create_first_channel": "Create Your First Channel",
-    "no_channels": "No channels yet",
-    "no_organization_title": "No Organization",
-    "no_organization_message": "You need to be part of an organization to manage channels.",
-    "error_loading": "Failed to load channels. Please try again.",
+  "environments": {
+    "page_title": "Environments",
+    "title": "Environments",
+    "subtitle": "Manage deployment environments ({{count}} environments)",
+    "create_button": "Create Environment",
+    "create_first_environment": "Create Your First Environment",
+    "no_environments": "No environments yet",
+    "error_loading": "Failed to load environments. Please try again.",
     "created_at": "Created on {{date}}",
-    "badge": "Channel",
+    "badge": "Environment",
     "no_description": "No description",
-    "load_more": "Load More Channels",
+    "load_more": "Load More",
     "loading_more": "Loading...",
     "table": {
       "name": "Name",
@@ -612,39 +611,39 @@
       "actions": "Actions"
     },
     "create": {
-      "modal_title": "Create Channel",
-      "name_label": "Channel Name",
-      "name_placeholder": "Enter channel name (e.g., production, staging, beta)",
+      "modal_title": "Create Environment",
+      "name_label": "Environment Name",
+      "name_placeholder": "Enter environment name (e.g., production, staging, beta)",
       "description_label": "Description (Optional)",
-      "description_placeholder": "Describe this channel's purpose",
-      "submit_button": "Create Channel",
+      "description_placeholder": "Describe this environment's purpose",
+      "submit_button": "Create Environment",
       "cancel_button": "Cancel",
-      "success_message": "Channel created successfully",
+      "success_message": "Environment created successfully",
       "validation": {
-        "name_required": "Channel name is required"
+        "name_required": "Environment name is required"
       }
     },
     "update": {
-      "modal_title": "Update Channel",
-      "name_label": "Channel Name",
-      "name_placeholder": "Enter channel name",
+      "modal_title": "Update Environment",
+      "name_label": "Environment Name",
+      "name_placeholder": "Enter environment name",
       "description_label": "Description (Optional)",
-      "description_placeholder": "Describe this channel's purpose",
-      "submit_button": "Update Channel",
+      "description_placeholder": "Describe this environment's purpose",
+      "submit_button": "Update Environment",
       "cancel_button": "Cancel",
-      "success_message": "Channel updated successfully",
-      "menu_item": "Edit channel",
+      "success_message": "Environment updated successfully",
+      "menu_item": "Edit environment",
       "validation": {
-        "name_required": "Channel name is required"
+        "name_required": "Environment name is required"
       }
     },
     "delete": {
-      "title": "Delete Channel",
+      "title": "Delete Environment",
       "confirmation": "Are you sure you want to delete '{{name}}'? This action cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel",
-      "success_message": "Channel deleted successfully",
-      "menu_item": "Delete channel"
+      "success_message": "Environment deleted successfully",
+      "menu_item": "Delete environment"
     }
   },
   "webhooks": {
@@ -801,8 +800,8 @@
         "description": "Upload, organize, and track your mobile app builds with version control and metadata management."
       },
       "channel_distribution": {
-        "title": "Channel Distribution",
-        "description": "Create and manage distribution channels for different environments like production, staging, and beta."
+        "title": "Environment Management",
+        "description": "Create and manage deployment environments like production, staging, and beta for your projects."
       },
       "team_collaboration": {
         "title": "Team Collaboration",

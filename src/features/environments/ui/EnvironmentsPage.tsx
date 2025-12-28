@@ -10,32 +10,29 @@ import {
   Badge,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Plus, MoreVertical, Trash2, Edit, Radio, Building } from 'lucide-react';
+import { AlertCircle, Plus, MoreVertical, Trash2, Edit, Layers } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useParams } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import {
-  useChannelsInfiniteQuery,
-  useDeleteChannelMutation,
-} from '../../../shared/api/queries/channels';
-import { useShowBackendError, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
-import { CreateChannelModal } from './CreateChannelModal';
-import { UpdateChannelModal } from './UpdateChannelModal';
-import type { ChannelResponse } from '../../../generated-api';
+  useEnvironmentsInfiniteQuery,
+  useDeleteEnvironmentMutation,
+} from '../../../shared/api/queries/environments';
+import { useShowBackendError } from '../../../shared/hooks';
+import { CreateEnvironmentModal } from './CreateEnvironmentModal';
+import { UpdateEnvironmentModal } from './UpdateEnvironmentModal';
+import type { EnvironmentResponse } from '../../../generated-api';
 
-export function ChannelsPage() {
+export function EnvironmentsPage() {
   const { t } = useTranslation();
-  usePageTitle(t('channels.page_title'));
-  const navigate = useNavigate();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const [createModalOpened, setCreateModalOpened] = useState(false);
   const [updateModalData, setUpdateModalData] = useState<{
     opened: boolean;
-    channel: ChannelResponse | null;
-  }>({ opened: false, channel: null });
+    environment: EnvironmentResponse | null;
+  }>({ opened: false, environment: null });
 
-  const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();
-  
   const {
     data,
     isLoading,
@@ -43,27 +40,27 @@ export function ChannelsPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useChannelsInfiniteQuery();
+  } = useEnvironmentsInfiniteQuery(projectKey || '');
 
-  const deleteChannelMutation = useDeleteChannelMutation();
+  const deleteEnvironmentMutation = useDeleteEnvironmentMutation(projectKey || '');
   const { showError } = useShowBackendError();
 
-  const handleDeleteChannel = (channelId: string, channelName: string) => {
+  const handleDeleteEnvironment = (environmentId: string, environmentName: string) => {
     modals.openConfirmModal({
-      title: t('channels.delete.title'),
+      title: t('environments.delete.title'),
       children: (
         <p className="text-sm">
-          {t('channels.delete.confirmation', { name: channelName })}
+          {t('environments.delete.confirmation', { name: environmentName })}
         </p>
       ),
-      labels: { confirm: t('channels.delete.confirm'), cancel: t('channels.delete.cancel') },
+      labels: { confirm: t('environments.delete.confirm'), cancel: t('environments.delete.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          await deleteChannelMutation.mutateAsync(channelId);
+          await deleteEnvironmentMutation.mutateAsync(environmentId);
           notifications.show({
             title: t('common.success'),
-            message: t('channels.delete.success_message'),
+            message: t('environments.delete.success_message'),
             color: 'green',
           });
         } catch (error) {
@@ -73,39 +70,14 @@ export function ChannelsPage() {
     });
   };
 
-  const handleUpdateChannel = (channel: ChannelResponse) => {
-    setUpdateModalData({ opened: true, channel });
+  const handleUpdateEnvironment = (environment: EnvironmentResponse) => {
+    setUpdateModalData({ opened: true, environment });
   };
 
-  if (isLoadingUser || isLoading) {
+  if (isLoading) {
     return (
-      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
+      <div className="h-64 flex items-center justify-center">
         <Loader size="lg" />
-      </div>
-    );
-  }
-
-  if (!currentOrganization) {
-    return (
-      <div>
-        <div className="flex flex-col gap-4">
-          <Alert
-            icon={<AlertCircle size={16} />}
-            title={t('channels.no_organization_title')}
-            color="yellow"
-          >
-            {t('channels.no_organization_message')}
-          </Alert>
-          <Button
-            leftSection={<Building size={16} />}
-            variant="light"
-            size="md"
-            onClick={() => navigate('/create-organization')}
-            className="self-start"
-          >
-            {t('dashboard.create_organization')}
-          </Button>
-        </div>
       </div>
     );
   }
@@ -118,52 +90,52 @@ export function ChannelsPage() {
           title={t('common.error')}
           color="red"
         >
-          {t('channels.error_loading')}
+          {t('environments.error_loading')}
         </Alert>
       </div>
     );
   }
 
-  const channels = data?.pages.flatMap((page) => page.data) || [];
+  const environments = data?.pages.flatMap((page) => page.data) || [];
   const totalElements = data?.pages[0]?.totalElements || 0;
 
   return (
     <div>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
-              {t('channels.title')}
-            </h1>
-            <p className="text-lg text-gray-500">
-              {t('channels.subtitle', { count: totalElements })}
+            <h2 className="text-xl font-semibold text-slate-900 mb-1">
+              {t('environments.title')}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {t('environments.subtitle', { count: totalElements })}
             </p>
           </div>
           <Button
-            leftSection={<Plus size={18} />}
-            variant="gradient"
-            gradient={{ from: 'blue', to: 'cyan', deg: 45 }}
+            leftSection={<Plus size={16} />}
+            size="sm"
             onClick={() => setCreateModalOpened(true)}
           >
-            {t('channels.create_button')}
+            {t('environments.create_button')}
           </Button>
         </div>
 
-        {/* Channels Table */}
-        {channels.length === 0 ? (
+        {/* Environments Table */}
+        {environments.length === 0 ? (
           <Card withBorder p="xl" radius="md">
             <div className="flex justify-center">
               <div className="flex flex-col items-center gap-4">
-                <Radio size={48} strokeWidth={1.5} className="text-gray-400" />
-                <p className="text-lg text-gray-500">
-                  {t('channels.no_channels')}
+                <Layers size={48} strokeWidth={1.5} className="text-slate-400" />
+                <p className="text-base text-slate-500">
+                  {t('environments.no_environments')}
                 </p>
                 <Button
-                  leftSection={<Plus size={18} />}
+                  leftSection={<Plus size={16} />}
+                  size="sm"
                   onClick={() => setCreateModalOpened(true)}
                 >
-                  {t('channels.create_first_channel')}
+                  {t('environments.create_first_environment')}
                 </Button>
               </div>
             </div>
@@ -172,40 +144,40 @@ export function ChannelsPage() {
           <>
             <Card withBorder padding={0} radius="md">
               <ScrollArea>
-                <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th>{t('channels.table.name')}</Table.Th>
-                      <Table.Th>{t('channels.table.description')}</Table.Th>
-                      <Table.Th>{t('channels.table.created_at')}</Table.Th>
-                      <Table.Th>{t('channels.table.updated_at')}</Table.Th>
-                      <Table.Th>{t('channels.table.actions')}</Table.Th>
+                      <Table.Th>{t('environments.table.name')}</Table.Th>
+                      <Table.Th>{t('environments.table.description')}</Table.Th>
+                      <Table.Th>{t('environments.table.created_at')}</Table.Th>
+                      <Table.Th>{t('environments.table.updated_at')}</Table.Th>
+                      <Table.Th>{t('environments.table.actions')}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
-                    {channels.map((channel) => (
-                      <Table.Tr key={channel.id}>
+                    {environments.map((environment) => (
+                      <Table.Tr key={environment.id}>
                         <Table.Td>
                           <div className="flex gap-3 items-center">
-                            <Radio size={20} strokeWidth={2} />
+                            <Layers size={18} strokeWidth={2} className="text-slate-500" />
                             <div>
                               <p className="font-medium text-sm">
-                                {channel.name}
+                                {environment.name}
                               </p>
                               <Badge variant="light" color="blue" size="xs" mt={2}>
-                                {t('channels.badge')}
+                                {t('environments.badge')}
                               </Badge>
                             </div>
                           </div>
                         </Table.Td>
                         <Table.Td>
-                          <p className={`text-sm ${channel.description ? '' : 'text-gray-500'}`}>
-                            {channel.description || t('channels.no_description')}
+                          <p className={`text-sm ${environment.description ? '' : 'text-slate-500'}`}>
+                            {environment.description || t('environments.no_description')}
                           </p>
                         </Table.Td>
                         <Table.Td>
                           <p className="text-sm">
-                            {new Date(channel.createdAt).toLocaleDateString('en-US', {
+                            {new Date(environment.createdAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
@@ -214,7 +186,7 @@ export function ChannelsPage() {
                         </Table.Td>
                         <Table.Td>
                           <p className="text-sm">
-                            {new Date(channel.updatedAt).toLocaleDateString('en-US', {
+                            {new Date(environment.updatedAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
@@ -231,16 +203,16 @@ export function ChannelsPage() {
                             <Menu.Dropdown>
                               <Menu.Item
                                 leftSection={<Edit size={16} />}
-                                onClick={() => handleUpdateChannel(channel)}
+                                onClick={() => handleUpdateEnvironment(environment)}
                               >
-                                {t('channels.update.menu_item')}
+                                {t('environments.update.menu_item')}
                               </Menu.Item>
                               <Menu.Item
                                 color="red"
                                 leftSection={<Trash2 size={16} />}
-                                onClick={() => handleDeleteChannel(channel.id, channel.name)}
+                                onClick={() => handleDeleteEnvironment(environment.id, environment.name)}
                               >
-                                {t('channels.delete.menu_item')}
+                                {t('environments.delete.menu_item')}
                               </Menu.Item>
                             </Menu.Dropdown>
                           </Menu>
@@ -254,13 +226,14 @@ export function ChannelsPage() {
 
             {/* Load More Button */}
             {hasNextPage && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-4">
                 <Button
                   onClick={() => fetchNextPage()}
                   loading={isFetchingNextPage}
                   variant="light"
+                  size="sm"
                 >
-                  {isFetchingNextPage ? t('channels.loading_more') : t('channels.load_more')}
+                  {isFetchingNextPage ? t('environments.loading_more') : t('environments.load_more')}
                 </Button>
               </div>
             )}
@@ -268,18 +241,23 @@ export function ChannelsPage() {
         )}
       </div>
 
-      <CreateChannelModal
-        opened={createModalOpened}
-        onClose={() => setCreateModalOpened(false)}
-      />
+      {projectKey && (
+        <CreateEnvironmentModal
+          opened={createModalOpened}
+          onClose={() => setCreateModalOpened(false)}
+          projectKey={projectKey}
+        />
+      )}
 
-      {updateModalData.channel && (
-        <UpdateChannelModal
+      {updateModalData.environment && projectKey && (
+        <UpdateEnvironmentModal
           opened={updateModalData.opened}
-          onClose={() => setUpdateModalData({ opened: false, channel: null })}
-          channel={updateModalData.channel}
+          onClose={() => setUpdateModalData({ opened: false, environment: null })}
+          projectKey={projectKey}
+          environment={updateModalData.environment}
         />
       )}
     </div>
   );
 }
+

@@ -33,6 +33,16 @@ export type PermissionCode =
   | "webhook.update"
   | "webhook.delete";
 
+/** The framework or technology type of the project */
+export type ProjectType =
+  | "react"
+  | "angular"
+  | "vue"
+  | "nextjs"
+  | "ionic"
+  | "flutter"
+  | "others";
+
 /** Event types that can trigger webhook deliveries */
 export type WebhookEventTypeEnum =
   | "invitation_received"
@@ -392,6 +402,8 @@ export interface CreateProjectRequest {
   name: string;
   /** Project description */
   description?: string;
+  /** The framework or technology type of the project */
+  projectType: ProjectType;
 }
 
 /** Request to update a project */
@@ -692,6 +704,8 @@ export interface ProjectResponse {
   name: string;
   /** Project description */
   description?: string;
+  /** The framework or technology type of the project */
+  projectType: ProjectType;
   /** User ID who created the project */
   createdBy: string;
   /**
@@ -777,19 +791,19 @@ export interface CreateApiKeyRequest {
   name: string;
 }
 
-/** Request to create a new channel */
-export interface CreateChannelRequest {
-  /** Channel name */
+/** Request to create a new environment */
+export interface CreateEnvironmentRequest {
+  /** Environment name */
   name: string;
-  /** Channel description */
+  /** Environment description */
   description?: string;
 }
 
-/** Request to update a channel */
-export interface UpdateChannelRequest {
-  /** Channel name */
+/** Request to update an environment */
+export interface UpdateEnvironmentRequest {
+  /** Environment name */
   name?: string;
-  /** Channel description */
+  /** Environment description */
   description?: string;
 }
 
@@ -838,37 +852,37 @@ export interface PermissionResponse {
   category: string;
 }
 
-/** Channel information */
-export interface ChannelResponse {
-  /** Channel ID */
+/** Environment information */
+export interface EnvironmentResponse {
+  /** Environment ID */
   id: string;
-  /** Channel name */
+  /** Environment name */
   name: string;
-  /** Channel description */
+  /** Environment description */
   description?: string;
-  /** Organization ID */
-  organizationId: string;
+  /** Project ID */
+  projectId: string;
   /**
-   * When the channel was created
+   * When the environment was created
    * @format date-time
    */
   createdAt: string;
   /**
-   * When the channel was last updated
+   * When the environment was last updated
    * @format date-time
    */
   updatedAt: string;
 }
 
-/** Paginated channel response */
-export interface PaginatedChannelResponse {
-  /** List of channels */
-  data: ChannelResponse[];
+/** Paginated environment response */
+export interface PaginatedEnvironmentResponse {
+  /** List of environments */
+  data: EnvironmentResponse[];
   /** Current page number */
   page: number;
   /** Number of items per page */
   size: number;
-  /** Total number of channels */
+  /** Total number of environments */
   totalElements: number;
   /** Total number of pages */
   totalPages: number;
@@ -1937,6 +1951,137 @@ export class Api<
         secure: true,
         ...params,
       }),
+
+    /**
+     * @description List all environments for a project. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Environments
+     * @name ListEnvironments
+     * @summary List environments
+     * @request GET:/projects/{projectKey}/environments
+     * @secure
+     */
+    listEnvironments: (
+      projectKey: string,
+      query?: {
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 20
+         */
+        size?: number;
+        /**
+         * Sort direction by creation date
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedEnvironmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new environment in a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Environments
+     * @name CreateEnvironment
+     * @summary Create environment
+     * @request POST:/projects/{projectKey}/environments
+     * @secure
+     */
+    createEnvironment: (
+      projectKey: string,
+      data: CreateEnvironmentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<EnvironmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get environment details within a project. Organization context determined by subdomain. Any member can view.
+     *
+     * @tags Environments
+     * @name GetEnvironment
+     * @summary Get environment details
+     * @request GET:/projects/{projectKey}/environments/{environmentId}
+     * @secure
+     */
+    getEnvironment: (
+      projectKey: string,
+      environmentId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<EnvironmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update environment within a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Environments
+     * @name UpdateEnvironment
+     * @summary Update environment
+     * @request PATCH:/projects/{projectKey}/environments/{environmentId}
+     * @secure
+     */
+    updateEnvironment: (
+      projectKey: string,
+      environmentId: string,
+      data: UpdateEnvironmentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<EnvironmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete environment within a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Environments
+     * @name DeleteEnvironment
+     * @summary Delete environment
+     * @request DELETE:/projects/{projectKey}/environments/{environmentId}
+     * @secure
+     */
+    deleteEnvironment: (
+      projectKey: string,
+      environmentId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
   };
   builds = {
     /**
@@ -1989,124 +2134,6 @@ export class Api<
         body: data,
         type: ContentType.FormData,
         format: "json",
-        ...params,
-      }),
-  };
-  channels = {
-    /**
-     * @description List all channels for the organization. Organization context determined by subdomain. Any member can view.
-     *
-     * @tags Channels
-     * @name ListChannels
-     * @summary List channels
-     * @request GET:/channels
-     * @secure
-     */
-    listChannels: (
-      query?: {
-        /**
-         * Page number (0-based)
-         * @default 0
-         */
-        page?: number;
-        /**
-         * Number of items per page
-         * @default 20
-         */
-        size?: number;
-        /**
-         * Sort direction by creation date
-         * @default "desc"
-         */
-        sort?: "asc" | "desc";
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<PaginatedChannelResponse, ErrorResponse>({
-        path: `/channels`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new channel. Organization context determined by subdomain. Requires Developer+ role.
-     *
-     * @tags Channels
-     * @name CreateChannel
-     * @summary Create channel
-     * @request POST:/channels
-     * @secure
-     */
-    createChannel: (data: CreateChannelRequest, params: RequestParams = {}) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/channels`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get channel details. Organization context determined by subdomain. Any member can view.
-     *
-     * @tags Channels
-     * @name GetChannel
-     * @summary Get channel details
-     * @request GET:/channels/{channelId}
-     * @secure
-     */
-    getChannel: (channelId: string, params: RequestParams = {}) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/channels/${channelId}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update channel. Organization context determined by subdomain. Requires Developer+ role.
-     *
-     * @tags Channels
-     * @name UpdateChannel
-     * @summary Update channel
-     * @request PATCH:/channels/{channelId}
-     * @secure
-     */
-    updateChannel: (
-      channelId: string,
-      data: UpdateChannelRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<ChannelResponse, ErrorResponse>({
-        path: `/channels/${channelId}`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete channel. Organization context determined by subdomain. Requires Developer+ role.
-     *
-     * @tags Channels
-     * @name DeleteChannel
-     * @summary Delete channel
-     * @request DELETE:/channels/{channelId}
-     * @secure
-     */
-    deleteChannel: (channelId: string, params: RequestParams = {}) =>
-      this.request<void, ErrorResponse>({
-        path: `/channels/${channelId}`,
-        method: "DELETE",
-        secure: true,
         ...params,
       }),
   };

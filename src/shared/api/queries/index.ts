@@ -31,12 +31,12 @@ export {
   BUILDS_QUERY_KEY,
 } from './builds';
 export {
-  useChannelsInfiniteQuery,
-  useCreateChannelMutation,
-  useUpdateChannelMutation,
-  useDeleteChannelMutation,
-  CHANNELS_QUERY_KEY,
-} from './channels';
+  useEnvironmentsInfiniteQuery,
+  useCreateEnvironmentMutation,
+  useUpdateEnvironmentMutation,
+  useDeleteEnvironmentMutation,
+  getEnvironmentsQueryKey,
+} from './environments';
 export {
   useChangelogsQuery,
   useChangelogQuery,

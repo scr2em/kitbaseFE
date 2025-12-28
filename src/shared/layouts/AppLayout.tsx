@@ -10,7 +10,6 @@ import {
   LogOut,
   Menu as MenuIcon,
   Folder,
-  Radio,
   Plus,
   ChevronDown,
   Check,
@@ -74,12 +73,6 @@ export function AppLayout() {
           label: t('navigation.projects'),
           path: '/projects',
           permission: permissions.canReadProject,
-        },
-        {
-          icon: Radio,
-          label: t('navigation.channels'),
-          path: '/channels',
-          permission: null, // Channels are accessible to all organization members
         },
       ],
     },

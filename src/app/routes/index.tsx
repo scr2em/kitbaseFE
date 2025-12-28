@@ -18,7 +18,7 @@ import {
   EditChangelogPage,
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
-import { ChannelsPage } from '../../features/channels';
+import { EnvironmentsPage } from '../../features/environments';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { LandingPage } from '../../features/landing';
 import { ProtectedRoute, PublicRoute } from '../../shared/lib/router';
@@ -87,9 +87,9 @@ const routes: RouteObject[] = [
               { path: 'changelog/create', element: <CreateChangelogPage /> },
               { path: 'changelog/:changelogId/edit', element: <EditChangelogPage /> },
               { path: 'api-keys', element: <ApiKeysPage /> },
+              { path: 'environments', element: <EnvironmentsPage /> },
             ],
           },
-          { path: '/channels', element: <ChannelsPage /> },
           { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },
           {
             path: '/organization',

@@ -36,8 +36,8 @@ tags:
     description: Role and permission management operations
   - name: Projects
     description: Project management operations
-  - name: Channels
-    description: Channel management operations
+  - name: Environments
+    description: Environment management operations
   - name: Builds
     description: Build management operations
   - name: API Keys
@@ -77,6 +77,12 @@ components:
       type: string
       enum: [invitation_received, build_completed, member_joined, member_removed]
       description: Event types that can trigger webhook deliveries
+
+    # Project Type - framework/technology used by the project
+    ProjectType:
+      type: string
+      enum: [react, angular, vue, nextjs, ionic, flutter, others]
+      description: The framework or technology type of the project
 
     # Webhook Request DTOs
     CreateWebhookRequest:
@@ -534,6 +540,7 @@ components:
       required:
         - projectKey
         - name
+        - projectType
       properties:
         projectKey:
           type: string
@@ -544,6 +551,8 @@ components:
         description:
           type: string
           description: Project description
+        projectType:
+          $ref: '#/components/schemas/ProjectType'
 
     UpdateProjectRequest:
       type: object
@@ -1014,6 +1023,7 @@ components:
         - projectKey
         - organizationId
         - name
+        - projectType
         - createdBy
         - createdAt
       properties:
@@ -1032,6 +1042,8 @@ components:
         description:
           type: string
           description: Project description
+        projectType:
+          $ref: '#/components/schemas/ProjectType'
         createdBy:
           type: string
           description: User ID who created the project
@@ -1165,29 +1177,29 @@ components:
           type: string
           description: Name/description for the API key
 
-    CreateChannelRequest:
+    CreateEnvironmentRequest:
       type: object
-      description: Request to create a new channel
+      description: Request to create a new environment
       required:
         - name
       properties:
         name:
           type: string
-          description: Channel name
+          description: Environment name
         description:
           type: string
-          description: Channel description
+          description: Environment description
 
-    UpdateChannelRequest:
+    UpdateEnvironmentRequest:
       type: object
-      description: Request to update a channel
+      description: Request to update an environment
       properties:
         name:
           type: string
-          description: Channel name
+          description: Environment name
         description:
           type: string
-          description: Channel description
+          description: Environment description
 
     ApiKeyResponse:
       type: object
@@ -1257,40 +1269,40 @@ components:
           type: string
           description: Permission category (e.g., "organization", "member", "role")
 
-    ChannelResponse:
+    EnvironmentResponse:
       type: object
-      description: Channel information
+      description: Environment information
       required:
         - id
         - name
-        - organizationId
+        - projectId
         - createdAt
         - updatedAt
       properties:
         id:
           type: string
-          description: Channel ID
+          description: Environment ID
         name:
           type: string
-          description: Channel name
+          description: Environment name
         description:
           type: string
-          description: Channel description
-        organizationId:
+          description: Environment description
+        projectId:
           type: string
-          description: Organization ID
+          description: Project ID
         createdAt:
           type: string
           format: date-time
-          description: When the channel was created
+          description: When the environment was created
         updatedAt:
           type: string
           format: date-time
-          description: When the channel was last updated
+          description: When the environment was last updated
 
-    PaginatedChannelResponse:
+    PaginatedEnvironmentResponse:
       type: object
-      description: Paginated channel response
+      description: Paginated environment response
       required:
         - data
         - page
@@ -1301,8 +1313,8 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ChannelResponse'
-          description: List of channels
+            $ref: '#/components/schemas/EnvironmentResponse'
+          description: List of environments
         page:
           type: integer
           description: Current page number
@@ -1311,7 +1323,7 @@ components:
           description: Number of items per page
         totalElements:
           type: integer
-          description: Total number of channels
+          description: Total number of environments
         totalPages:
           type: integer
           description: Total number of pages
@@ -2921,17 +2933,23 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /channels:
+  /projects/{projectKey}/environments:
     get:
-      operationId: listChannels
-      summary: List channels
-      description: List all channels for the organization. Organization context determined by subdomain. Any member can view.
+      operationId: listEnvironments
+      summary: List environments
+      description: List all environments for a project. Organization context determined by subdomain. Any member can view.
       tags:
-        - Channels
+        - Environments
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
         - name: page
           in: query
           required: false
@@ -2956,11 +2974,11 @@ paths:
           description: Sort direction by creation date
       responses:
         '200':
-          description: Channels retrieved successfully
+          description: Environments retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedChannelResponse'
+                $ref: '#/components/schemas/PaginatedEnvironmentResponse'
         '400':
           description: Bad request (e.g., invalid sort parameter)
           content:
@@ -2971,30 +2989,38 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
     
     post:
-      operationId: createChannel
-      summary: Create channel
-      description: Create a new channel. Organization context determined by subdomain. Requires Developer+ role.
+      operationId: createEnvironment
+      summary: Create environment
+      description: Create a new environment in a project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
-        - Channels
+        - Environments
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateChannelRequest'
+              $ref: '#/components/schemas/CreateEnvironmentRequest'
       responses:
         '201':
-          description: Channel created successfully
+          description: Environment created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChannelResponse'
+                $ref: '#/components/schemas/EnvironmentResponse'
         '400':
           description: Bad request (e.g., validation error)
           content:
@@ -3005,33 +3031,41 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /channels/{channelId}:
+  /projects/{projectKey}/environments/{environmentId}:
     get:
-      operationId: getChannel
-      summary: Get channel details
-      description: Get channel details. Organization context determined by subdomain. Any member can view.
+      operationId: getEnvironment
+      summary: Get environment details
+      description: Get environment details within a project. Organization context determined by subdomain. Any member can view.
       tags:
-        - Channels
+        - Environments
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: channelId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Channel ID
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Environment ID
       responses:
         '200':
-          description: Channel retrieved successfully
+          description: Environment retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChannelResponse'
+                $ref: '#/components/schemas/EnvironmentResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -3040,34 +3074,40 @@ paths:
           $ref: '#/components/responses/NotFoundError'
     
     patch:
-      operationId: updateChannel
-      summary: Update channel
-      description: Update channel. Organization context determined by subdomain. Requires Developer+ role.
+      operationId: updateEnvironment
+      summary: Update environment
+      description: Update environment within a project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
-        - Channels
+        - Environments
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: channelId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Channel ID
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Environment ID
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateChannelRequest'
+              $ref: '#/components/schemas/UpdateEnvironmentRequest'
       responses:
         '200':
-          description: Channel updated successfully
+          description: Environment updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChannelResponse'
+                $ref: '#/components/schemas/EnvironmentResponse'
         '400':
           description: Bad request (e.g., validation error)
           content:
@@ -3084,24 +3124,30 @@ paths:
           $ref: '#/components/responses/ConflictError'
     
     delete:
-      operationId: deleteChannel
-      summary: Delete channel
-      description: Delete channel. Organization context determined by subdomain. Requires Developer+ role.
+      operationId: deleteEnvironment
+      summary: Delete environment
+      description: Delete environment within a project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
-        - Channels
+        - Environments
       security:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: channelId
+        - name: projectKey
           in: path
           required: true
           schema:
             type: string
-          description: Channel ID
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Environment ID
       responses:
         '204':
-          description: Channel deleted successfully
+          description: Environment deleted successfully
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
