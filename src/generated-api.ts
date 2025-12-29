@@ -10,6 +10,9 @@
  * ---------------------------------------------------------------
  */
 
+/** Type discriminator for merged member/invitation list */
+export type MemberOrInvitationType = "MEMBER" | "INVITATION";
+
 /** Permission code enum representing all available permissions in the system */
 export type PermissionCode =
   | "organization.update"
@@ -26,6 +29,10 @@ export type PermissionCode =
   | "environment.create"
   | "environment.update"
   | "environment.delete"
+  | "changelog.view"
+  | "changelog.create"
+  | "changelog.update"
+  | "changelog.delete"
   | "analytics.view"
   | "support.operations"
   | "webhook.view"
@@ -631,6 +638,40 @@ export interface PendingInvitationSummary {
    * @format date-time
    */
   createdAt: string;
+}
+
+/** Unified item representing either a member or pending invitation */
+export interface MemberOrInvitationItem {
+  /** Member ID or Invitation ID */
+  id: string;
+  /** Type discriminator for merged member/invitation list */
+  type: MemberOrInvitationType;
+  /**
+   * Email of the user (from user record for members, invitation email for invitations)
+   * @format email
+   */
+  email: string;
+  /** Role information (roles are now global across all organizations) */
+  role: RoleResponse;
+  /**
+   * Enabled at timestamp for members, created at for invitations
+   * @format date-time
+   */
+  timestamp: string;
+  /** Full user details (only for members, null for invitations) */
+  user?: UserResponse | null;
+}
+
+/** Paginated merged list of members and pending invitations */
+export interface PaginatedMemberOrInvitationResponse {
+  /** Array of members and invitations merged and sorted by timestamp */
+  data: MemberOrInvitationItem[];
+  /** Total number of items (members + invitations) across all pages */
+  total: number;
+  /** Number of items in this page */
+  count: number;
+  /** Maximum items per page */
+  itemsPerPage: number;
 }
 
 /** Paginated members data */
@@ -1750,7 +1791,7 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<MembersAndInvitationsResponse, ErrorResponse>({
+      this.request<PaginatedMemberOrInvitationResponse, ErrorResponse>({
         path: `/members`,
         method: "GET",
         query: query,

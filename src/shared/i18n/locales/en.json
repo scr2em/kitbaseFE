@@ -236,6 +236,18 @@
     "resend_success": "Invitation resent successfully",
     "resend_error": "Failed to resend invitation. Please try again.",
     "no_invitation": "N/A",
+    "pending_invitation": "Pending invitation",
+    "status_pending": "Pending",
+    "invitation_pending": "Awaiting response",
+    "active_member": "Active",
+    "revoke_invitation": {
+      "title": "Revoke Invitation",
+      "confirmation": "Are you sure you want to revoke the invitation for {{email}}? This action cannot be undone.",
+      "confirm": "Revoke",
+      "cancel": "Cancel",
+      "success_message": "Invitation revoked successfully",
+      "menu_item": "Revoke invitation"
+    },
     "delete": {
       "title": "Remove Team Member",
       "confirmation": "Are you sure you want to remove {{name}} from the team? This action cannot be undone.",

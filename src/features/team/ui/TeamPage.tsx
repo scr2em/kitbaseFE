@@ -13,16 +13,17 @@ import {
   Select,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, UserPlus, MoreVertical, Trash2, Building, Shield, RefreshCw } from 'lucide-react';
+import { AlertCircle, UserPlus, MoreVertical, Trash2, Building, Shield, RefreshCw, Mail, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
-import { useOrganizationMembersQuery, useRemoveMemberMutation, useUpdateMemberRoleMutation } from '../../../shared/api/queries/organization';
+import { useOrganizationMembersQuery, useRemoveMemberMutation, useUpdateMemberRoleMutation, useRevokeInvitationMutation } from '../../../shared/api/queries/organization';
 import { useRolesQuery } from '../../../shared/api/queries/role';
 import { InviteUserModal } from '../../invitation';
 import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 import { useCurrentUserQuery } from '../../../shared/api/queries/user';
+import type { MemberOrInvitationItem } from '../../../generated-api';
 
 export function TeamPage() {
   const { t } = useTranslation();
@@ -53,6 +54,7 @@ export function TeamPage() {
   
   const removeMemberMutation = useRemoveMemberMutation();
   const updateMemberRoleMutation = useUpdateMemberRoleMutation();
+  const revokeInvitationMutation = useRevokeInvitationMutation();
   const { showError } = useShowBackendError();
   const { canInviteMember, canRemoveMember, canUpdateMemberRole } = usePermissions();
 
@@ -73,6 +75,31 @@ export function TeamPage() {
           notifications.show({
             title: t('common.success'),
             message: t('team.delete.success_message'),
+            color: 'green',
+          });
+        } catch (error) {
+          showError(error);
+        }
+      },
+    });
+  };
+
+  const handleRevokeInvitation = (invitationId: string, email: string) => {
+    modals.openConfirmModal({
+      title: t('team.revoke_invitation.title'),
+      children: (
+        <p className="text-sm">
+          {t('team.revoke_invitation.confirmation', { email })}
+        </p>
+      ),
+      labels: { confirm: t('team.revoke_invitation.confirm'), cancel: t('team.revoke_invitation.cancel') },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await revokeInvitationMutation.mutateAsync(invitationId);
+          notifications.show({
+            title: t('common.success'),
+            message: t('team.revoke_invitation.success_message'),
             color: 'green',
           });
         } catch (error) {
@@ -111,8 +138,20 @@ export function TeamPage() {
     }
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (item: MemberOrInvitationItem) => {
+    if (item.type === 'MEMBER' && item.user) {
+      return `${item.user.firstName.charAt(0)}${item.user.lastName.charAt(0)}`.toUpperCase();
+    }
+    // For invitations, use first letter of email
+    return item.email.charAt(0).toUpperCase();
+  };
+
+  const getDisplayName = (item: MemberOrInvitationItem) => {
+    if (item.type === 'MEMBER' && item.user) {
+      return `${item.user.firstName} ${item.user.lastName}`;
+    }
+    // For invitations, return the email as the identifier
+    return item.email;
   };
 
   const getRoleBadgeColor = (roleName: string) => {
@@ -246,100 +285,148 @@ export function TeamPage() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {allMembers.map((member) => (
-                  <Table.Tr key={member.id}>
-                    <Table.Td>
-                      <div className="flex gap-3 items-center">
-                        <Avatar
-                          size={40}
-                          radius="xl"
-                          color="blue"
-                        >
-                          {getInitials(member.user.firstName, member.user.lastName)}
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {member.user.firstName} {member.user.lastName}
-                          </p>
-                          {member.user.id === currentUser?.id && (
-                            <p className="text-xs text-gray-500">
-                              {t('team.you')}
+                {allMembers.map((item) => {
+                  const isMember = item.type === 'MEMBER';
+                  const isCurrentUser = isMember && item.user?.id === currentUser?.id;
+                  const displayName = getDisplayName(item);
+                  
+                  return (
+                    <Table.Tr key={item.id}>
+                      <Table.Td>
+                        <div className="flex gap-3 items-center">
+                          <Avatar
+                            size={40}
+                            radius="xl"
+                            color={isMember ? 'blue' : 'orange'}
+                          >
+                            {isMember ? (
+                              getInitials(item)
+                            ) : (
+                              <Mail size={18} />
+                            )}
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">
+                              {isMember && item.user ? `${item.user.firstName} ${item.user.lastName}` : item.email}
                             </p>
-                          )}
+                            {isCurrentUser && (
+                              <p className="text-xs text-gray-500">
+                                {t('team.you')}
+                              </p>
+                            )}
+                            {!isMember && (
+                              <p className="text-xs text-orange-500">
+                                {t('team.pending_invitation')}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Table.Td>
-                    <Table.Td>
-                      <p className="text-sm">{member.user.email}</p>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge
-                        color={getRoleBadgeColor(member.role.name)}
-                        variant="light"
-                      >
-                        {member.role.name}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge
-                        color={getStatusBadgeColor(member.user.status.status)}
-                        variant="dot"
-                      >
-                        {member.user.status.status}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <p className="text-sm text-gray-500">
-                        {t('team.active_member')}
-                      </p>
-                    </Table.Td>
-                    <Table.Td>
-                      <p className="text-sm">
-                        {new Date(member.user.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                    </Table.Td>
-                    <Table.Td>
-                      {(canRemoveMember || canUpdateMemberRole) && (
-                        <Menu shadow="md" width={200} position="bottom-end">
-                          <Menu.Target>
-                            <ActionIcon variant="subtle" color="gray">
-                              <MoreVertical size={18} />
-                            </ActionIcon>
-                          </Menu.Target>
-                          <Menu.Dropdown>
-                            {canUpdateMemberRole && (
-                              <Menu.Item
-                                leftSection={<Shield size={16} />}
-                                onClick={() => handleOpenChangeRoleModal(
-                                  member.id,
-                                  `${member.user.firstName} ${member.user.lastName}`,
-                                  member.role.id
+                      </Table.Td>
+                      <Table.Td>
+                        <p className="text-sm">{item.email}</p>
+                      </Table.Td>
+                      <Table.Td>
+                        <Badge
+                          color={getRoleBadgeColor(item.role.name)}
+                          variant="light"
+                        >
+                          {item.role.name}
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td>
+                        {isMember && item.user ? (
+                          <Badge
+                            color={getStatusBadgeColor(item.user.status.status)}
+                            variant="dot"
+                          >
+                            {item.user.status.status}
+                          </Badge>
+                        ) : (
+                          <Badge color="gray" variant="dot">
+                            {t('team.status_pending')}
+                          </Badge>
+                        )}
+                      </Table.Td>
+                      <Table.Td>
+                        {isMember ? (
+                          <p className="text-sm text-gray-500">
+                            {t('team.active_member')}
+                          </p>
+                        ) : (
+                          <Badge color="orange" variant="light">
+                            {t('team.invitation_pending')}
+                          </Badge>
+                        )}
+                      </Table.Td>
+                      <Table.Td>
+                        <p className="text-sm">
+                          {new Date(item.timestamp).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </p>
+                      </Table.Td>
+                      <Table.Td>
+                        {isMember ? (
+                          (canRemoveMember || canUpdateMemberRole) && (
+                            <Menu shadow="md" width={200} position="bottom-end">
+                              <Menu.Target>
+                                <ActionIcon variant="subtle" color="gray">
+                                  <MoreVertical size={18} />
+                                </ActionIcon>
+                              </Menu.Target>
+                              <Menu.Dropdown>
+                                {canUpdateMemberRole && (
+                                  <Menu.Item
+                                    leftSection={<Shield size={16} />}
+                                    onClick={() => handleOpenChangeRoleModal(
+                                      item.id,
+                                      displayName,
+                                      item.role.id
+                                    )}
+                                    disabled={isCurrentUser}
+                                  >
+                                    {t('team.change_role.menu_item')}
+                                  </Menu.Item>
                                 )}
-                                disabled={member.user.id === currentUser?.id}
-                              >
-                                {t('team.change_role.menu_item')}
-                              </Menu.Item>
-                            )}
-                            {canRemoveMember && (
-                              <Menu.Item
-                                color="red"
-                                leftSection={<Trash2 size={16} />}
-                                onClick={() => handleDeleteMember(member.id, `${member.user.firstName} ${member.user.lastName}`)}
-                                disabled={member.user.id === currentUser?.id}
-                              >
-                                {t('team.delete.menu_item')}
-                              </Menu.Item>
-                            )}
-                          </Menu.Dropdown>
-                        </Menu>
-                      )}
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
+                                {canRemoveMember && (
+                                  <Menu.Item
+                                    color="red"
+                                    leftSection={<Trash2 size={16} />}
+                                    onClick={() => handleDeleteMember(item.id, displayName)}
+                                    disabled={isCurrentUser}
+                                  >
+                                    {t('team.delete.menu_item')}
+                                  </Menu.Item>
+                                )}
+                              </Menu.Dropdown>
+                            </Menu>
+                          )
+                        ) : (
+                          canInviteMember && (
+                            <Menu shadow="md" width={200} position="bottom-end">
+                              <Menu.Target>
+                                <ActionIcon variant="subtle" color="gray">
+                                  <MoreVertical size={18} />
+                                </ActionIcon>
+                              </Menu.Target>
+                              <Menu.Dropdown>
+                                <Menu.Item
+                                  color="red"
+                                  leftSection={<XCircle size={16} />}
+                                  onClick={() => handleRevokeInvitation(item.id, item.email)}
+                                >
+                                  {t('team.revoke_invitation.menu_item')}
+                                </Menu.Item>
+                              </Menu.Dropdown>
+                            </Menu>
+                          )
+                        )}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
               </Table.Tbody>
             </Table>
           </ScrollArea>

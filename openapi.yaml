@@ -812,6 +812,10 @@ components:
         - environment.create
         - environment.update
         - environment.delete
+        - changelog.view
+        - changelog.create
+        - changelog.update
+        - changelog.delete
         - analytics.view
         - support.operations
         - webhook.view
@@ -911,6 +915,65 @@ components:
           type: string
           format: date-time
           description: When the invitation was created
+
+    MemberOrInvitationType:
+      type: string
+      enum: [MEMBER, INVITATION]
+      description: Type discriminator for merged member/invitation list
+
+    MemberOrInvitationItem:
+      type: object
+      description: Unified item representing either a member or pending invitation
+      required:
+        - id
+        - type
+        - email
+        - role
+        - timestamp
+      properties:
+        id:
+          type: string
+          description: Member ID or Invitation ID
+        type:
+          $ref: '#/components/schemas/MemberOrInvitationType'
+        email:
+          type: string
+          format: email
+          description: Email of the user (from user record for members, invitation email for invitations)
+        role:
+          $ref: '#/components/schemas/RoleResponse'
+        timestamp:
+          type: string
+          format: date-time
+          description: Enabled at timestamp for members, created at for invitations
+        user:
+          $ref: '#/components/schemas/UserResponse'
+          nullable: true
+          description: Full user details (only for members, null for invitations)
+
+    PaginatedMemberOrInvitationResponse:
+      type: object
+      description: Paginated merged list of members and pending invitations
+      required:
+        - data
+        - total
+        - count
+        - itemsPerPage
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberOrInvitationItem'
+          description: Array of members and invitations merged and sorted by timestamp
+        total:
+          type: integer
+          description: Total number of items (members + invitations) across all pages
+        count:
+          type: integer
+          description: Number of items in this page
+        itemsPerPage:
+          type: integer
+          description: Maximum items per page
 
     MembersData:
       type: object
@@ -2541,11 +2604,11 @@ paths:
             default: 20
       responses:
         '200':
-          description: Members and pending invitations retrieved successfully
+          description: Members and invitations retrieved successfully (merged and sorted by timestamp)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MembersAndInvitationsResponse'
+                $ref: '#/components/schemas/PaginatedMemberOrInvitationResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
