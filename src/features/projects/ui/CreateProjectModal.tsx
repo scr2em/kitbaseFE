@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { notifications } from '@mantine/notifications';
-import { createProjectSchema, type CreateProjectFormData } from '../model/schema';
+import { createProjectSchema, projectTypeOptions, type CreateProjectFormData } from '../model/schema';
 import { useCreateProjectMutation } from '../../../shared/api/queries';
 import {
   ControlledTextInput,
   ControlledTextArea,
+  ControlledSelect,
 } from '../../../shared/controlled-form-fields';
 import { useShowBackendError } from '../../../shared/hooks';
 
@@ -27,6 +28,7 @@ export function CreateProjectModal({ opened, onClose }: CreateProjectModalProps)
       projectKey: '',
       name: '',
       description: '',
+      projectType: undefined,
     },
   });
 
@@ -76,6 +78,15 @@ export function CreateProjectModal({ opened, onClose }: CreateProjectModalProps)
             label={t('projects.create.description_label')}
             placeholder={t('projects.create.description_placeholder')}
             minRows={3}
+          />
+
+          <ControlledSelect
+            control={form.control}
+            name="projectType"
+            label={t('projects.create.project_type_label')}
+            placeholder={t('projects.create.project_type_placeholder')}
+            options={[...projectTypeOptions]}
+            required
           />
 
           <Button

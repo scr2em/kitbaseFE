@@ -418,12 +418,15 @@
       "name_placeholder": "Enter project name",
       "description_label": "Description (Optional)",
       "description_placeholder": "Describe your project",
+      "project_type_label": "Project Type",
+      "project_type_placeholder": "Select project type",
       "submit_button": "Create Project",
       "success_message": "Project created successfully",
       "validation": {
         "project_key_required": "Project key is required",
         "project_key_invalid": "Project key must be in format: com.example.app",
-        "name_required": "Project name is required"
+        "name_required": "Project name is required",
+        "project_type_required": "Project type is required"
       }
     },
     "edit": {

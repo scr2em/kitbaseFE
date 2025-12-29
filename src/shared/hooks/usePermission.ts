@@ -39,11 +39,7 @@ export function usePermissions() {
     canCreateProject: hasPermission('project.create'),
     canUpdateProject: hasPermission('project.update'),
     canDeleteProject: hasPermission('project.delete'),
-    // Channel permissions
-    canReadChannel: hasPermission('channel.read'),
-    canCreateChannel: hasPermission('channel.create'),
-    canUpdateChannel: hasPermission('channel.update'),
-    canDeleteChannel: hasPermission('channel.delete'),
+   
     // Webhook permissions
     canViewWebhook: hasPermission('webhook.view'),
     canCreateWebhook: hasPermission('webhook.create'),
