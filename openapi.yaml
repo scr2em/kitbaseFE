@@ -569,21 +569,6 @@ components:
           type: string
           description: Project description
 
-    UpdateUserRequest:
-      type: object
-      description: Request to update user information
-      properties:
-        firstName:
-          type: string
-          description: User's first name
-        lastName:
-          type: string
-          description: User's last name
-        email:
-          type: string
-          format: email
-          description: User's email address
-
     # Response DTOs
     UserResponse:
       type: object
@@ -670,6 +655,21 @@ components:
           type: string
           format: date-time
           description: When the user was last updated
+
+    UpdateUserRequest:
+      type: object
+      description: Request to update user profile
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User's first name
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User's last name
     
     UserOrganizationMembership:
       type: object
@@ -1784,6 +1784,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CurrentUserResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    patch:
+      operationId: updateCurrentUser
+      summary: Update current user's profile
+      description: Updates the current user's first name and/or last name.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 

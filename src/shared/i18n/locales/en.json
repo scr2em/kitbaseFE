@@ -805,6 +805,25 @@
     "hours_ago": "{{count}}h ago",
     "days_ago": "{{count}}d ago"
   },
+  "settings": {
+    "nav": {
+      "profile": "Profile"
+    },
+    "profile": {
+      "page_title": "Profile Settings",
+      "title": "Profile Settings",
+      "subtitle": "Manage your personal information",
+      "first_name_label": "First Name",
+      "first_name_placeholder": "Enter your first name",
+      "last_name_label": "Last Name",
+      "last_name_placeholder": "Enter your last name",
+      "email_label": "Email",
+      "email_description": "Email cannot be changed",
+      "submit_button": "Save Changes",
+      "success_message": "Profile updated successfully",
+      "error_loading": "Failed to load profile. Please try again."
+    }
+  },
   "landing": {
     "page_title": "Home",
     "hero": {

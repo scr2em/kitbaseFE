@@ -20,6 +20,7 @@ import {
 import { AcceptInvitationPage } from '../../features/invitation';
 import { EnvironmentsPage } from '../../features/environments';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
+import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
 import { LandingPage } from '../../features/landing';
 import { ProtectedRoute, PublicRoute } from '../../shared/lib/router';
 import { AppLayout, AuthLayout, OrganizationLayout } from '../../shared/layouts';
@@ -103,8 +104,14 @@ const routes: RouteObject[] = [
               { path: 'webhooks/:webhookId', element: <WebhookDetailPage /> },
             ],
           },
-          { path: '/settings', element: <div>Settings Page (Coming Soon)</div> },
-          { path: '/profile', element: <div>Profile Page (Coming Soon)</div> },
+          {
+            path: '/settings',
+            element: <SettingsLayout />,
+            children: [
+              { index: true, element: <Navigate to="me" replace /> },
+              { path: 'me', element: <ProfileSettingsPage /> },
+            ],
+          },
         ],
       },
       {

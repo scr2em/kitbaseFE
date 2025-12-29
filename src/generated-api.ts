@@ -421,19 +421,6 @@ export interface UpdateProjectRequest {
   description?: string;
 }
 
-/** Request to update user information */
-export interface UpdateUserRequest {
-  /** User's first name */
-  firstName?: string;
-  /** User's last name */
-  lastName?: string;
-  /**
-   * User's email address
-   * @format email
-   */
-  email?: string;
-}
-
 /** User information */
 export interface UserResponse {
   /** User ID */
@@ -492,6 +479,22 @@ export interface CurrentUserResponse {
    * @format date-time
    */
   updatedAt?: string;
+}
+
+/** Request to update user profile */
+export interface UpdateUserRequest {
+  /**
+   * User's first name
+   * @minLength 1
+   * @maxLength 100
+   */
+  firstName?: string;
+  /**
+   * User's last name
+   * @minLength 1
+   * @maxLength 100
+   */
+  lastName?: string;
 }
 
 /** User's membership in an organization */
@@ -1349,6 +1352,26 @@ export class Api<
         path: `/users/me`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Updates the current user's first name and/or last name.
+     *
+     * @tags Users
+     * @name UpdateCurrentUser
+     * @summary Update current user's profile
+     * @request PATCH:/users/me
+     * @secure
+     */
+    updateCurrentUser: (data: UpdateUserRequest, params: RequestParams = {}) =>
+      this.request<CurrentUserResponse, ErrorResponse>({
+        path: `/users/me`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
