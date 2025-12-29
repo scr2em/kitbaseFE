@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
-import { useOrganizationMembersQuery, useRemoveMemberMutation, useUpdateMemberRoleMutation, useRevokeInvitationMutation } from '../../../shared/api/queries/organization';
+import { useOrganizationMembersQuery, useRemoveMemberMutation, useUpdateMemberRoleMutation, useRevokeInvitationMutation, useUpdateInvitationRoleMutation } from '../../../shared/api/queries/organization';
 import { useRolesQuery } from '../../../shared/api/queries/role';
 import { InviteUserModal } from '../../invitation';
 import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
@@ -32,10 +32,11 @@ export function TeamPage() {
   const [inviteModalOpened, setInviteModalOpened] = useState(false);
   const [changeRoleModal, setChangeRoleModal] = useState<{
     opened: boolean;
-    memberId: string;
-    memberName: string;
+    id: string;
+    name: string;
     currentRoleId: string;
-  }>({ opened: false, memberId: '', memberName: '', currentRoleId: '' });
+    type: 'member' | 'invitation';
+  }>({ opened: false, id: '', name: '', currentRoleId: '', type: 'member' });
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
   
   const { currentOrganization, isLoading: isLoadingUser } = useCurrentOrganization();
@@ -55,6 +56,7 @@ export function TeamPage() {
   const removeMemberMutation = useRemoveMemberMutation();
   const updateMemberRoleMutation = useUpdateMemberRoleMutation();
   const revokeInvitationMutation = useRevokeInvitationMutation();
+  const updateInvitationRoleMutation = useUpdateInvitationRoleMutation();
   const { showError } = useShowBackendError();
   const { canInviteMember, canRemoveMember, canUpdateMemberRole } = usePermissions();
 
@@ -109,13 +111,13 @@ export function TeamPage() {
     });
   };
 
-  const handleOpenChangeRoleModal = (memberId: string, memberName: string, currentRoleId: string) => {
+  const handleOpenChangeRoleModal = (id: string, name: string, currentRoleId: string, type: 'member' | 'invitation') => {
     setSelectedRoleId(currentRoleId);
-    setChangeRoleModal({ opened: true, memberId, memberName, currentRoleId });
+    setChangeRoleModal({ opened: true, id, name, currentRoleId, type });
   };
 
   const handleCloseChangeRoleModal = () => {
-    setChangeRoleModal({ opened: false, memberId: '', memberName: '', currentRoleId: '' });
+    setChangeRoleModal({ opened: false, id: '', name: '', currentRoleId: '', type: 'member' });
     setSelectedRoleId(null);
   };
 
@@ -123,13 +125,22 @@ export function TeamPage() {
     if (!selectedRoleId || selectedRoleId === changeRoleModal.currentRoleId) return;
     
     try {
-      await updateMemberRoleMutation.mutateAsync({
-        membershipId: changeRoleModal.memberId,
-        roleId: selectedRoleId,
-      });
+      if (changeRoleModal.type === 'member') {
+        await updateMemberRoleMutation.mutateAsync({
+          membershipId: changeRoleModal.id,
+          roleId: selectedRoleId,
+        });
+      } else {
+        await updateInvitationRoleMutation.mutateAsync({
+          invitationId: changeRoleModal.id,
+          roleId: selectedRoleId,
+        });
+      }
       notifications.show({
         title: t('common.success'),
-        message: t('team.change_role.success_message'),
+        message: changeRoleModal.type === 'member' 
+          ? t('team.change_role.success_message') 
+          : t('team.change_invitation_role.success_message'),
         color: 'green',
       });
       handleCloseChangeRoleModal();
@@ -383,7 +394,8 @@ export function TeamPage() {
                                     onClick={() => handleOpenChangeRoleModal(
                                       item.id,
                                       displayName,
-                                      item.role.id
+                                      item.role.id,
+                                      'member'
                                     )}
                                     disabled={isCurrentUser}
                                   >
@@ -412,6 +424,19 @@ export function TeamPage() {
                                 </ActionIcon>
                               </Menu.Target>
                               <Menu.Dropdown>
+                                {canUpdateMemberRole && (
+                                  <Menu.Item
+                                    leftSection={<Shield size={16} />}
+                                    onClick={() => handleOpenChangeRoleModal(
+                                      item.id,
+                                      item.email,
+                                      item.role.id,
+                                      'invitation'
+                                    )}
+                                  >
+                                    {t('team.change_invitation_role.menu_item')}
+                                  </Menu.Item>
+                                )}
                                 <Menu.Item
                                   color="red"
                                   leftSection={<XCircle size={16} />}
@@ -459,12 +484,16 @@ export function TeamPage() {
       <Modal
         opened={changeRoleModal.opened}
         onClose={handleCloseChangeRoleModal}
-        title={t('team.change_role.modal_title')}
+        title={changeRoleModal.type === 'member' 
+          ? t('team.change_role.modal_title') 
+          : t('team.change_invitation_role.modal_title')}
         centered
       >
         <div className="flex flex-col gap-4">
           <p className="text-sm text-gray-600">
-            {t('team.change_role.description', { name: changeRoleModal.memberName })}
+            {changeRoleModal.type === 'member'
+              ? t('team.change_role.description', { name: changeRoleModal.name })
+              : t('team.change_invitation_role.description', { email: changeRoleModal.name })}
           </p>
           <Select
             label={t('team.change_role.role_label')}
@@ -482,7 +511,9 @@ export function TeamPage() {
             </Button>
             <Button
               onClick={handleChangeRole}
-              loading={updateMemberRoleMutation.isPending}
+              loading={changeRoleModal.type === 'member' 
+                ? updateMemberRoleMutation.isPending 
+                : updateInvitationRoleMutation.isPending}
               disabled={!selectedRoleId || selectedRoleId === changeRoleModal.currentRoleId}
             >
               {t('team.change_role.submit_button')}

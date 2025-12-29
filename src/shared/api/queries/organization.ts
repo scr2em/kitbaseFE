@@ -113,3 +113,18 @@ export function useRevokeInvitationMutation() {
   });
 }
 
+export function useUpdateInvitationRoleMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ invitationId, roleId }: { invitationId: string; roleId: string }) => {
+      const response = await apiClient.invitations.updateInvitation(invitationId, { role: roleId });
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate members query to refetch the teams page
+      queryClient.invalidateQueries({ queryKey: ORGANIZATION_MEMBERS_QUERY_KEY });
+    },
+  });
+}
+

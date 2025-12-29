@@ -266,6 +266,12 @@
       "cancel_button": "Cancel",
       "success_message": "Member role updated successfully"
     },
+    "change_invitation_role": {
+      "menu_item": "Change role",
+      "modal_title": "Change Invitation Role",
+      "description": "Select a new role for the invitation to {{email}}",
+      "success_message": "Invitation role updated successfully"
+    },
     "table": {
       "member": "Member",
       "email": "Email",
