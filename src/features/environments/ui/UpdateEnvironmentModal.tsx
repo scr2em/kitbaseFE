@@ -18,7 +18,7 @@ interface UpdateEnvironmentModalProps {
 
 export function UpdateEnvironmentModal({ opened, onClose, projectKey, environment }: UpdateEnvironmentModalProps) {
   const { t } = useTranslation();
-  const updateMutation = useUpdateEnvironmentMutation(projectKey, environment.id);
+  const updateMutation = useUpdateEnvironmentMutation(projectKey, environment.name);
   const { showError } = useShowBackendError();
 
   const { control, handleSubmit, reset } = useForm<UpdateEnvironmentFormData>({

@@ -7,7 +7,6 @@ import {
   ActionIcon,
   Table,
   ScrollArea,
-  Badge,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Plus, MoreVertical, Trash2, Edit, Layers } from 'lucide-react';
