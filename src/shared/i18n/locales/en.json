@@ -655,6 +655,26 @@
       "description": "Description",
       "tags": "Tags",
       "error_loading": "Failed to load event details. Please try again."
+    },
+    "view": {
+      "list": "List",
+      "aggregated": "Aggregated"
+    },
+    "aggregated": {
+      "no_data": "No aggregated data available",
+      "no_data_description": "Events will be aggregated here once data is available",
+      "total_events": "Total Events",
+      "unique_users": "Unique Users",
+      "count": "Count",
+      "percentage": "Distribution",
+      "unknown": "Unknown",
+      "group_by_label": "Group by",
+      "group_by": {
+        "event": "Event Name",
+        "environment": "Environment",
+        "channel": "Channel",
+        "user_id": "User ID"
+      }
     }
   },
   "environments": {

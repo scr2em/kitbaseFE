@@ -9,8 +9,15 @@ export const getEventsQueryKey = (projectKey: string, page: number, size: number
 export const getEventsInfiniteQueryKey = (projectKey: string, filters?: EventsFilters) => 
   ['eventsInfinite', projectKey, filters] as const;
 
-export const getEventStatsQueryKey = (projectKey: string, groupBy: string) => 
-  ['eventStats', projectKey, groupBy] as const;
+export interface EventStatsFilters {
+  environment?: string;
+  channel?: string;
+  from?: string;
+  to?: string;
+}
+
+export const getEventStatsQueryKey = (projectKey: string, groupBy: string, filters?: EventStatsFilters) => 
+  ['eventStats', projectKey, groupBy, filters] as const;
 
 export interface EventsFilters {
   environment?: string;
@@ -81,13 +88,15 @@ export function useEventQuery(projectKey: string, eventId: string) {
 
 export function useEventStatsQuery(
   projectKey: string,
-  groupBy: 'event' | 'environment' | 'channel' | 'user_id'
+  groupBy: 'event' | 'environment' | 'channel' | 'user_id',
+  filters?: EventStatsFilters
 ) {
   return useQuery({
-    queryKey: getEventStatsQueryKey(projectKey, groupBy),
+    queryKey: getEventStatsQueryKey(projectKey, groupBy, filters),
     queryFn: async () => {
       const response = await apiClient.projects.getEventStats(projectKey, {
         group_by: groupBy,
+        ...filters,
       });
       return response.data;
     },

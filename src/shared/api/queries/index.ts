@@ -69,4 +69,5 @@ export {
   getEventsQueryKey,
   EVENTS_QUERY_KEY,
   type EventsFilters,
+  type EventStatsFilters,
 } from './events';
