@@ -382,43 +382,31 @@ export function EventsPage() {
               {t('events.subtitle_simple')}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <SegmentedControl
-              value={viewMode}
-              onChange={(value) => setViewMode(value as ViewMode)}
-              data={[
-                { 
-                  value: 'list', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <List size={14} />
-                      <span>{t('events.view.list')}</span>
-                    </div>
-                  ),
-                },
-                { 
-                  value: 'aggregated', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <BarChart3 size={14} />
-                      <span>{t('events.view.aggregated')}</span>
-                    </div>
-                  ),
-                },
-              ]}
-              size="sm"
-            />
-            {viewMode === 'list' && (
-              <div className="w-full sm:w-64">
-                <TextInput
-                  placeholder={t('events.search_placeholder')}
-                  leftSection={<Search size={16} />}
-                  value={searchValue}
-                  onChange={(e) => handleSearchChange(e.currentTarget.value)}
-                />
-              </div>
-            )}
-          </div>
+          <SegmentedControl
+            value={viewMode}
+            onChange={(value) => setViewMode(value as ViewMode)}
+            data={[
+              { 
+                value: 'list', 
+                label: (
+                  <div className="flex items-center gap-1.5">
+                    <List size={14} />
+                    <span>{t('events.view.list')}</span>
+                  </div>
+                ),
+              },
+              { 
+                value: 'aggregated', 
+                label: (
+                  <div className="flex items-center gap-1.5">
+                    <BarChart3 size={14} />
+                    <span>{t('events.view.aggregated')}</span>
+                  </div>
+                ),
+              },
+            ]}
+            size="sm"
+          />
         </div>
 
         {/* Filters */}
@@ -429,6 +417,15 @@ export function EventsPage() {
               data={groupByOptions}
               value={groupBy}
               onChange={(value) => value && setGroupBy(value as GroupByOption)}
+              className="w-48"
+            />
+          )}
+          {viewMode === 'list' && (
+            <TextInput
+              placeholder={t('events.search_placeholder')}
+              leftSection={<Search size={16} />}
+              value={searchValue}
+              onChange={(e) => handleSearchChange(e.currentTarget.value)}
               className="w-48"
             />
           )}
