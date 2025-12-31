@@ -24,7 +24,6 @@ import {
   type EventsFilters,
   type EventStatsFilters,
 } from '../../../shared/api/queries/events';
-import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/environments';
 
 const PAGE_SIZE = 20;
 
@@ -310,7 +309,8 @@ export function EventsPage() {
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
   const [channelValue, setChannelValue] = useState('');
   const [debouncedChannel] = useDebouncedValue(channelValue, 300);
-  const [filters, setFilters] = useState<Omit<EventsFilters, 'channel'>>({});
+  const [environmentValue, setEnvironmentValue] = useState('');
+  const [debouncedEnvironment] = useDebouncedValue(environmentValue, 300);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useQueryState(
     'view',
@@ -318,28 +318,19 @@ export function EventsPage() {
   );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
 
-  const {
-    data: environmentsData,
-  } = useEnvironmentsInfiniteQuery(projectKey || '');
-
-  const environments = environmentsData?.pages.flatMap((page) => page.data) || [];
-
   const activeFilters: EventsFilters = {
-    ...filters,
     event: debouncedSearch || undefined,
     channel: debouncedChannel || undefined,
+    environment: debouncedEnvironment || undefined,
   };
 
   const statsFilters: EventStatsFilters = {
-    environment: filters.environment,
+    environment: debouncedEnvironment || undefined,
     channel: debouncedChannel || undefined,
   };
 
-  const handleEnvironmentChange = (value: string | null) => {
-    setFilters((prev) => ({
-      ...prev,
-      environment: value || undefined,
-    }));
+  const handleEnvironmentChange = (value: string) => {
+    setEnvironmentValue(value);
     setCurrentPage(1);
   };
 
@@ -356,11 +347,11 @@ export function EventsPage() {
   const clearFilters = () => {
     setSearchValue('');
     setChannelValue('');
-    setFilters({});
+    setEnvironmentValue('');
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchValue || filters.environment || channelValue;
+  const hasActiveFilters = searchValue || environmentValue || channelValue;
 
   const groupByOptions = [
     { value: 'event', label: t('events.aggregated.group_by.event') },
@@ -429,15 +420,10 @@ export function EventsPage() {
               className="w-48"
             />
           )}
-          <Select
-            placeholder={t('events.filters.all_environments')}
-            data={environments.map((env) => ({
-              value: env.name,
-              label: env.name,
-            }))}
-            value={filters.environment || null}
-            onChange={handleEnvironmentChange}
-            clearable
+          <TextInput
+            placeholder={t('events.filters.environment_placeholder')}
+            value={environmentValue}
+            onChange={(e) => handleEnvironmentChange(e.currentTarget.value)}
             className="w-48"
           />
           <TextInput
