@@ -929,9 +929,7 @@ export interface PermissionResponse {
 
 /** Environment information */
 export interface EnvironmentResponse {
-  /** Environment ID */
-  id: string;
-  /** Environment name */
+  /** Environment name (unique identifier within project) */
   name: string;
   /** Environment description */
   description?: string;
@@ -2154,16 +2152,16 @@ export class Api<
      * @tags Environments
      * @name GetEnvironment
      * @summary Get environment details
-     * @request GET:/projects/{projectKey}/environments/{environmentId}
+     * @request GET:/projects/{projectKey}/environments/{environmentName}
      * @secure
      */
     getEnvironment: (
       projectKey: string,
-      environmentId: string,
+      environmentName: string,
       params: RequestParams = {},
     ) =>
       this.request<EnvironmentResponse, ErrorResponse>({
-        path: `/projects/${projectKey}/environments/${environmentId}`,
+        path: `/projects/${projectKey}/environments/${environmentName}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -2176,17 +2174,17 @@ export class Api<
      * @tags Environments
      * @name UpdateEnvironment
      * @summary Update environment
-     * @request PATCH:/projects/{projectKey}/environments/{environmentId}
+     * @request PATCH:/projects/{projectKey}/environments/{environmentName}
      * @secure
      */
     updateEnvironment: (
       projectKey: string,
-      environmentId: string,
+      environmentName: string,
       data: UpdateEnvironmentRequest,
       params: RequestParams = {},
     ) =>
       this.request<EnvironmentResponse, ErrorResponse>({
-        path: `/projects/${projectKey}/environments/${environmentId}`,
+        path: `/projects/${projectKey}/environments/${environmentName}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -2201,16 +2199,16 @@ export class Api<
      * @tags Environments
      * @name DeleteEnvironment
      * @summary Delete environment
-     * @request DELETE:/projects/{projectKey}/environments/{environmentId}
+     * @request DELETE:/projects/{projectKey}/environments/{environmentName}
      * @secure
      */
     deleteEnvironment: (
       projectKey: string,
-      environmentId: string,
+      environmentName: string,
       params: RequestParams = {},
     ) =>
       this.request<void, ErrorResponse>({
-        path: `/projects/${projectKey}/environments/${environmentId}`,
+        path: `/projects/${projectKey}/environments/${environmentName}`,
         method: "DELETE",
         secure: true,
         ...params,

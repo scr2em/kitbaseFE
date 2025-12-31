@@ -1374,18 +1374,14 @@ components:
       type: object
       description: Environment information
       required:
-        - id
         - name
         - projectId
         - createdAt
         - updatedAt
       properties:
-        id:
-          type: string
-          description: Environment ID
         name:
           type: string
-          description: Environment name
+          description: Environment name (unique identifier within project)
         description:
           type: string
           description: Environment description
@@ -3226,7 +3222,7 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /projects/{projectKey}/environments/{environmentId}:
+  /projects/{projectKey}/environments/{environmentName}:
     get:
       operationId: getEnvironment
       summary: Get environment details
@@ -3243,12 +3239,12 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environmentId
+        - name: environmentName
           in: path
           required: true
           schema:
             type: string
-          description: Environment ID
+          description: Environment name (unique identifier within project)
       responses:
         '200':
           description: Environment retrieved successfully
@@ -3279,12 +3275,12 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environmentId
+        - name: environmentName
           in: path
           required: true
           schema:
             type: string
-          description: Environment ID
+          description: Environment name (unique identifier within project)
       requestBody:
         required: true
         content:
@@ -3329,12 +3325,12 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environmentId
+        - name: environmentName
           in: path
           required: true
           schema:
             type: string
-          description: Environment ID
+          description: Environment name (unique identifier within project)
       responses:
         '204':
           description: Environment deleted successfully
