@@ -1693,13 +1693,8 @@ components:
       type: object
       description: Request to log a custom event from SDK
       required:
-        - environment
         - event
       properties:
-        environment:
-          type: string
-          description: Environment name (e.g., production, development)
-          example: "production"
         event:
           type: string
           description: Event name
@@ -1743,7 +1738,6 @@ components:
       required:
         - id
         - event
-        - environment
         - timestamp
       properties:
         id:
@@ -1753,9 +1747,6 @@ components:
         event:
           type: string
           description: Event name
-        environment:
-          type: string
-          description: Environment name
         timestamp:
           type: string
           format: date-time
@@ -1767,7 +1758,6 @@ components:
       required:
         - id
         - event
-        - environment
         - timestamp
         - createdAt
       properties:
@@ -1778,9 +1768,9 @@ components:
         event:
           type: string
           description: Event name
-        environment:
+        apiKeyName:
           type: string
-          description: Environment name
+          description: Name of the API key that triggered this event
         channel:
           type: string
           description: Channel/category
@@ -4244,11 +4234,11 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environment
+        - name: api_key_name
           in: query
           schema:
             type: string
-          description: Filter by environment
+          description: Filter by API key name (partial match)
         - name: event
           in: query
           schema:
@@ -4365,14 +4355,14 @@ paths:
           in: query
           schema:
             type: string
-            enum: [event, environment, channel, user_id]
+            enum: [event, api_key, channel, user_id]
             default: event
           description: Field to group by
-        - name: environment
+        - name: api_key_name
           in: query
           schema:
             type: string
-          description: Filter by environment
+          description: Filter by API key name (partial match)
         - name: channel
           in: query
           schema:
@@ -4432,11 +4422,11 @@ paths:
           schema:
             type: string
           description: Filter by event name
-        - name: environment
+        - name: api_key_name
           in: query
           schema:
             type: string
-          description: Filter by environment
+          description: Filter by API key name (partial match)
         - name: from
           in: query
           schema:

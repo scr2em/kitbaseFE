@@ -1131,11 +1131,6 @@ export interface ErrorResponse {
 /** Request to log a custom event from SDK */
 export interface LogEventRequest {
   /**
-   * Environment name (e.g., production, development)
-   * @example "production"
-   */
-  environment: string;
-  /**
    * Event name
    * @example "New Subscription"
    */
@@ -1186,8 +1181,6 @@ export interface LogEventResponse {
   id: string;
   /** Event name */
   event: string;
-  /** Environment name */
-  environment: string;
   /**
    * When the event was recorded
    * @format date-time
@@ -1204,8 +1197,8 @@ export interface CustomEventResponse {
   id: string;
   /** Event name */
   event: string;
-  /** Environment name */
-  environment: string;
+  /** Name of the API key that triggered this event */
+  apiKeyName?: string;
   /** Channel/category */
   channel?: string;
   /** External user identifier */
@@ -2531,8 +2524,8 @@ export class Api<
     listEvents: (
       projectKey: string,
       query?: {
-        /** Filter by environment */
-        environment?: string;
+        /** Filter by API key name (partial match) */
+        api_key_name?: string;
         /** Filter by event name */
         event?: string;
         /** Filter by channel */
@@ -2614,9 +2607,9 @@ export class Api<
          * Field to group by
          * @default "event"
          */
-        group_by?: "event" | "environment" | "channel" | "user_id";
-        /** Filter by environment */
-        environment?: string;
+        group_by?: "event" | "api_key" | "channel" | "user_id";
+        /** Filter by API key name (partial match) */
+        api_key_name?: string;
         /** Filter by channel */
         channel?: string;
         /**
@@ -2660,8 +2653,8 @@ export class Api<
         interval?: "hour" | "day" | "week" | "month";
         /** Filter by event name */
         event?: string;
-        /** Filter by environment */
-        environment?: string;
+        /** Filter by API key name (partial match) */
+        api_key_name?: string;
         /**
          * Start of time range
          * @format date-time

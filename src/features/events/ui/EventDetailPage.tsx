@@ -13,7 +13,7 @@ import {
   Clock,
   Tag,
   User,
-  Radio,
+  Key,
   Bell,
   FileText,
 } from 'lucide-react';
@@ -81,9 +81,11 @@ export function EventDetailPage() {
             <h1 className="text-xl font-semibold text-slate-900">
               {event.event}
             </h1>
-            <Badge variant="light" color="blue" size="sm">
-              {event.environment}
-            </Badge>
+            {event.apiKeyName && (
+              <Badge variant="light" color="blue" size="sm">
+                {event.apiKeyName}
+              </Badge>
+            )}
           </div>
           <p className="text-sm text-slate-500">
             {formatDate(event.timestamp)}
@@ -109,18 +111,22 @@ export function EventDetailPage() {
             </div>
           </div>
 
-          {/* Environment */}
+          {/* API Key */}
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
-              <Radio size={16} className="text-slate-600" />
+              <Key size={16} className="text-slate-600" />
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-                {t('events.detail.environment')}
+                {t('events.detail.api_key')}
               </p>
-              <Badge variant="light" color="blue" size="sm">
-                {event.environment}
-              </Badge>
+              {event.apiKeyName ? (
+                <Badge variant="light" color="blue" size="sm">
+                  {event.apiKeyName}
+                </Badge>
+              ) : (
+                <p className="text-sm text-slate-400">{t('events.no_api_key')}</p>
+              )}
             </div>
           </div>
 

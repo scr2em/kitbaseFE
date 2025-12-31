@@ -29,7 +29,7 @@ const PAGE_SIZE = 20;
 
 const VIEW_MODES = ['list', 'aggregated'] as const;
 type ViewMode = (typeof VIEW_MODES)[number];
-type GroupByOption = 'event' | 'environment' | 'channel' | 'user_id';
+type GroupByOption = 'event' | 'api_key' | 'channel' | 'user_id';
 
 interface EventsTableProps {
   projectKey: string;
@@ -97,10 +97,10 @@ function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdC
       <Card withBorder padding={0} radius="md">
         <ScrollArea>
           <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
-            <Table.Thead>
+                <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t('events.table.event')}</Table.Th>
-                <Table.Th>{t('events.table.environment')}</Table.Th>
+                <Table.Th>{t('events.table.api_key')}</Table.Th>
                 <Table.Th>{t('events.table.channel')}</Table.Th>
                 <Table.Th>{t('events.table.user_id')}</Table.Th>
                 <Table.Th>{t('events.table.timestamp')}</Table.Th>
@@ -131,9 +131,15 @@ function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdC
                     </div>
                   </Table.Td>
                   <Table.Td>
-                    <Badge variant="light" color="blue" size="sm">
-                      {event.environment}
-                    </Badge>
+                    {event.apiKeyName ? (
+                      <Badge variant="light" color="blue" size="sm">
+                        {event.apiKeyName}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm text-slate-400">
+                        {t('events.no_api_key')}
+                      </span>
+                    )}
                   </Table.Td>
                   <Table.Td>
                     {event.channel ? (
@@ -323,8 +329,8 @@ export function EventsPage() {
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
   const [channelValue, setChannelValue] = useState('');
   const [debouncedChannel] = useDebouncedValue(channelValue, 300);
-  const [environmentValue, setEnvironmentValue] = useState('');
-  const [debouncedEnvironment] = useDebouncedValue(environmentValue, 300);
+  const [apiKeyNameValue, setApiKeyNameValue] = useState('');
+  const [debouncedApiKeyName] = useDebouncedValue(apiKeyNameValue, 300);
   const [userIdValue, setUserIdValue] = useQueryState(
     'user_id',
     parseAsString.withDefault('')
@@ -340,17 +346,17 @@ export function EventsPage() {
   const activeFilters: EventsFilters = {
     event: debouncedSearch || undefined,
     channel: debouncedChannel || undefined,
-    environment: debouncedEnvironment || undefined,
+    api_key_name: debouncedApiKeyName || undefined,
     user_id: debouncedUserId || undefined,
   };
 
   const statsFilters: EventStatsFilters = {
-    environment: debouncedEnvironment || undefined,
+    api_key_name: debouncedApiKeyName || undefined,
     channel: debouncedChannel || undefined,
   };
 
-  const handleEnvironmentChange = (value: string) => {
-    setEnvironmentValue(value);
+  const handleApiKeyNameChange = (value: string) => {
+    setApiKeyNameValue(value);
     setCurrentPage(1);
   };
 
@@ -377,16 +383,16 @@ export function EventsPage() {
   const clearFilters = () => {
     setSearchValue('');
     setChannelValue('');
-    setEnvironmentValue('');
+    setApiKeyNameValue('');
     setUserIdValue(null);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchValue || environmentValue || channelValue || userIdValue;
+  const hasActiveFilters = searchValue || apiKeyNameValue || channelValue || userIdValue;
 
   const groupByOptions = [
     { value: 'event', label: t('events.aggregated.group_by.event') },
-    { value: 'environment', label: t('events.aggregated.group_by.environment') },
+    { value: 'api_key', label: t('events.aggregated.group_by.api_key') },
     { value: 'channel', label: t('events.aggregated.group_by.channel') },
     { value: 'user_id', label: t('events.aggregated.group_by.user_id') },
   ];
@@ -452,9 +458,9 @@ export function EventsPage() {
             />
           )}
           <TextInput
-            placeholder={t('events.filters.environment_placeholder')}
-            value={environmentValue}
-            onChange={(e) => handleEnvironmentChange(e.currentTarget.value)}
+            placeholder={t('events.filters.api_key_placeholder')}
+            value={apiKeyNameValue}
+            onChange={(e) => handleApiKeyNameChange(e.currentTarget.value)}
             className="w-48"
           />
           <TextInput
