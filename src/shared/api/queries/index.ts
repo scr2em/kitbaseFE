@@ -61,3 +61,10 @@ export {
   useTestWebhookMutation,
   WEBHOOKS_QUERY_KEY,
 } from './webhooks';
+export {
+  useEventsInfiniteQuery,
+  useEventQuery,
+  getEventsQueryKey,
+  EVENTS_QUERY_KEY,
+  type EventsFilters,
+} from './events';

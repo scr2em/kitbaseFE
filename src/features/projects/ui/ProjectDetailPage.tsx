@@ -13,6 +13,7 @@ import {
   Key, 
   FileText,
   Layers,
+  Activity,
 } from 'lucide-react';
 import { useProjectQuery } from '../../../shared/api/queries';
 
@@ -48,6 +49,11 @@ export function ProjectDetailPage() {
       label: t('projects.detail.nav.environments'),
       path: `/projects/${projectKey}/environments`,
       icon: <Layers size={18} />,
+    },
+    {
+      label: t('projects.detail.nav.events'),
+      path: `/projects/${projectKey}/events`,
+      icon: <Activity size={18} />,
     },
   ];
 

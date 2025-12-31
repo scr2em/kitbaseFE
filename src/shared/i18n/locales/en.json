@@ -468,7 +468,8 @@
         "access": "Access",
         "changelog": "Changelog",
         "api_keys": "API Keys",
-        "environments": "Environments"
+        "environments": "Environments",
+        "events": "Events"
       },
       "bundles": {
         "title": "Bundles",
@@ -610,6 +611,35 @@
         }
       }
     }
+  },
+  "events": {
+    "page_title": "Events",
+    "title": "Events",
+    "subtitle": "View custom events ({{count}} events)",
+    "no_events": "No events recorded yet",
+    "no_events_description": "Events will appear here when your app starts tracking them",
+    "error_loading": "Failed to load events. Please try again.",
+    "load_more": "Load More",
+    "loading_more": "Loading...",
+    "search_placeholder": "Search by event name...",
+    "filters": {
+      "environment": "Environment",
+      "channel": "Channel",
+      "all_environments": "All environments",
+      "all_channels": "All channels",
+      "clear_filters": "Clear filters"
+    },
+    "table": {
+      "event": "Event",
+      "environment": "Environment",
+      "channel": "Channel",
+      "user_id": "User ID",
+      "timestamp": "Timestamp",
+      "description": "Description"
+    },
+    "no_user_id": "N/A",
+    "no_channel": "N/A",
+    "no_description": "No description"
   },
   "environments": {
     "page_title": "Environments",
