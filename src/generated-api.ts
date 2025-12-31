@@ -1122,6 +1122,174 @@ export interface ErrorResponse {
   timestamp: string;
 }
 
+/** Request to log a custom event from SDK */
+export interface LogEventRequest {
+  /**
+   * Environment name (e.g., production, development)
+   * @example "production"
+   */
+  environment: string;
+  /**
+   * Event name
+   * @example "New Subscription"
+   */
+  event: string;
+  /**
+   * Optional channel/category for grouping events
+   * @example "payments"
+   */
+  channel?: string;
+  /**
+   * External user identifier from client system
+   * @example "user-123"
+   */
+  user_id?: string;
+  /**
+   * Emoji icon for the event
+   * @example "💰"
+   */
+  icon?: string;
+  /**
+   * Whether to trigger notifications
+   * @default false
+   */
+  notify?: boolean;
+  /**
+   * Optional event description
+   * @example "User subscribed to premium plan"
+   */
+  description?: string;
+  /**
+   * Key-value metadata for the event
+   * @example {"plan":"premium","cycle":"monthly","trial":false}
+   */
+  tags?: Record<string, any>;
+  /**
+   * When the event occurred (defaults to server time if not provided)
+   * @format date-time
+   */
+  timestamp?: string;
+}
+
+/** Response after logging an event */
+export interface LogEventResponse {
+  /**
+   * Unique event identifier
+   * @format uuid
+   */
+  id: string;
+  /** Event name */
+  event: string;
+  /** Environment name */
+  environment: string;
+  /**
+   * When the event was recorded
+   * @format date-time
+   */
+  timestamp: string;
+}
+
+/** Full custom event details */
+export interface CustomEventResponse {
+  /**
+   * Unique event identifier
+   * @format uuid
+   */
+  id: string;
+  /** Event name */
+  event: string;
+  /** Environment name */
+  environment: string;
+  /** Channel/category */
+  channel?: string;
+  /** External user identifier */
+  userId?: string;
+  /** Emoji icon */
+  icon?: string;
+  /** Whether notifications were triggered */
+  notify?: boolean;
+  /** Key-value metadata */
+  tags?: Record<string, any>;
+  /** Event description */
+  description?: string;
+  /**
+   * When the event occurred
+   * @format date-time
+   */
+  timestamp: string;
+  /**
+   * When the event was recorded on server
+   * @format date-time
+   */
+  createdAt: string;
+}
+
+/** Paginated list of custom events */
+export interface PaginatedCustomEventResponse {
+  /** Array of events for this page */
+  data: CustomEventResponse[];
+  /** Current page number */
+  page: number;
+  /** Items per page */
+  size: number;
+  /** Total number of items */
+  totalElements: number;
+  /** Total number of pages */
+  totalPages: number;
+}
+
+/** A single group in event statistics */
+export interface EventStatsGroup {
+  /** Group key (event name, environment, channel, etc.) */
+  key: string;
+  /** Number of events in this group */
+  count: number;
+  /**
+   * Percentage of total events
+   * @format double
+   */
+  percentage: number;
+}
+
+/** Aggregated event statistics */
+export interface EventStatsResponse {
+  /**
+   * Start of the time range
+   * @format date-time
+   */
+  from?: string;
+  /**
+   * End of the time range
+   * @format date-time
+   */
+  to?: string;
+  /** Total number of events in range */
+  totalEvents: number;
+  /** Number of unique users */
+  uniqueUsers: number;
+  /** Grouped event counts */
+  groups: EventStatsGroup[];
+}
+
+/** A single data point in the timeline */
+export interface EventTimelinePoint {
+  /**
+   * Time bucket start
+   * @format date-time
+   */
+  timestamp: string;
+  /** Number of events in this bucket */
+  count: number;
+}
+
+/** Event counts over time for charts */
+export interface EventTimelineResponse {
+  /** Time interval (hour, day, week, month) */
+  interval: "hour" | "day" | "week" | "month";
+  /** Timeline data points */
+  data: EventTimelinePoint[];
+}
+
 import type {
   AxiosInstance,
   AxiosRequestConfig,
@@ -2344,6 +2512,171 @@ export class Api<
         secure: true,
         ...params,
       }),
+
+    /**
+     * @description List custom events for a project with pagination and filters. Requires event.view permission.
+     *
+     * @tags Event Analytics
+     * @name ListEvents
+     * @summary List custom events
+     * @request GET:/projects/{projectKey}/events
+     * @secure
+     */
+    listEvents: (
+      projectKey: string,
+      query?: {
+        /** Filter by environment */
+        environment?: string;
+        /** Filter by event name */
+        event?: string;
+        /** Filter by channel */
+        channel?: string;
+        /** Filter by user ID */
+        user_id?: string;
+        /**
+         * Start of time range
+         * @format date-time
+         */
+        from?: string;
+        /**
+         * End of time range
+         * @format date-time
+         */
+        to?: string;
+        /**
+         * Page number
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Page size
+         * @default 50
+         */
+        size?: number;
+        /**
+         * Sort order by timestamp
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedCustomEventResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get details of a specific custom event. Requires event.view permission.
+     *
+     * @tags Event Analytics
+     * @name GetEvent
+     * @summary Get event details
+     * @request GET:/projects/{projectKey}/events/{eventId}
+     * @secure
+     */
+    getEvent: (
+      projectKey: string,
+      eventId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<CustomEventResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events/${eventId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get aggregated event statistics with grouping. Requires event.view permission.
+     *
+     * @tags Event Analytics
+     * @name GetEventStats
+     * @summary Get aggregated event statistics
+     * @request GET:/projects/{projectKey}/events/stats
+     * @secure
+     */
+    getEventStats: (
+      projectKey: string,
+      query?: {
+        /**
+         * Field to group by
+         * @default "event"
+         */
+        group_by?: "event" | "environment" | "channel" | "user_id";
+        /** Filter by environment */
+        environment?: string;
+        /** Filter by channel */
+        channel?: string;
+        /**
+         * Start of time range
+         * @format date-time
+         */
+        from?: string;
+        /**
+         * End of time range
+         * @format date-time
+         */
+        to?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<EventStatsResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events/stats`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get event counts over time intervals for chart visualization. Requires event.view permission.
+     *
+     * @tags Event Analytics
+     * @name GetEventTimeline
+     * @summary Get event timeline for charts
+     * @request GET:/projects/{projectKey}/events/timeline
+     * @secure
+     */
+    getEventTimeline: (
+      projectKey: string,
+      query?: {
+        /**
+         * Time interval for grouping
+         * @default "day"
+         */
+        interval?: "hour" | "day" | "week" | "month";
+        /** Filter by event name */
+        event?: string;
+        /** Filter by environment */
+        environment?: string;
+        /**
+         * Start of time range
+         * @format date-time
+         */
+        from?: string;
+        /**
+         * End of time range
+         * @format date-time
+         */
+        to?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<EventTimelineResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events/timeline`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
   };
   builds = {
     /**
@@ -2395,6 +2728,26 @@ export class Api<
         method: "POST",
         body: data,
         type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Log a custom event from SDK. Authentication is via API key (Bearer token). The project is automatically determined from the API key.
+     *
+     * @tags Events
+     * @name LogEvent
+     * @summary Log a custom event
+     * @request POST:/v1/logs
+     * @secure
+     */
+    logEvent: (data: LogEventRequest, params: RequestParams = {}) =>
+      this.request<LogEventResponse, ErrorResponse>({
+        path: `/v1/logs`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
