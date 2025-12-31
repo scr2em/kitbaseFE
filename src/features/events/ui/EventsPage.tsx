@@ -12,7 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Activity, Search, X } from 'lucide-react';
 import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import {
   useEventsInfiniteQuery,
   type EventsFilters,
@@ -22,6 +22,7 @@ import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/enviro
 export function EventsPage() {
   const { t } = useTranslation();
   const { projectKey } = useParams<{ projectKey: string }>();
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [filters, setFilters] = useState<EventsFilters>({});
 
@@ -186,7 +187,11 @@ export function EventsPage() {
                   </Table.Thead>
                   <Table.Tbody>
                     {events.map((event) => (
-                      <Table.Tr key={event.id}>
+                      <Table.Tr 
+                        key={event.id}
+                        onClick={() => navigate(`/projects/${projectKey}/events/${event.id}`)}
+                        className="cursor-pointer"
+                      >
                         <Table.Td>
                           <div className="flex gap-2 items-center">
                             {event.icon && (

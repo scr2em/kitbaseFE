@@ -19,7 +19,7 @@ import {
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { EnvironmentsPage } from '../../features/environments';
-import { EventsPage } from '../../features/events';
+import { EventsPage, EventDetailPage } from '../../features/events';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
 import { LandingPage } from '../../features/landing';
@@ -91,6 +91,7 @@ const routes: RouteObject[] = [
               { path: 'api-keys', element: <ApiKeysPage /> },
               { path: 'environments', element: <EnvironmentsPage /> },
               { path: 'events', element: <EventsPage /> },
+              { path: 'events/:eventId', element: <EventDetailPage /> },
             ],
           },
           { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },

@@ -639,7 +639,22 @@
     },
     "no_user_id": "N/A",
     "no_channel": "N/A",
-    "no_description": "No description"
+    "no_description": "No description",
+    "detail": {
+      "page_title": "Event Details",
+      "section_title": "Event Information",
+      "event_name": "Event Name",
+      "environment": "Environment",
+      "channel": "Channel",
+      "user_id": "User ID",
+      "timestamp": "Timestamp",
+      "notifications": "Notifications",
+      "notify_enabled": "Enabled",
+      "notify_disabled": "Disabled",
+      "description": "Description",
+      "tags": "Tags",
+      "error_loading": "Failed to load event details. Please try again."
+    }
   },
   "environments": {
     "page_title": "Environments",
