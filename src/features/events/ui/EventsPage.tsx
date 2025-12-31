@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, Activity, Search, X, List, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
+import { useQueryState, parseAsStringLiteral } from 'nuqs';
 import {
   useEventsQuery,
   useEventStatsQuery,
@@ -27,7 +28,8 @@ import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/enviro
 
 const PAGE_SIZE = 20;
 
-type ViewMode = 'list' | 'aggregated';
+const VIEW_MODES = ['list', 'aggregated'] as const;
+type ViewMode = (typeof VIEW_MODES)[number];
 type GroupByOption = 'event' | 'environment' | 'channel' | 'user_id';
 
 interface EventsTableProps {
@@ -306,30 +308,31 @@ export function EventsPage() {
   const { projectKey } = useParams<{ projectKey: string }>();
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
-  const [filters, setFilters] = useState<EventsFilters>({});
+  const [channelValue, setChannelValue] = useState('');
+  const [debouncedChannel] = useDebouncedValue(channelValue, 300);
+  const [filters, setFilters] = useState<Omit<EventsFilters, 'channel'>>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useQueryState(
+    'view',
+    parseAsStringLiteral(VIEW_MODES).withDefault('list')
+  );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
 
   const {
     data: environmentsData,
   } = useEnvironmentsInfiniteQuery(projectKey || '');
 
-  const {
-    data: channelStatsData,
-  } = useEventStatsQuery(projectKey || '', 'channel');
-
   const environments = environmentsData?.pages.flatMap((page) => page.data) || [];
-  const channels = channelStatsData?.groups?.map((group) => group.key).filter(Boolean) || [];
 
   const activeFilters: EventsFilters = {
     ...filters,
     event: debouncedSearch || undefined,
+    channel: debouncedChannel || undefined,
   };
 
   const statsFilters: EventStatsFilters = {
     environment: filters.environment,
-    channel: filters.channel,
+    channel: debouncedChannel || undefined,
   };
 
   const handleEnvironmentChange = (value: string | null) => {
@@ -340,11 +343,8 @@ export function EventsPage() {
     setCurrentPage(1);
   };
 
-  const handleChannelChange = (value: string | null) => {
-    setFilters((prev) => ({
-      ...prev,
-      channel: value || undefined,
-    }));
+  const handleChannelChange = (value: string) => {
+    setChannelValue(value);
     setCurrentPage(1);
   };
 
@@ -355,11 +355,12 @@ export function EventsPage() {
 
   const clearFilters = () => {
     setSearchValue('');
+    setChannelValue('');
     setFilters({});
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchValue || filters.environment || filters.channel;
+  const hasActiveFilters = searchValue || filters.environment || channelValue;
 
   const groupByOptions = [
     { value: 'event', label: t('events.aggregated.group_by.event') },
@@ -442,15 +443,10 @@ export function EventsPage() {
             clearable
             className="w-48"
           />
-          <Select
-            placeholder={t('events.filters.all_channels')}
-            data={channels.map((channel) => ({
-              value: channel,
-              label: channel,
-            }))}
-            value={filters.channel || null}
-            onChange={handleChannelChange}
-            clearable
+          <TextInput
+            placeholder={t('events.filters.channel_placeholder')}
+            value={channelValue}
+            onChange={(e) => handleChannelChange(e.currentTarget.value)}
             className="w-48"
           />
           {hasActiveFilters && (

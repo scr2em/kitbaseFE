@@ -627,7 +627,7 @@
       "environment": "Environment",
       "channel": "Channel",
       "all_environments": "All environments",
-      "all_channels": "All channels",
+      "channel_placeholder": "Filter by channel...",
       "clear_filters": "Clear filters"
     },
     "table": {

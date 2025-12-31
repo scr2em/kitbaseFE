@@ -3,6 +3,7 @@ import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Outlet } from 'react-router';
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import { AuthProvider } from '../../shared/lib/auth/AuthContext';
 import { theme } from '../../shared/theme';
 import '@mantine/core/styles.css';
@@ -20,14 +21,16 @@ const queryClient = new QueryClient({
 export function AppProviders() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme} >
-        <ModalsProvider>
-          <Notifications position="top-right" />
-          <AuthProvider>
-            <Outlet />
-          </AuthProvider>
-        </ModalsProvider>
-      </MantineProvider>
+      <NuqsAdapter>
+        <MantineProvider theme={theme} >
+          <ModalsProvider>
+            <Notifications position="top-right" />
+            <AuthProvider>
+              <Outlet />
+            </AuthProvider>
+          </ModalsProvider>
+        </MantineProvider>
+      </NuqsAdapter>
     </QueryClientProvider>
   );
 }
