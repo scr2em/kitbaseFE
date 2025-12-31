@@ -1,6 +1,6 @@
 import { Popover, ActionIcon, Badge, Loader, ScrollArea, Tooltip, Button } from '@mantine/core';
 import { useDisclosure, useIntersection } from '@mantine/hooks';
-import { Bell, Check, CheckCheck, UserCheck, UserX, Package, UserPlus, UserMinus } from 'lucide-react';
+import { Bell, Check, CheckCheck, UserCheck, UserX, Package, UserPlus, UserMinus, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { match } from 'ts-pattern';
@@ -283,6 +283,31 @@ function MemberRemovedNotificationItem({
 }
 
 // ============================================
+// Log Rate Exceeded Notification
+// ============================================
+function LogRateExceededNotificationItem({
+  notification,
+  onMarkAsRead,
+  isMarkingAsRead,
+}: BaseNotificationItemProps) {
+  const icon = (
+    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+      <AlertTriangle size={16} className="text-amber-600" />
+    </div>
+  );
+
+  const actions = !notification.isRead ? (
+    <MarkAsReadAction
+      notificationId={notification.id}
+      onMarkAsRead={onMarkAsRead}
+      isMarkingAsRead={isMarkingAsRead}
+    />
+  ) : null;
+
+  return <NotificationWrapper notification={notification} icon={icon} actions={actions} />;
+}
+
+// ============================================
 // Notification Item Router
 // ============================================
 type NotificationItemProps = InvitationNotificationItemProps;
@@ -293,6 +318,7 @@ function NotificationItem(props: NotificationItemProps) {
     .with('build_completed', () => <BuildCompletedNotificationItem {...props} />)
     .with('member_joined', () => <MemberJoinedNotificationItem {...props} />)
     .with('member_removed', () => <MemberRemovedNotificationItem {...props} />)
+    .with('log_rate_exceeded', () => <LogRateExceededNotificationItem {...props} />)
     .exhaustive();
 }
 

@@ -75,13 +75,13 @@ components:
 
     NotificationTypeEnum:
       type: string
-      enum: [invitation_received, build_completed, member_joined, member_removed]
+      enum: [invitation_received, build_completed, member_joined, member_removed, log_rate_exceeded]
       description: Type of notification
 
     # Webhook Event Types - events that can trigger webhooks
     WebhookEventTypeEnum:
       type: string
-      enum: [invitation_received, build_completed, member_joined, member_removed]
+      enum: [invitation_received, build_completed, member_joined, member_removed, log_rate_exceeded]
       description: Event types that can trigger webhook deliveries
 
     # Project Type - framework/technology used by the project

@@ -59,14 +59,16 @@ export type WebhookEventTypeEnum =
   | "invitation_received"
   | "build_completed"
   | "member_joined"
-  | "member_removed";
+  | "member_removed"
+  | "log_rate_exceeded";
 
 /** Type of notification */
 export type NotificationTypeEnum =
   | "invitation_received"
   | "build_completed"
   | "member_joined"
-  | "member_removed";
+  | "member_removed"
+  | "log_rate_exceeded";
 
 /** Organization membership status */
 export type MembershipStatusEnum = "active" | "inactive";
