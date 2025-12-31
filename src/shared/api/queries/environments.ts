@@ -59,8 +59,8 @@ export function useDeleteEnvironmentMutation(projectKey: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (environmentId: string) => {
-      const response = await apiClient.projects.deleteEnvironment(projectKey, environmentId);
+    mutationFn: async (environmentName: string) => {
+      const response = await apiClient.projects.deleteEnvironment(projectKey, environmentName);
       return response.data;
     },
     onSuccess: () => {

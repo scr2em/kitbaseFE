@@ -45,7 +45,7 @@ export function EnvironmentsPage() {
   const deleteEnvironmentMutation = useDeleteEnvironmentMutation(projectKey || '');
   const { showError } = useShowBackendError();
 
-  const handleDeleteEnvironment = (environmentId: string, environmentName: string) => {
+  const handleDeleteEnvironment = (environmentName: string) => {
     modals.openConfirmModal({
       title: t('environments.delete.title'),
       children: (
@@ -57,7 +57,7 @@ export function EnvironmentsPage() {
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          await deleteEnvironmentMutation.mutateAsync(environmentId);
+          await deleteEnvironmentMutation.mutateAsync(environmentName);
           notifications.show({
             title: t('common.success'),
             message: t('environments.delete.success_message'),
@@ -156,7 +156,7 @@ export function EnvironmentsPage() {
                   </Table.Thead>
                   <Table.Tbody>
                     {environments.map((environment) => (
-                      <Table.Tr key={environment.id}>
+                      <Table.Tr key={environment.name}>
                         <Table.Td>
                           <div className="flex gap-3 items-center">
                             <Layers size={18} strokeWidth={2} className="text-slate-500" />
@@ -164,9 +164,7 @@ export function EnvironmentsPage() {
                               <p className="font-medium text-sm">
                                 {environment.name}
                               </p>
-                              <Badge variant="light" color="blue" size="xs" mt={2}>
-                                {t('environments.badge')}
-                              </Badge>
+                           
                             </div>
                           </div>
                         </Table.Td>
@@ -210,7 +208,7 @@ export function EnvironmentsPage() {
                               <Menu.Item
                                 color="red"
                                 leftSection={<Trash2 size={16} />}
-                                onClick={() => handleDeleteEnvironment(environment.id, environment.name)}
+                                onClick={() => handleDeleteEnvironment(environment.name)}
                               >
                                 {t('environments.delete.menu_item')}
                               </Menu.Item>
