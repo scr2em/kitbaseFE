@@ -5,6 +5,7 @@ export const webhookEventTypes = [
   'build_completed',
   'member_joined',
   'member_removed',
+  'log_rate_exceeded',
 ] as const;
 
 export const createWebhookSchema = z.object({

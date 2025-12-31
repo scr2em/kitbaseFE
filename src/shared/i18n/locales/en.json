@@ -780,7 +780,8 @@
       "invitation_received": "Triggered when a team member receives an invitation",
       "build_completed": "Triggered when a build is completed",
       "member_joined": "Triggered when a new member joins the organization",
-      "member_removed": "Triggered when a member is removed from the organization"
+      "member_removed": "Triggered when a member is removed from the organization",
+      "log_rate_exceeded": "Triggered when the log rate limit is exceeded"
     },
     "create": {
       "page_title": "Create Webhook",
