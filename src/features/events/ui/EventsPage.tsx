@@ -11,8 +11,11 @@ import {
   Pagination,
   SegmentedControl,
   Progress,
+  Switch,
+  Tooltip,
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Activity, Search, X, List, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
@@ -21,6 +24,8 @@ import { useQueryState, parseAsStringLiteral, parseAsString } from 'nuqs';
 import {
   useEventsQuery,
   useEventStatsQuery,
+  useEventsStatusQuery,
+  useUpdateEventsStatusMutation,
   type EventsFilters,
   type EventStatsFilters,
 } from '../../../shared/api/queries/events';
@@ -343,6 +348,30 @@ export function EventsPage() {
   );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
 
+  const { data: eventsStatusData, isLoading: isEventsStatusLoading } = useEventsStatusQuery(projectKey || '');
+  const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
+
+  const handleEventsStatusToggle = (enabled: boolean) => {
+    updateEventsStatusMutation.mutate(enabled, {
+      onSuccess: () => {
+        notifications.show({
+          title: t('common.success'),
+          message: enabled 
+            ? t('events.logging.enable_success') 
+            : t('events.logging.disable_success'),
+          color: 'green',
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: t('common.error'),
+          message: t('events.logging.error'),
+          color: 'red',
+        });
+      },
+    });
+  };
+
   const activeFilters: EventsFilters = {
     event: debouncedSearch || undefined,
     channel: debouncedChannel || undefined,
@@ -410,31 +439,53 @@ export function EventsPage() {
               {t('events.subtitle_simple')}
             </p>
           </div>
-          <SegmentedControl
-            value={viewMode}
-            onChange={(value) => setViewMode(value as ViewMode)}
-            data={[
-              { 
-                value: 'list', 
-                label: (
-                  <div className="flex items-center gap-1.5">
-                    <List size={14} />
-                    <span>{t('events.view.list')}</span>
-                  </div>
-                ),
-              },
-              { 
-                value: 'aggregated', 
-                label: (
-                  <div className="flex items-center gap-1.5">
-                    <BarChart3 size={14} />
-                    <span>{t('events.view.aggregated')}</span>
-                  </div>
-                ),
-              },
-            ]}
-            size="sm"
-          />
+          <div className="flex items-center gap-4">
+            <Tooltip 
+              label={eventsStatusData?.eventsEnabled 
+                ? t('events.logging.enabled') 
+                : t('events.logging.disabled')
+              }
+              position="bottom"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">
+                  {t('events.logging.label')}
+                </span>
+                <Switch
+                  checked={eventsStatusData?.eventsEnabled ?? false}
+                  onChange={(event) => handleEventsStatusToggle(event.currentTarget.checked)}
+                  disabled={isEventsStatusLoading || updateEventsStatusMutation.isPending}
+                  size="sm"
+                  color="green"
+                />
+              </div>
+            </Tooltip>
+            <SegmentedControl
+              value={viewMode}
+              onChange={(value) => setViewMode(value as ViewMode)}
+              data={[
+                { 
+                  value: 'list', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <List size={14} />
+                      <span>{t('events.view.list')}</span>
+                    </div>
+                  ),
+                },
+                { 
+                  value: 'aggregated', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <BarChart3 size={14} />
+                      <span>{t('events.view.aggregated')}</span>
+                    </div>
+                  ),
+                },
+              ]}
+              size="sm"
+            />
+          </div>
         </div>
 
         {/* Filters */}

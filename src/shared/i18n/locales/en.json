@@ -678,6 +678,14 @@
         "channel": "Channel",
         "user_id": "User ID"
       }
+    },
+    "logging": {
+      "label": "Event Logging",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable_success": "Event logging enabled successfully",
+      "disable_success": "Event logging disabled successfully",
+      "error": "Failed to update event logging status"
     }
   },
   "environments": {

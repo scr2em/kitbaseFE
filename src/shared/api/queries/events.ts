@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../client';
 
 export const EVENTS_QUERY_KEY = 'events';
@@ -102,6 +102,37 @@ export function useEventStatsQuery(
     },
     staleTime: 60 * 1000,
     enabled: !!projectKey,
+  });
+}
+
+export const getEventsStatusQueryKey = (projectKey: string) =>
+  ['eventsStatus', projectKey] as const;
+
+export function useEventsStatusQuery(projectKey: string) {
+  return useQuery({
+    queryKey: getEventsStatusQueryKey(projectKey),
+    queryFn: async () => {
+      const response = await apiClient.projects.getEventsStatus(projectKey);
+      return response.data;
+    },
+    staleTime: 30 * 1000,
+    enabled: !!projectKey,
+  });
+}
+
+export function useUpdateEventsStatusMutation(projectKey: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await apiClient.projects.updateEventsStatus(projectKey, {
+        enabled,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getEventsStatusQueryKey(projectKey) });
+    },
   });
 }
 

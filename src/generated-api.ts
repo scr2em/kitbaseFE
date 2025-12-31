@@ -768,6 +768,22 @@ export interface ProjectResponse {
    * @format date-time
    */
   updatedAt?: string;
+  /** Whether event logging is enabled for this project */
+  eventsEnabled?: boolean;
+}
+
+/** Events status for a project */
+export interface EventsStatusResponse {
+  /** Project key identifier */
+  projectKey: string;
+  /** Whether event logging is enabled for this project */
+  eventsEnabled: boolean;
+}
+
+/** Request to update events status for a project */
+export interface UpdateEventsStatusRequest {
+  /** Whether event logging should be enabled for this project */
+  enabled: boolean;
 }
 
 /** Build information */
@@ -2124,6 +2140,48 @@ export class Api<
         path: `/projects/${projectKey}`,
         method: "DELETE",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description Get whether event logging is enabled for a project. Organization context determined by subdomain.
+     *
+     * @tags Projects
+     * @name GetEventsStatus
+     * @summary Get events status
+     * @request GET:/projects/{projectKey}/events-status
+     * @secure
+     */
+    getEventsStatus: (projectKey: string, params: RequestParams = {}) =>
+      this.request<EventsStatusResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events-status`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Enable or disable event logging for a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Projects
+     * @name UpdateEventsStatus
+     * @summary Update events status
+     * @request PUT:/projects/{projectKey}/events-status
+     * @secure
+     */
+    updateEventsStatus: (
+      projectKey: string,
+      data: UpdateEventsStatusRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<EventsStatusResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events-status`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
