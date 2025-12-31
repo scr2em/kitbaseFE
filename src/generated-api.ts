@@ -33,6 +33,10 @@ export type PermissionCode =
   | "changelog.create"
   | "changelog.update"
   | "changelog.delete"
+  | "event.view"
+  | "event.create"
+  | "event.update"
+  | "event.delete"
   | "analytics.view"
   | "support.operations"
   | "webhook.view"
@@ -2671,6 +2675,58 @@ export class Api<
     ) =>
       this.request<EventTimelineResponse, ErrorResponse>({
         path: `/projects/${projectKey}/events/timeline`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description List all custom events for a specific user ID within a project. Requires event.view permission.
+     *
+     * @tags Event Analytics
+     * @name ListEventsByUserId
+     * @summary List events by user ID
+     * @request GET:/projects/{projectKey}/events/users/{userId}
+     * @secure
+     */
+    listEventsByUserId: (
+      projectKey: string,
+      userId: string,
+      query?: {
+        /** Filter by event name (partial match) */
+        event?: string;
+        /**
+         * Start of time range
+         * @format date-time
+         */
+        from?: string;
+        /**
+         * End of time range
+         * @format date-time
+         */
+        to?: string;
+        /**
+         * Page number
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Page size
+         * @default 50
+         */
+        size?: number;
+        /**
+         * Sort order by timestamp
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedCustomEventResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/events/users/${userId}`,
         method: "GET",
         query: query,
         secure: true,

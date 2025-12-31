@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, Activity, Search, X, List, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { useQueryState, parseAsStringLiteral } from 'nuqs';
+import { useQueryState, parseAsStringLiteral, parseAsString } from 'nuqs';
 import {
   useEventsQuery,
   useEventStatsQuery,
@@ -36,9 +36,10 @@ interface EventsTableProps {
   filters: EventsFilters;
   currentPage: number;
   onPageChange: (page: number) => void;
+  onUserIdClick: (userId: string) => void;
 }
 
-function EventsTable({ projectKey, filters, currentPage, onPageChange }: EventsTableProps) {
+function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdClick }: EventsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -146,9 +147,22 @@ function EventsTable({ projectKey, filters, currentPage, onPageChange }: EventsT
                     )}
                   </Table.Td>
                   <Table.Td>
-                    <p className="text-sm font-mono text-slate-600">
-                      {event.userId || t('events.no_user_id')}
-                    </p>
+                    {event.userId ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUserIdClick(event.userId!);
+                        }}
+                        className="text-sm font-mono text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        {event.userId}
+                      </button>
+                    ) : (
+                      <span className="text-sm text-slate-400">
+                        {t('events.no_user_id')}
+                      </span>
+                    )}
                   </Table.Td>
                   <Table.Td>
                     <p className="text-sm text-slate-600">
@@ -311,6 +325,11 @@ export function EventsPage() {
   const [debouncedChannel] = useDebouncedValue(channelValue, 300);
   const [environmentValue, setEnvironmentValue] = useState('');
   const [debouncedEnvironment] = useDebouncedValue(environmentValue, 300);
+  const [userIdValue, setUserIdValue] = useQueryState(
+    'user_id',
+    parseAsString.withDefault('')
+  );
+  const [debouncedUserId] = useDebouncedValue(userIdValue, 300);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useQueryState(
     'view',
@@ -322,6 +341,7 @@ export function EventsPage() {
     event: debouncedSearch || undefined,
     channel: debouncedChannel || undefined,
     environment: debouncedEnvironment || undefined,
+    user_id: debouncedUserId || undefined,
   };
 
   const statsFilters: EventStatsFilters = {
@@ -344,14 +364,25 @@ export function EventsPage() {
     setCurrentPage(1);
   };
 
+  const handleUserIdChange = (value: string) => {
+    setUserIdValue(value || null);
+    setCurrentPage(1);
+  };
+
+  const handleUserIdClick = (userId: string) => {
+    setUserIdValue(userId);
+    setCurrentPage(1);
+  };
+
   const clearFilters = () => {
     setSearchValue('');
     setChannelValue('');
     setEnvironmentValue('');
+    setUserIdValue(null);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchValue || environmentValue || channelValue;
+  const hasActiveFilters = searchValue || environmentValue || channelValue || userIdValue;
 
   const groupByOptions = [
     { value: 'event', label: t('events.aggregated.group_by.event') },
@@ -432,6 +463,12 @@ export function EventsPage() {
             onChange={(e) => handleChannelChange(e.currentTarget.value)}
             className="w-48"
           />
+          <TextInput
+            placeholder={t('events.filters.user_id_placeholder')}
+            value={userIdValue}
+            onChange={(e) => handleUserIdChange(e.currentTarget.value)}
+            className="w-48"
+          />
           {hasActiveFilters && (
             <Button
               variant="subtle"
@@ -451,6 +488,7 @@ export function EventsPage() {
             filters={activeFilters} 
             currentPage={currentPage}
             onPageChange={setCurrentPage}
+            onUserIdClick={handleUserIdClick}
           />
         ) : (
           <AggregatedEventsTable

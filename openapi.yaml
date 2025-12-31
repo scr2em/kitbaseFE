@@ -820,6 +820,10 @@ components:
         - changelog.create
         - changelog.update
         - changelog.delete
+        - event.view
+        - event.create
+        - event.update
+        - event.delete
         - analytics.view
         - support.operations
         - webhook.view
@@ -4452,6 +4456,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventTimelineResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /projects/{projectKey}/events/users/{userId}:
+    get:
+      operationId: listEventsByUserId
+      summary: List events by user ID
+      description: List all custom events for a specific user ID within a project. Requires event.view permission.
+      tags:
+        - Event Analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID to filter events by
+        - name: event
+          in: query
+          schema:
+            type: string
+          description: Filter by event name (partial match)
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Start of time range
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: End of time range
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Page number
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 50
+          description: Page size
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order by timestamp
+      responses:
+        '200':
+          description: Paginated list of events for the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomEventResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':

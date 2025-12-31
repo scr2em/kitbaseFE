@@ -629,6 +629,7 @@
       "all_environments": "All environments",
       "environment_placeholder": "Filter by environment...",
       "channel_placeholder": "Filter by channel...",
+      "user_id_placeholder": "Filter by user ID...",
       "clear_filters": "Clear filters"
     },
     "table": {
