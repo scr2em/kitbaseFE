@@ -62,8 +62,10 @@ export {
   WEBHOOKS_QUERY_KEY,
 } from './webhooks';
 export {
+  useEventsQuery,
   useEventsInfiniteQuery,
   useEventQuery,
+  useEventStatsQuery,
   getEventsQueryKey,
   EVENTS_QUERY_KEY,
   type EventsFilters,

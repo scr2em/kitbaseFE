@@ -616,6 +616,7 @@
     "page_title": "Events",
     "title": "Events",
     "subtitle": "View custom events ({{count}} events)",
+    "subtitle_simple": "Track and analyze custom events from your app",
     "no_events": "No events recorded yet",
     "no_events_description": "Events will appear here when your app starts tracking them",
     "error_loading": "Failed to load events. Please try again.",

@@ -3,8 +3,14 @@ import { apiClient } from '../client';
 
 export const EVENTS_QUERY_KEY = 'events';
 
-export const getEventsQueryKey = (projectKey: string, filters?: EventsFilters) => 
-  ['events', projectKey, filters] as const;
+export const getEventsQueryKey = (projectKey: string, page: number, size: number, filters?: EventsFilters) => 
+  ['events', projectKey, page, size, filters] as const;
+
+export const getEventsInfiniteQueryKey = (projectKey: string, filters?: EventsFilters) => 
+  ['eventsInfinite', projectKey, filters] as const;
+
+export const getEventStatsQueryKey = (projectKey: string, groupBy: string) => 
+  ['eventStats', projectKey, groupBy] as const;
 
 export interface EventsFilters {
   environment?: string;
@@ -15,9 +21,31 @@ export interface EventsFilters {
   to?: string;
 }
 
+export function useEventsQuery(
+  projectKey: string,
+  page: number,
+  size: number,
+  filters?: EventsFilters
+) {
+  return useQuery({
+    queryKey: getEventsQueryKey(projectKey, page, size, filters),
+    queryFn: async () => {
+      const response = await apiClient.projects.listEvents(projectKey, {
+        page,
+        size,
+        sort: 'desc',
+        ...filters,
+      });
+      return response.data;
+    },
+    staleTime: 30 * 1000,
+    enabled: !!projectKey,
+  });
+}
+
 export function useEventsInfiniteQuery(projectKey: string, filters?: EventsFilters) {
   return useInfiniteQuery({
-    queryKey: getEventsQueryKey(projectKey, filters),
+    queryKey: getEventsInfiniteQueryKey(projectKey, filters),
     queryFn: async ({ pageParam = 0 }) => {
       const response = await apiClient.projects.listEvents(projectKey, {
         page: pageParam,
@@ -48,6 +76,23 @@ export function useEventQuery(projectKey: string, eventId: string) {
     },
     staleTime: 30 * 1000,
     enabled: !!projectKey && !!eventId,
+  });
+}
+
+export function useEventStatsQuery(
+  projectKey: string,
+  groupBy: 'event' | 'environment' | 'channel' | 'user_id'
+) {
+  return useQuery({
+    queryKey: getEventStatsQueryKey(projectKey, groupBy),
+    queryFn: async () => {
+      const response = await apiClient.projects.getEventStats(projectKey, {
+        group_by: groupBy,
+      });
+      return response.data;
+    },
+    staleTime: 60 * 1000,
+    enabled: !!projectKey,
   });
 }
 
