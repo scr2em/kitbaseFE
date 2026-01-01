@@ -5,7 +5,7 @@ frontend:
       commands:
         - corepack enable
         - corepack prepare pnpm@latest --activate
-        - pnpm install --frozen-lockfile
+        - pnpm install -f 
     build:
       commands:
         - pnpm build:prod
