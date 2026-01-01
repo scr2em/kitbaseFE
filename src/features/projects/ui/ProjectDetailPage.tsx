@@ -41,22 +41,20 @@ export function ProjectDetailPage() {
       path: `/projects/${projectKey}/changelog`,
       icon: <FileText size={18} />,
     },
-
     {
       label: t('projects.detail.nav.events'),
       path: `/projects/${projectKey}/events`,
       icon: <Activity size={18} />,
     },
-
-    {
-      label: t('projects.detail.nav.environments'),
-      path: `/projects/${projectKey}/environments`,
-      icon: <Layers size={18} />,
-    },
     {
       label: t('projects.detail.nav.api_keys'),
       path: `/projects/${projectKey}/api-keys`,
       icon: <Key size={18} />,
+    },
+    {
+      label: t('projects.detail.nav.environments'),
+      path: `/projects/${projectKey}/environments`,
+      icon: <Layers size={18} />,
     },
     {
       label: t('projects.detail.nav.settings'),
