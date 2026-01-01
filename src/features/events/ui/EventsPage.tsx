@@ -16,7 +16,6 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { DatePicker } from '@mantine/dates';
-import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Activity, Search, X, List, BarChart3, Calendar, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
@@ -393,26 +392,6 @@ export function EventsPage() {
     },
   ];
 
-  const handleEventsStatusToggle = (enabled: boolean) => {
-    updateEventsStatusMutation.mutate(enabled, {
-      onSuccess: () => {
-        notifications.show({
-          title: t('common.success'),
-          message: enabled 
-            ? t('events.logging.enable_success') 
-            : t('events.logging.disable_success'),
-          color: 'green',
-        });
-      },
-      onError: () => {
-        notifications.show({
-          title: t('common.error'),
-          message: t('events.logging.error'),
-          color: 'red',
-        });
-      },
-    });
-  };
 
   const activeFilters: EventsFilters = {
     event: debouncedSearch || undefined,
