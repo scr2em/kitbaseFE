@@ -184,6 +184,7 @@
   "common": {
     "loading": "Loading...",
     "error": "Error",
+    "error_with_code": "Error: {{code}}",
     "success": "Success",
     "warning": "Warning",
     "error_generic": "An error occurred. Please try again."
