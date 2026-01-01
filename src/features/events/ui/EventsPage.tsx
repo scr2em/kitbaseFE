@@ -358,7 +358,6 @@ export function EventsPage() {
     parseAsStringLiteral(VIEW_MODES).withDefault('list')
   );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
-  const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
   const { data: environmentsData } = useEnvironmentsInfiniteQuery(projectKey || '');
 
   const datePresets: Array<{ value: [string, string]; label: string }> = [
