@@ -26,7 +26,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useEventsQuery,
   useEventStatsQuery,
-  useUpdateEventsStatusMutation,
   getEventsQueryKey,
   getEventStatsQueryKey,
   type EventsFilters,
