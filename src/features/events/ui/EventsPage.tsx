@@ -11,7 +11,6 @@ import {
   Pagination,
   SegmentedControl,
   Progress,
-  Switch,
   Tooltip,
   Popover,
 } from '@mantine/core';
@@ -28,7 +27,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useEventsQuery,
   useEventStatsQuery,
-  useEventsStatusQuery,
   useUpdateEventsStatusMutation,
   getEventsQueryKey,
   getEventStatsQueryKey,
@@ -361,7 +359,6 @@ export function EventsPage() {
     parseAsStringLiteral(VIEW_MODES).withDefault('list')
   );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
-  const { data: eventsStatusData, isLoading: isEventsStatusLoading } = useEventsStatusQuery(projectKey || '');
   const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
   const { data: environmentsData } = useEnvironmentsInfiniteQuery(projectKey || '');
 
@@ -537,26 +534,7 @@ export function EventsPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Tooltip 
-              label={eventsStatusData?.eventsEnabled 
-                ? t('events.logging.enabled') 
-                : t('events.logging.disabled')
-              }
-              position="bottom"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600">
-                  {t('events.logging.label')}
-                </span>
-                <Switch
-                  checked={eventsStatusData?.eventsEnabled ?? false}
-                  onChange={(event) => handleEventsStatusToggle(event.currentTarget.checked)}
-                  disabled={isEventsStatusLoading || updateEventsStatusMutation.isPending}
-                  size="sm"
-                  color="green"
-                />
-              </div>
-            </Tooltip>
+           
             <SegmentedControl
               value={viewMode}
               onChange={(value) => setViewMode(value as ViewMode)}
