@@ -44,6 +44,17 @@ export type PermissionCode =
   | "webhook.update"
   | "webhook.delete";
 
+/** Target platform for the OTA update */
+export type OtaTargetPlatformEnum = "ios" | "android" | "both";
+
+/**
+ * Update mode for OTA updates:
+ * - force: Update is applied immediately, user cannot skip
+ * - silent: Update is applied silently in the background
+ * - prompt: User is prompted to update, can skip
+ */
+export type OtaUpdateModeEnum = "force" | "silent" | "prompt";
+
 /** The framework or technology type of the project */
 export type ProjectType =
   | "react"
@@ -82,6 +93,24 @@ export type InvitationStatusEnum =
 
 /** User account status */
 export type UserStatusEnum = "active" | "inactive" | "pending" | "suspended";
+
+/** A single targeting condition */
+export interface TargetingCondition {
+  /** Metadata field name (e.g., user_id, device_id) */
+  field: string;
+  /** Operator - eq (equals), neq (not equals) */
+  op: "eq" | "neq";
+  /** Value to compare against */
+  value: string;
+}
+
+/** Targeting conditions with AND/OR operator */
+export interface TargetingConditions {
+  /** How conditions are combined */
+  operator: "and" | "or";
+  /** List of targeting conditions */
+  conditions: TargetingCondition[];
+}
 
 /** Request to create a new webhook subscription */
 export interface CreateWebhookRequest {
@@ -936,7 +965,9 @@ export interface ApiKeyResponse {
   keyPrefix: string;
   /** Project key this API key is for */
   projectKey: string;
-  /** The environment this API key is scoped to */
+  /** The environment ID this API key is scoped to */
+  environmentId: string;
+  /** The environment name this API key is scoped to */
   environmentName: string;
   /** Organization ID */
   organizationId: string;
@@ -1005,6 +1036,145 @@ export interface PaginatedEnvironmentResponse {
   totalElements: number;
   /** Total number of pages */
   totalPages: number;
+}
+
+/** Request to create a new OTA update */
+export interface CreateOtaUpdateRequest {
+  /**
+   * Name of the OTA update
+   * @minLength 1
+   * @maxLength 255
+   */
+  name: string;
+  /**
+   * Version string for this OTA update (e.g., "1.0.0")
+   * @minLength 1
+   * @maxLength 50
+   */
+  version: string;
+  /** ID of the build associated with this OTA update */
+  buildId: string;
+  /** ID of the environment this OTA update targets */
+  environmentId: string;
+  /**
+   * Minimum native app version required (e.g., "1.0.0")
+   * @minLength 1
+   * @maxLength 50
+   */
+  minNativeVersion: string;
+  /**
+   * Update mode for OTA updates:
+   * - force: Update is applied immediately, user cannot skip
+   * - silent: Update is applied silently in the background
+   * - prompt: User is prompted to update, can skip
+   */
+  updateMode: OtaUpdateModeEnum;
+  /** Target platform for the OTA update */
+  targetPlatform: OtaTargetPlatformEnum;
+  /** Targeting conditions with AND/OR operator */
+  targetingConditions?: TargetingConditions;
+}
+
+/** Request to update an existing OTA update */
+export interface UpdateOtaUpdateRequest {
+  /**
+   * Name of the OTA update
+   * @minLength 1
+   * @maxLength 255
+   */
+  name?: string;
+  /**
+   * Version string for this OTA update
+   * @minLength 1
+   * @maxLength 50
+   */
+  version?: string;
+  /** ID of the build associated with this OTA update */
+  buildId?: string;
+  /** ID of the environment this OTA update targets */
+  environmentId?: string;
+  /**
+   * Minimum native app version required
+   * @minLength 1
+   * @maxLength 50
+   */
+  minNativeVersion?: string;
+  /**
+   * Update mode for OTA updates:
+   * - force: Update is applied immediately, user cannot skip
+   * - silent: Update is applied silently in the background
+   * - prompt: User is prompted to update, can skip
+   */
+  updateMode?: OtaUpdateModeEnum;
+  /** Target platform for the OTA update */
+  targetPlatform?: OtaTargetPlatformEnum;
+  /** Targeting conditions with AND/OR operator */
+  targetingConditions?: TargetingConditions;
+}
+
+/** OTA update information */
+export interface OtaUpdateResponse {
+  /** Unique identifier for the OTA update */
+  id: string;
+  /** Name of the OTA update */
+  name: string;
+  /** Version string for this OTA update */
+  version: string;
+  /** ID of the build associated with this OTA update */
+  buildId: string;
+  /** ID of the environment this OTA update targets */
+  environmentId: string;
+  /** Minimum native app version required */
+  minNativeVersion: string;
+  /**
+   * Update mode for OTA updates:
+   * - force: Update is applied immediately, user cannot skip
+   * - silent: Update is applied silently in the background
+   * - prompt: User is prompted to update, can skip
+   */
+  updateMode: OtaUpdateModeEnum;
+  /** Target platform for the OTA update */
+  targetPlatform: OtaTargetPlatformEnum;
+  /** Targeting conditions with AND/OR operator */
+  targetingConditions?: TargetingConditions;
+  /** Project ID */
+  projectId: string;
+  /** User ID who created this OTA update */
+  createdBy: string;
+  /**
+   * When the OTA update was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the OTA update was last updated
+   * @format date-time
+   */
+  updatedAt: string;
+}
+
+/** Paginated OTA update response */
+export interface PaginatedOtaUpdateResponse {
+  /** List of OTA updates */
+  data: OtaUpdateResponse[];
+  /** Current page number */
+  page: number;
+  /** Number of items per page */
+  size: number;
+  /** Total number of OTA updates */
+  totalElements: number;
+  /** Total number of pages */
+  totalPages: number;
+}
+
+/** Request to check for available OTA updates */
+export interface CheckOtaUpdateRequest {
+  /** Client platform */
+  platform: "ios" | "android";
+  /** Current native app version (e.g., "1.0.0") */
+  nativeVersion: string;
+  /** Client metadata for targeting (e.g., user_id, device_id) */
+  metadata?: Record<string, string>;
 }
 
 /** Changelog information */
@@ -2508,6 +2678,139 @@ export class Api<
       }),
 
     /**
+     * @description List all OTA updates for a project with optional environment filter. Organization context determined by subdomain.
+     *
+     * @tags OTA Updates
+     * @name ListOtaUpdates
+     * @summary List OTA updates
+     * @request GET:/projects/{projectKey}/ota-updates
+     * @secure
+     */
+    listOtaUpdates: (
+      projectKey: string,
+      query?: {
+        /** Optional environment ID to filter OTA updates */
+        environmentId?: string;
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 20
+         */
+        size?: number;
+        /**
+         * Sort direction by creation date
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedOtaUpdateResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/ota-updates`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new OTA update for a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags OTA Updates
+     * @name CreateOtaUpdate
+     * @summary Create OTA update
+     * @request POST:/projects/{projectKey}/ota-updates
+     * @secure
+     */
+    createOtaUpdate: (
+      projectKey: string,
+      data: CreateOtaUpdateRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<OtaUpdateResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/ota-updates`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get OTA update details by ID within a project. Organization context determined by subdomain.
+     *
+     * @tags OTA Updates
+     * @name GetOtaUpdate
+     * @summary Get OTA update details
+     * @request GET:/projects/{projectKey}/ota-updates/{otaUpdateId}
+     * @secure
+     */
+    getOtaUpdate: (
+      projectKey: string,
+      otaUpdateId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<OtaUpdateResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/ota-updates/${otaUpdateId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update OTA update by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags OTA Updates
+     * @name UpdateOtaUpdate
+     * @summary Update OTA update
+     * @request PATCH:/projects/{projectKey}/ota-updates/{otaUpdateId}
+     * @secure
+     */
+    updateOtaUpdate: (
+      projectKey: string,
+      otaUpdateId: string,
+      data: UpdateOtaUpdateRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<OtaUpdateResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/ota-updates/${otaUpdateId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete OTA update by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags OTA Updates
+     * @name DeleteOtaUpdate
+     * @summary Delete OTA update
+     * @request DELETE:/projects/{projectKey}/ota-updates/{otaUpdateId}
+     * @secure
+     */
+    deleteOtaUpdate: (
+      projectKey: string,
+      otaUpdateId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/projects/${projectKey}/ota-updates/${otaUpdateId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
      * @description List all changelogs for a project. Organization context determined by subdomain.
      *
      * @tags Changelogs
@@ -2905,6 +3208,24 @@ export class Api<
         method: "POST",
         body: data,
         type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Check if there's an applicable OTA update for the client. Uses API key authentication. Returns the latest matching OTA update based on platform, native version, and targeting conditions.
+     *
+     * @tags OTA Updates
+     * @name CheckOtaUpdate
+     * @summary Check for available OTA updates
+     * @request POST:/v1/ota/check
+     */
+    checkOtaUpdate: (data: CheckOtaUpdateRequest, params: RequestParams = {}) =>
+      this.request<OtaUpdateResponse, ErrorResponse>({
+        path: `/v1/ota/check`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

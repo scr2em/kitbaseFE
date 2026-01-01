@@ -1,6 +1,9 @@
 export { ProjectsPage } from './ui/ProjectsPage';
 export { ProjectDetailPage } from './ui/ProjectDetailPage';
 export { BundlesPage } from './ui/BundlesPage';
+export { OtaUpdatesPage } from './ui/OtaUpdatesPage';
+export { CreateOtaUpdatePage } from './ui/CreateOtaUpdatePage';
+export { UpdateOtaUpdateModal } from './ui/UpdateOtaUpdateModal';
 export { ProjectBuildsPage } from './ui/ProjectBuildsPage';
 export { AccessPage } from './ui/AccessPage';
 export { ApiKeysPage } from './ui/ApiKeysPage';

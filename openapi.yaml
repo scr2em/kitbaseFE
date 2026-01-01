@@ -42,6 +42,8 @@ tags:
     description: Changelog management for projects
   - name: Builds
     description: Build management operations
+  - name: OTA Updates
+    description: Over-the-air update management operations
   - name: API Keys
     description: API key management for build uploads
   - name: Audit Logs
@@ -89,6 +91,60 @@ components:
       type: string
       enum: [react, angular, vue, nextjs, ionic, flutter, others]
       description: The framework or technology type of the project
+
+    # OTA Update Mode - how the update should be applied
+    OtaUpdateModeEnum:
+      type: string
+      enum: [force, silent, prompt]
+      description: |
+        Update mode for OTA updates:
+        - force: Update is applied immediately, user cannot skip
+        - silent: Update is applied silently in the background
+        - prompt: User is prompted to update, can skip
+
+    # OTA Target Platform - which platforms the update targets
+    OtaTargetPlatformEnum:
+      type: string
+      enum: [ios, android, both]
+      description: Target platform for the OTA update
+
+    # OTA Targeting Condition - single condition for targeting
+    TargetingCondition:
+      type: object
+      description: A single targeting condition
+      required:
+        - field
+        - op
+        - value
+      properties:
+        field:
+          type: string
+          description: Metadata field name (e.g., user_id, device_id)
+        op:
+          type: string
+          enum: [eq, neq]
+          description: Operator - eq (equals), neq (not equals)
+        value:
+          type: string
+          description: Value to compare against
+
+    # OTA Targeting Conditions - group of conditions with AND/OR operator
+    TargetingConditions:
+      type: object
+      description: Targeting conditions with AND/OR operator
+      required:
+        - operator
+        - conditions
+      properties:
+        operator:
+          type: string
+          enum: [and, or]
+          description: How conditions are combined
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetingCondition'
+          description: List of targeting conditions
 
     # Webhook Request DTOs
     CreateWebhookRequest:
@@ -1378,6 +1434,7 @@ components:
         - name
         - keyPrefix
         - projectKey
+        - environmentId
         - environmentName
         - organizationId
         - createdBy
@@ -1398,9 +1455,12 @@ components:
         projectKey:
           type: string
           description: Project key this API key is for
+        environmentId:
+          type: string
+          description: The environment ID this API key is scoped to
         environmentName:
           type: string
-          description: The environment this API key is scoped to
+          description: The environment name this API key is scoped to
         organizationId:
           type: string
           description: Organization ID
@@ -1500,6 +1560,183 @@ components:
         totalPages:
           type: integer
           description: Total number of pages
+
+    # OTA Update Schemas
+    CreateOtaUpdateRequest:
+      type: object
+      description: Request to create a new OTA update
+      required:
+        - name
+        - version
+        - buildId
+        - environmentId
+        - minNativeVersion
+        - updateMode
+        - targetPlatform
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Name of the OTA update
+        version:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Version string for this OTA update (e.g., "1.0.0")
+        buildId:
+          type: string
+          description: ID of the build associated with this OTA update
+        environmentId:
+          type: string
+          description: ID of the environment this OTA update targets
+        minNativeVersion:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Minimum native app version required (e.g., "1.0.0")
+        updateMode:
+          $ref: '#/components/schemas/OtaUpdateModeEnum'
+        targetPlatform:
+          $ref: '#/components/schemas/OtaTargetPlatformEnum'
+        targetingConditions:
+          $ref: '#/components/schemas/TargetingConditions'
+
+    UpdateOtaUpdateRequest:
+      type: object
+      description: Request to update an existing OTA update
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Name of the OTA update
+        version:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Version string for this OTA update
+        buildId:
+          type: string
+          description: ID of the build associated with this OTA update
+        environmentId:
+          type: string
+          description: ID of the environment this OTA update targets
+        minNativeVersion:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Minimum native app version required
+        updateMode:
+          $ref: '#/components/schemas/OtaUpdateModeEnum'
+        targetPlatform:
+          $ref: '#/components/schemas/OtaTargetPlatformEnum'
+        targetingConditions:
+          $ref: '#/components/schemas/TargetingConditions'
+
+    OtaUpdateResponse:
+      type: object
+      description: OTA update information
+      required:
+        - id
+        - name
+        - version
+        - buildId
+        - environmentId
+        - minNativeVersion
+        - updateMode
+        - targetPlatform
+        - projectId
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the OTA update
+        name:
+          type: string
+          description: Name of the OTA update
+        version:
+          type: string
+          description: Version string for this OTA update
+        buildId:
+          type: string
+          description: ID of the build associated with this OTA update
+        environmentId:
+          type: string
+          description: ID of the environment this OTA update targets
+        minNativeVersion:
+          type: string
+          description: Minimum native app version required
+        updateMode:
+          $ref: '#/components/schemas/OtaUpdateModeEnum'
+        targetPlatform:
+          $ref: '#/components/schemas/OtaTargetPlatformEnum'
+        targetingConditions:
+          $ref: '#/components/schemas/TargetingConditions'
+        projectId:
+          type: string
+          description: Project ID
+        createdBy:
+          type: string
+          description: User ID who created this OTA update
+        createdAt:
+          type: string
+          format: date-time
+          description: When the OTA update was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the OTA update was last updated
+
+    PaginatedOtaUpdateResponse:
+      type: object
+      description: Paginated OTA update response
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OtaUpdateResponse'
+          description: List of OTA updates
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of OTA updates
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    CheckOtaUpdateRequest:
+      type: object
+      description: Request to check for available OTA updates
+      required:
+        - platform
+        - nativeVersion
+      properties:
+        platform:
+          type: string
+          enum: [ios, android]
+          description: Client platform
+        nativeVersion:
+          type: string
+          description: Current native app version (e.g., "1.0.0")
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Client metadata for targeting (e.g., user_id, device_id)
 
     ChangelogResponse:
       type: object
@@ -3427,6 +3664,40 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
+  /v1/ota/check:
+    post:
+      operationId: checkOtaUpdate
+      summary: Check for available OTA updates
+      description: "Check if there's an applicable OTA update for the client. Uses API key authentication. Returns the latest matching OTA update based on platform, native version, and targeting conditions."
+      tags:
+        - OTA Updates
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: API key for authentication (e.g., "flyway_abc123...")
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckOtaUpdateRequest'
+      responses:
+        '200':
+          description: OTA update found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtaUpdateResponse'
+        '204':
+          description: No applicable OTA update found
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /projects/{projectKey}/api-keys:
     get:
       operationId: getApiKeys
@@ -3775,6 +4046,238 @@ paths:
       responses:
         '204':
           description: Environment deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ==================== OTA Updates ====================
+  /projects/{projectKey}/ota-updates:
+    get:
+      operationId: listOtaUpdates
+      summary: List OTA updates
+      description: List all OTA updates for a project with optional environment filter. Organization context determined by subdomain.
+      tags:
+        - OTA Updates
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional environment ID to filter OTA updates
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-based)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction by creation date
+      responses:
+        '200':
+          description: OTA updates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOtaUpdateResponse'
+        '400':
+          description: Bad request (e.g., invalid sort parameter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    post:
+      operationId: createOtaUpdate
+      summary: Create OTA update
+      description: Create a new OTA update for a project. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - OTA Updates
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOtaUpdateRequest'
+      responses:
+        '201':
+          description: OTA update created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtaUpdateResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /projects/{projectKey}/ota-updates/{otaUpdateId}:
+    get:
+      operationId: getOtaUpdate
+      summary: Get OTA update details
+      description: Get OTA update details by ID within a project. Organization context determined by subdomain.
+      tags:
+        - OTA Updates
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: otaUpdateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: OTA update ID (UUID)
+      responses:
+        '200':
+          description: OTA update retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtaUpdateResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateOtaUpdate
+      summary: Update OTA update
+      description: Update OTA update by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - OTA Updates
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: otaUpdateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: OTA update ID (UUID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOtaUpdateRequest'
+      responses:
+        '200':
+          description: OTA update updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtaUpdateResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+    
+    delete:
+      operationId: deleteOtaUpdate
+      summary: Delete OTA update
+      description: Delete OTA update by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - OTA Updates
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: otaUpdateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: OTA update ID (UUID)
+      responses:
+        '204':
+          description: OTA update deleted successfully
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':

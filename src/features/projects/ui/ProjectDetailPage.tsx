@@ -15,6 +15,7 @@ import {
   Layers,
   Activity,
   Settings,
+  Smartphone,
 } from 'lucide-react';
 import { useProjectQuery } from '../../../shared/api/queries';
 
@@ -27,9 +28,9 @@ export function ProjectDetailPage() {
 
   const navigationItems = [
     {
-      label: t('projects.detail.nav.bundles'),
-      path: `/projects/${projectKey}/bundles`,
-      icon: <Package size={18} />,
+      label: t('projects.detail.nav.ota_updates'),
+      path: `/projects/${projectKey}/ota-updates`,
+      icon: <Smartphone size={18} />,
     },
     {
       label: t('projects.detail.nav.builds'),
@@ -120,7 +121,7 @@ export function ProjectDetailPage() {
             </div>
             <div className="flex flex-col gap-0.5 px-3">
               {navigationItems.map((item) => {
-                const isActive = location.pathname === item.path;
+                const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                 return (
                   <button
                     key={item.path}

@@ -71,3 +71,12 @@ export {
   type EventsFilters,
   type EventStatsFilters,
 } from './events';
+export {
+  useOtaUpdatesInfiniteQuery,
+  useOtaUpdateQuery,
+  useCreateOtaUpdateMutation,
+  useUpdateOtaUpdateMutation,
+  useDeleteOtaUpdateMutation,
+  getOtaUpdatesQueryKey,
+  OTA_UPDATES_QUERY_KEY,
+} from './ota-updates';
