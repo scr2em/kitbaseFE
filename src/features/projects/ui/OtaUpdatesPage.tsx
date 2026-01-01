@@ -11,7 +11,6 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Plus, MoreVertical, Trash2, Edit, Smartphone, Monitor, Apple } from 'lucide-react';
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
@@ -20,17 +19,12 @@ import {
   useDeleteOtaUpdateMutation,
 } from '../../../shared/api/queries/ota-updates';
 import { useShowBackendError } from '../../../shared/hooks';
-import { UpdateOtaUpdateModal } from './UpdateOtaUpdateModal';
 import type { OtaUpdateResponse } from '../../../generated-api';
 
 export function OtaUpdatesPage() {
   const { t } = useTranslation();
   const { projectKey } = useParams<{ projectKey: string }>();
   const navigate = useNavigate();
-  const [updateModalData, setUpdateModalData] = useState<{
-    opened: boolean;
-    otaUpdate: OtaUpdateResponse | null;
-  }>({ opened: false, otaUpdate: null });
 
   const {
     data,
@@ -69,8 +63,8 @@ export function OtaUpdatesPage() {
     });
   };
 
-  const handleUpdateOtaUpdate = (otaUpdate: OtaUpdateResponse) => {
-    setUpdateModalData({ opened: true, otaUpdate });
+  const handleEditOtaUpdate = (otaUpdate: OtaUpdateResponse) => {
+    navigate(`/projects/${projectKey}/ota-updates/${otaUpdate.id}/edit`);
   };
 
   const handleCreateOtaUpdate = () => {
@@ -251,16 +245,16 @@ export function OtaUpdatesPage() {
                             <Menu.Dropdown>
                               <Menu.Item
                                 leftSection={<Edit size={16} />}
-                                onClick={() => handleUpdateOtaUpdate(otaUpdate)}
+                                onClick={() => handleEditOtaUpdate(otaUpdate)}
                               >
-                                {t('ota_updates.update.menu_item')}
+                                {t('ota_updates.actions.edit')}
                               </Menu.Item>
                               <Menu.Item
                                 color="red"
                                 leftSection={<Trash2 size={16} />}
                                 onClick={() => handleDeleteOtaUpdate(otaUpdate)}
                               >
-                                {t('ota_updates.delete.menu_item')}
+                                {t('ota_updates.actions.delete')}
                               </Menu.Item>
                             </Menu.Dropdown>
                           </Menu>
@@ -288,16 +282,6 @@ export function OtaUpdatesPage() {
           </>
         )}
       </div>
-
-      {updateModalData.otaUpdate && projectKey && (
-        <UpdateOtaUpdateModal
-          opened={updateModalData.opened}
-          onClose={() => setUpdateModalData({ opened: false, otaUpdate: null })}
-          projectKey={projectKey}
-          otaUpdate={updateModalData.otaUpdate}
-        />
-      )}
     </div>
   );
 }
-

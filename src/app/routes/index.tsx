@@ -9,9 +9,8 @@ import { TeamPage } from '../../features/team';
 import { 
   ProjectsPage, 
   ProjectDetailPage, 
-  BundlesPage, 
   OtaUpdatesPage,
-  CreateOtaUpdatePage,
+  OtaUpdateFormPage,
   ProjectBuildsPage, 
   AccessPage,
   ApiKeysPage,
@@ -86,9 +85,9 @@ const routes: RouteObject[] = [
             element: <ProjectDetailPage />,
             children: [
               { index: true, element: <Navigate to="ota-updates" replace /> },
-              { path: 'bundles', element: <BundlesPage /> },
               { path: 'ota-updates', element: <OtaUpdatesPage /> },
-              { path: 'ota-updates/create', element: <CreateOtaUpdatePage /> },
+              { path: 'ota-updates/create', element: <OtaUpdateFormPage /> },
+              { path: 'ota-updates/:otaUpdateId/edit', element: <OtaUpdateFormPage /> },
               { path: 'builds', element: <ProjectBuildsPage /> },
               { path: 'access', element: <AccessPage /> },
               { path: 'changelog', element: <ChangelogPage /> },
