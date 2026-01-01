@@ -35,6 +35,7 @@ import {
   type EventsFilters,
   type EventStatsFilters,
 } from '../../../shared/api/queries/events';
+import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/environments';
 
 const PAGE_SIZE = 20;
 
@@ -362,6 +363,7 @@ export function EventsPage() {
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
   const { data: eventsStatusData, isLoading: isEventsStatusLoading } = useEventsStatusQuery(projectKey || '');
   const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
+  const { data: environmentsData } = useEnvironmentsInfiniteQuery(projectKey || '');
 
   const datePresets: Array<{ value: [string, string]; label: string }> = [
     {
@@ -516,6 +518,11 @@ export function EventsPage() {
     { value: 'user_id', label: t('events.aggregated.group_by.user_id') },
   ];
 
+  const environmentOptions = (environmentsData?.pages.flatMap((page) => page.data) || []).map((env) => ({
+    value: env.name,
+    label: env.name,
+  }));
+
   return (
     <div>
       <div className="flex flex-col gap-6">
@@ -608,10 +615,13 @@ export function EventsPage() {
               className="w-48"
             />
           )}
-          <TextInput
-            placeholder={t('events.filters.environment_placeholder')}
-            value={environmentNameValue}
-            onChange={(e) => handleEnvironmentNameChange(e.currentTarget.value)}
+          <Select
+            placeholder={t('events.filters.all_environments')}
+            data={environmentOptions}
+            value={environmentNameValue || null}
+            onChange={(value) => handleEnvironmentNameChange(value || '')}
+            clearable
+            searchable
             className="w-48"
           />
           <TextInput
