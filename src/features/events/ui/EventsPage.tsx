@@ -344,7 +344,10 @@ export function EventsPage() {
     parseAsString.withDefault('')
   );
   const [debouncedUserId] = useDebouncedValue(userIdValue, 300);
-  const [dateRange, setDateRange] = useState<[string | null, string | null]>([null, null]);
+  const [dateRange, setDateRange] = useState<[string | null, string | null]>([
+    dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+    dayjs().format('YYYY-MM-DD'),
+  ]);
   const [datePickerOpened, { open: openDatePicker, close: closeDatePicker }] = useDisclosure(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useQueryState(
@@ -594,7 +597,7 @@ export function EventsPage() {
           />
           <Popover
             opened={datePickerOpened}
-            onClose={closeDatePicker}
+            onChange={(opened) => opened ? openDatePicker() : closeDatePicker()}
             position="bottom-start"
             shadow="md"
           >
