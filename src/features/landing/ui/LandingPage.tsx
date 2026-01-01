@@ -163,14 +163,14 @@ export function LandingPage() {
                 >
                   {t('landing.navigation.login')}
                 </Button>
-                <Button 
+                {/* <Button 
                   component={Link} 
                   to="/signup"
                   radius="lg"
                   className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 border-0"
                 >
                   {t('landing.navigation.signup')}
-                </Button>
+                </Button> */}
               </div>
 
               <ActionIcon
