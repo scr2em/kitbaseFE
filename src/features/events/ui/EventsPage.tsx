@@ -19,16 +19,19 @@ import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { DatePicker } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Activity, Search, X, List, BarChart3, Calendar } from 'lucide-react';
+import { AlertCircle, Activity, Search, X, List, BarChart3, Calendar, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { useParams, useNavigate } from 'react-router';
 import { useQueryState, parseAsStringLiteral, parseAsString } from 'nuqs';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useEventsQuery,
   useEventStatsQuery,
   useEventsStatusQuery,
   useUpdateEventsStatusMutation,
+  getEventsQueryKey,
+  getEventStatsQueryKey,
   type EventsFilters,
   type EventStatsFilters,
 } from '../../../shared/api/queries/events';
@@ -333,6 +336,8 @@ function AggregatedEventsTable({ projectKey, groupBy, filters }: AggregatedEvent
 export function EventsPage() {
   const { t } = useTranslation();
   const { projectKey } = useParams<{ projectKey: string }>();
+  const queryClient = useQueryClient();
+  const [isRefetching, setIsRefetching] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
   const [channelValue, setChannelValue] = useState('');
@@ -476,6 +481,23 @@ export function EventsPage() {
 
   const hasActiveFilters = searchValue || apiKeyNameValue || channelValue || userIdValue || dateRange[0] || dateRange[1];
 
+  const handleRefetch = async () => {
+    setIsRefetching(true);
+    try {
+      if (viewMode === 'list') {
+        await queryClient.invalidateQueries({
+          queryKey: getEventsQueryKey(projectKey || '', currentPage - 1, PAGE_SIZE, activeFilters),
+        });
+      } else {
+        await queryClient.invalidateQueries({
+          queryKey: getEventStatsQueryKey(projectKey || '', groupBy, statsFilters),
+        });
+      }
+    } finally {
+      setIsRefetching(false);
+    }
+  };
+
   const formatDateRangeDisplay = () => {
     if (!dateRange[0] && !dateRange[1]) return null;
     
@@ -554,6 +576,16 @@ export function EventsPage() {
               ]}
               size="sm"
             />
+            <Tooltip label={t('events.refetch')} position="bottom">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleRefetch}
+                loading={isRefetching}
+              >
+                <RefreshCw size={16} />
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
