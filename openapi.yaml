@@ -1417,14 +1417,18 @@ components:
       type: object
       description: Environment information
       required:
+        - id
         - name
         - projectId
         - createdAt
         - updatedAt
       properties:
+        id:
+          type: string
+          description: Unique identifier for the environment
         name:
           type: string
-          description: Environment name (unique identifier within project)
+          description: Environment name (unique within project)
         description:
           type: string
           description: Environment description
@@ -3555,11 +3559,11 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictError'
 
-  /projects/{projectKey}/environments/{environmentName}:
+  /projects/{projectKey}/environments/{environmentId}:
     get:
       operationId: getEnvironment
       summary: Get environment details
-      description: Get environment details within a project. Organization context determined by subdomain. Any member can view.
+      description: Get environment details by ID within a project. Organization context determined by subdomain. Any member can view.
       tags:
         - Environments
       security:
@@ -3572,12 +3576,13 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environmentName
+        - name: environmentId
           in: path
           required: true
           schema:
             type: string
-          description: Environment name (unique identifier within project)
+            format: uuid
+          description: Environment ID (UUID)
       responses:
         '200':
           description: Environment retrieved successfully
@@ -3595,7 +3600,7 @@ paths:
     patch:
       operationId: updateEnvironment
       summary: Update environment
-      description: Update environment within a project. Organization context determined by subdomain. Requires Developer+ role.
+      description: Update environment by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Environments
       security:
@@ -3608,12 +3613,13 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environmentName
+        - name: environmentId
           in: path
           required: true
           schema:
             type: string
-          description: Environment name (unique identifier within project)
+            format: uuid
+          description: Environment ID (UUID)
       requestBody:
         required: true
         content:
@@ -3645,7 +3651,7 @@ paths:
     delete:
       operationId: deleteEnvironment
       summary: Delete environment
-      description: Delete environment within a project. Organization context determined by subdomain. Requires Developer+ role.
+      description: Delete environment by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
       tags:
         - Environments
       security:
@@ -3658,12 +3664,13 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environmentName
+        - name: environmentId
           in: path
           required: true
           schema:
             type: string
-          description: Environment name (unique identifier within project)
+            format: uuid
+          description: Environment ID (UUID)
       responses:
         '204':
           description: Environment deleted successfully

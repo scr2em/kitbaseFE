@@ -41,12 +41,12 @@ export function useCreateEnvironmentMutation(projectKey: string) {
   });
 }
 
-export function useUpdateEnvironmentMutation(projectKey: string, environmentName: string) {
+export function useUpdateEnvironmentMutation(projectKey: string, environmentId: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (data: UpdateEnvironmentRequest) => {
-      const response = await apiClient.projects.updateEnvironment(projectKey, environmentName, data);
+      const response = await apiClient.projects.updateEnvironment(projectKey, environmentId, data);
       return response.data;
     },
     onSuccess: () => {
@@ -57,10 +57,10 @@ export function useUpdateEnvironmentMutation(projectKey: string, environmentName
 
 export function useDeleteEnvironmentMutation(projectKey: string) {
   const queryClient = useQueryClient();
-  
+      
   return useMutation({
-    mutationFn: async (environmentName: string) => {
-      const response = await apiClient.projects.deleteEnvironment(projectKey, environmentName);
+    mutationFn: async (environmentId  : string) => {
+      const response = await apiClient.projects.deleteEnvironment(projectKey, environmentId);
       return response.data;
     },
     onSuccess: () => {

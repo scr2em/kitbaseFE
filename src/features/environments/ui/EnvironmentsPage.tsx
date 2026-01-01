@@ -44,19 +44,19 @@ export function EnvironmentsPage() {
   const deleteEnvironmentMutation = useDeleteEnvironmentMutation(projectKey || '');
   const { showError } = useShowBackendError();
 
-  const handleDeleteEnvironment = (environmentName: string) => {
+  const handleDeleteEnvironment = (environment: EnvironmentResponse) => {
     modals.openConfirmModal({
       title: t('environments.delete.title'),
       children: (
         <p className="text-sm">
-          {t('environments.delete.confirmation', { name: environmentName })}
+          {t('environments.delete.confirmation', { name: environment.name })}
         </p>
       ),
       labels: { confirm: t('environments.delete.confirm'), cancel: t('environments.delete.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          await deleteEnvironmentMutation.mutateAsync(environmentName);
+          await deleteEnvironmentMutation.mutateAsync(environment.id);
           notifications.show({
             title: t('common.success'),
             message: t('environments.delete.success_message'),
@@ -155,7 +155,7 @@ export function EnvironmentsPage() {
                   </Table.Thead>
                   <Table.Tbody>
                     {environments.map((environment) => (
-                      <Table.Tr key={environment.name}>
+                      <Table.Tr key={environment.id}>
                         <Table.Td>
                           <div className="flex gap-3 items-center">
                             <Layers size={18} strokeWidth={2} className="text-slate-500" />
@@ -207,7 +207,7 @@ export function EnvironmentsPage() {
                               <Menu.Item
                                 color="red"
                                 leftSection={<Trash2 size={16} />}
-                                onClick={() => handleDeleteEnvironment(environment.name)}
+                                onClick={() => handleDeleteEnvironment(environment)}
                               >
                                 {t('environments.delete.menu_item')}
                               </Menu.Item>

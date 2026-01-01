@@ -955,7 +955,9 @@ export interface PermissionResponse {
 
 /** Environment information */
 export interface EnvironmentResponse {
-  /** Environment name (unique identifier within project) */
+  /** Unique identifier for the environment */
+  id: string;
+  /** Environment name (unique within project) */
   name: string;
   /** Environment description */
   description?: string;
@@ -2376,21 +2378,21 @@ export class Api<
       }),
 
     /**
-     * @description Get environment details within a project. Organization context determined by subdomain. Any member can view.
+     * @description Get environment details by ID within a project. Organization context determined by subdomain. Any member can view.
      *
      * @tags Environments
      * @name GetEnvironment
      * @summary Get environment details
-     * @request GET:/projects/{projectKey}/environments/{environmentName}
+     * @request GET:/projects/{projectKey}/environments/{environmentId}
      * @secure
      */
     getEnvironment: (
       projectKey: string,
-      environmentName: string,
+      environmentId: string,
       params: RequestParams = {},
     ) =>
       this.request<EnvironmentResponse, ErrorResponse>({
-        path: `/projects/${projectKey}/environments/${environmentName}`,
+        path: `/projects/${projectKey}/environments/${environmentId}`,
         method: "GET",
         secure: true,
         format: "json",
@@ -2398,22 +2400,22 @@ export class Api<
       }),
 
     /**
-     * @description Update environment within a project. Organization context determined by subdomain. Requires Developer+ role.
+     * @description Update environment by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
      *
      * @tags Environments
      * @name UpdateEnvironment
      * @summary Update environment
-     * @request PATCH:/projects/{projectKey}/environments/{environmentName}
+     * @request PATCH:/projects/{projectKey}/environments/{environmentId}
      * @secure
      */
     updateEnvironment: (
       projectKey: string,
-      environmentName: string,
+      environmentId: string,
       data: UpdateEnvironmentRequest,
       params: RequestParams = {},
     ) =>
       this.request<EnvironmentResponse, ErrorResponse>({
-        path: `/projects/${projectKey}/environments/${environmentName}`,
+        path: `/projects/${projectKey}/environments/${environmentId}`,
         method: "PATCH",
         body: data,
         secure: true,
@@ -2423,21 +2425,21 @@ export class Api<
       }),
 
     /**
-     * @description Delete environment within a project. Organization context determined by subdomain. Requires Developer+ role.
+     * @description Delete environment by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
      *
      * @tags Environments
      * @name DeleteEnvironment
      * @summary Delete environment
-     * @request DELETE:/projects/{projectKey}/environments/{environmentName}
+     * @request DELETE:/projects/{projectKey}/environments/{environmentId}
      * @secure
      */
     deleteEnvironment: (
       projectKey: string,
-      environmentName: string,
+      environmentId: string,
       params: RequestParams = {},
     ) =>
       this.request<void, ErrorResponse>({
-        path: `/projects/${projectKey}/environments/${environmentName}`,
+        path: `/projects/${projectKey}/environments/${environmentId}`,
         method: "DELETE",
         secure: true,
         ...params,
