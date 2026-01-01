@@ -1212,61 +1212,70 @@
   "landing": {
     "page_title": "Home",
     "hero": {
-      "title": "Deploy Mobile Apps with Confidence",
-      "subtitle": "Streamline your mobile app deployment process with powerful build management, channel distribution, and team collaboration tools.",
+      "badge": "Now in Public Beta",
+      "title_gradient": "Build Better",
+      "title_rest": "Mobile Products",
+      "subtitle": "Event tracking, changelogs, and OTA updates SDK for mobile apps. Simple, typed, and reliable.",
       "cta_primary": "Get Started",
-      "cta_secondary": "Learn More"
+      "cta_secondary": "View on GitHub"
+    },
+    "stats": {
+      "events": "Events tracked",
+      "uptime": "Uptime",
+      "latency": "Avg latency"
     },
     "features": {
-      "title": "Everything you need to deploy mobile apps",
-      "subtitle": "Powerful features designed for modern development teams",
-      "build_management": {
-        "title": "Build Management",
-        "description": "Upload, organize, and track your mobile app builds with version control and metadata management."
+      "title": "Everything you need to ship mobile apps",
+      "subtitle": "Powerful SDKs and dashboard to track events, manage releases, and deliver OTA updates",
+      "event_tracking": {
+        "title": "Event Tracking",
+        "description": "Track user events, payments, errors, and more with rich metadata. Get real-time notifications for critical moments."
       },
-      "channel_distribution": {
-        "title": "Environment Management",
-        "description": "Create and manage deployment environments like production, staging, and beta for your projects."
+      "ota_updates": {
+        "title": "OTA Updates",
+        "description": "Push updates instantly without app store review. Target specific users, devices, or environments with conditional rollouts."
       },
-      "team_collaboration": {
-        "title": "Team Collaboration",
-        "description": "Invite team members, manage roles and permissions, and collaborate effectively on app deployments."
+      "fully_typed": {
+        "title": "Fully Typed",
+        "description": "Complete TypeScript and Dart type definitions. Catch errors at compile time, not runtime."
       },
-      "api_integration": {
-        "title": "API Integration",
-        "description": "Seamlessly integrate with your CI/CD pipeline using our comprehensive REST API."
+      "multi_platform": {
+        "title": "Multi-Platform",
+        "description": "Native SDKs for TypeScript/JavaScript and Dart/Flutter. Works on web, mobile, and server."
+      },
+      "notifications": {
+        "title": "Real-time Notifications",
+        "description": "Get notified instantly when important events happen. Webhooks, in-app, and email notifications."
+      },
+      "simple_integration": {
+        "title": "Simple Integration",
+        "description": "Get started in minutes with our intuitive SDKs. Just initialize with your API key and go."
       }
     },
-    "benefits": {
-      "title": "Why choose Kitbase?",
-      "faster_deployments": {
-        "title": "Faster Deployments",
-        "description": "Reduce deployment time from hours to minutes with our streamlined process."
-      },
-      "better_organization": {
-        "title": "Better Organization",
-        "description": "Keep your builds organized with clear versioning and channel management."
-      },
-      "team_efficiency": {
-        "title": "Team Efficiency",
-        "description": "Enable your team to work together seamlessly with role-based access control."
-      },
-      "reliable_platform": {
-        "title": "Reliable Platform",
-        "description": "Built for scale with enterprise-grade reliability and security."
-      }
+    "integration": {
+      "title": "Integrate in minutes, not days",
+      "description": "Our SDKs are designed to be simple and intuitive. Add powerful analytics and update capabilities to your mobile app with just a few lines of code.",
+      "benefit_1": "TypeScript & Dart SDKs",
+      "benefit_2": "React Native & Flutter support",
+      "benefit_3": "Comprehensive REST API",
+      "benefit_4": "Webhook integrations"
     },
     "cta": {
-      "title": "Ready to streamline your mobile app deployments?",
-      "subtitle": "Join thousands of developers who trust Kitbase for their mobile app deployment needs.",
+      "title": "Ready to build better products?",
+      "subtitle": "Join thousands of developers using Kitbase to track events, publish changelogs, and ship OTA updates.",
       "button": "Start Free Trial"
     },
     "navigation": {
       "features": "Features",
       "pricing": "Pricing",
-      "docs": "Documentation",
+      "docs": "Docs",
       "login": "Login",
-      "signup": "Sign Up"
+      "signup": "Get Started"
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "privacy": "Privacy",
+      "terms": "Terms"
     }
   }
 }

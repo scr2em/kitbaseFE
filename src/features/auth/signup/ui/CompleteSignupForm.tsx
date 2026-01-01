@@ -5,11 +5,10 @@ import {
   TextInput, 
   PasswordInput, 
   Button, 
-  Anchor, 
-  Divider,
+  Anchor,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { completeSignupSchema, type CompleteSignupFormData } from '../model/schema';
 import { useCompleteSignupMutation } from '../../../../shared/api/queries/auth';
@@ -72,13 +71,18 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <TextInput
             label={t('auth.signup.first_name_label')}
             placeholder={t('auth.signup.first_name_placeholder')}
-            leftSection={<User size={18} />}
+            leftSection={<User size={18} className="text-gray-400" />}
             size="md"
+            radius="lg"
+            classNames={{
+              input: 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 focus:border-violet-500 dark:focus:border-violet-500',
+              label: 'text-gray-700 dark:text-gray-300 font-medium mb-1.5',
+            }}
             {...register('firstName')}
             error={errors.firstName?.message ? t(errors.firstName.message) : undefined}
           />
@@ -86,8 +90,13 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
           <TextInput
             label={t('auth.signup.last_name_label')}
             placeholder={t('auth.signup.last_name_placeholder')}
-            leftSection={<User size={18} />}
+            leftSection={<User size={18} className="text-gray-400" />}
             size="md"
+            radius="lg"
+            classNames={{
+              input: 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 focus:border-violet-500 dark:focus:border-violet-500',
+              label: 'text-gray-700 dark:text-gray-300 font-medium mb-1.5',
+            }}
             {...register('lastName')}
             error={errors.lastName?.message ? t(errors.lastName.message) : undefined}
           />
@@ -96,8 +105,13 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
         <PasswordInput
           label={t('auth.signup.password_label')}
           placeholder={t('auth.signup.password_placeholder')}
-          leftSection={<Lock size={18} />}
+          leftSection={<Lock size={18} className="text-gray-400" />}
           size="md"
+          radius="lg"
+          classNames={{
+            input: 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 focus:border-violet-500 dark:focus:border-violet-500',
+            label: 'text-gray-700 dark:text-gray-300 font-medium mb-1.5',
+          }}
           {...register('password')}
           error={errors.password?.message ? t(errors.password.message) : undefined}
         />
@@ -105,8 +119,13 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
         <PasswordInput
           label={t('auth.signup.complete.confirm_password_label')}
           placeholder={t('auth.signup.complete.confirm_password_placeholder')}
-          leftSection={<Lock size={18} />}
+          leftSection={<Lock size={18} className="text-gray-400" />}
           size="md"
+          radius="lg"
+          classNames={{
+            input: 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 focus:border-violet-500 dark:focus:border-violet-500',
+            label: 'text-gray-700 dark:text-gray-300 font-medium mb-1.5',
+          }}
           {...register('confirmPassword')}
           error={errors.confirmPassword?.message ? t(errors.confirmPassword.message) : undefined}
         />
@@ -114,25 +133,33 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
         <Button
           type="submit"
           fullWidth
-          size="md"
+          size="lg"
+          radius="lg"
           loading={completeSignupMutation.isPending}
+          rightSection={!completeSignupMutation.isPending && <ArrowRight size={18} />}
+          className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 border-0 mt-2 h-12"
         >
           {t('auth.signup.complete.submit_button')}
         </Button>
 
-        <Divider />
+        <div className="relative my-2">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200 dark:border-white/10" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-white dark:bg-[#0a0a0f] text-gray-500">
+              {t('auth.signup.have_account')}
+            </span>
+          </div>
+        </div>
 
-        <p className="text-center text-sm">
-          {t('auth.signup.have_account')}{' '}
-          <Anchor
-            onClick={() => navigate('/login')}
-            fw={700}
-            c="brand"
-            className="cursor-pointer"
-          >
-            {t('auth.signup.login_link')}
-          </Anchor>
-        </p>
+        <Anchor
+          onClick={() => navigate('/login')}
+          className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 cursor-pointer font-semibold text-center"
+          underline="never"
+        >
+          {t('auth.signup.login_link')}
+        </Anchor>
       </div>
     </form>
   );
