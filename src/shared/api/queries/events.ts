@@ -10,7 +10,7 @@ export const getEventsInfiniteQueryKey = (projectKey: string, filters?: EventsFi
   ['eventsInfinite', projectKey, filters] as const;
 
 export interface EventStatsFilters {
-  api_key_name?: string;
+  environment_name?: string;
   channel?: string;
   from?: string;
   to?: string;
@@ -20,7 +20,7 @@ export const getEventStatsQueryKey = (projectKey: string, groupBy: string, filte
   ['eventStats', projectKey, groupBy, filters] as const;
 
 export interface EventsFilters {
-  api_key_name?: string;
+  environment_name?: string;
   event?: string;
   channel?: string;
   user_id?: string;
@@ -88,7 +88,7 @@ export function useEventQuery(projectKey: string, eventId: string) {
 
 export function useEventStatsQuery(
   projectKey: string,
-  groupBy: 'event' | 'api_key' | 'channel' | 'user_id',
+  groupBy: 'event' | 'environment' | 'channel' | 'user_id',
   filters?: EventStatsFilters
 ) {
   return useQuery({

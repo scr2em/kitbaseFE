@@ -855,6 +855,8 @@ export interface PaginatedApiKeyResponse {
 export interface CreateApiKeyRequest {
   /** Name/description for the API key */
   name: string;
+  /** The environment this API key is scoped to */
+  environmentName: string;
 }
 
 /** Request to create a new environment */
@@ -916,6 +918,8 @@ export interface ApiKeyResponse {
   keyPrefix: string;
   /** Project key this API key is for */
   projectKey: string;
+  /** The environment this API key is scoped to */
+  environmentName: string;
   /** Organization ID */
   organizationId: string;
   /** User ID who created the key */
@@ -1213,8 +1217,8 @@ export interface CustomEventResponse {
   id: string;
   /** Event name */
   event: string;
-  /** Name of the API key that triggered this event */
-  apiKeyName?: string;
+  /** Name of the environment this event belongs to */
+  environmentName?: string;
   /** Channel/category */
   channel?: string;
   /** External user identifier */
@@ -2582,8 +2586,8 @@ export class Api<
     listEvents: (
       projectKey: string,
       query?: {
-        /** Filter by API key name (partial match) */
-        api_key_name?: string;
+        /** Filter by environment name (partial match) */
+        environment_name?: string;
         /** Filter by event name */
         event?: string;
         /** Filter by channel */
@@ -2665,9 +2669,9 @@ export class Api<
          * Field to group by
          * @default "event"
          */
-        group_by?: "event" | "api_key" | "channel" | "user_id";
-        /** Filter by API key name (partial match) */
-        api_key_name?: string;
+        group_by?: "event" | "environment" | "channel" | "user_id";
+        /** Filter by environment name (partial match) */
+        environment_name?: string;
         /** Filter by channel */
         channel?: string;
         /**
@@ -2711,8 +2715,8 @@ export class Api<
         interval?: "hour" | "day" | "week" | "month";
         /** Filter by event name */
         event?: string;
-        /** Filter by API key name (partial match) */
-        api_key_name?: string;
+        /** Filter by environment name (partial match) */
+        environment_name?: string;
         /**
          * Start of time range
          * @format date-time
@@ -2857,6 +2861,24 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get a published changelog by version. Authentication is via API key (Bearer token). The project is automatically determined from the API key. Only returns published changelogs.
+     *
+     * @tags Changelogs
+     * @name GetChangelogByVersion
+     * @summary Get changelog by version
+     * @request GET:/v1/changelogs/{version}
+     * @secure
+     */
+    getChangelogByVersion: (version: string, params: RequestParams = {}) =>
+      this.request<ChangelogResponse, ErrorResponse>({
+        path: `/v1/changelogs/${version}`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),

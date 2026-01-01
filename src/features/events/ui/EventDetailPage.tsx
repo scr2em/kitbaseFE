@@ -13,7 +13,7 @@ import {
   Clock,
   Tag,
   User,
-  Key,
+  Layers,
   Bell,
   FileText,
 } from 'lucide-react';
@@ -81,9 +81,9 @@ export function EventDetailPage() {
             <h1 className="text-xl font-semibold text-slate-900">
               {event.event}
             </h1>
-            {event.apiKeyName && (
+            {event.environmentName && (
               <Badge variant="light" color="blue" size="sm">
-                {event.apiKeyName}
+                {event.environmentName}
               </Badge>
             )}
           </div>
@@ -111,21 +111,21 @@ export function EventDetailPage() {
             </div>
           </div>
 
-          {/* API Key */}
+          {/* Environment */}
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
-              <Key size={16} className="text-slate-600" />
+              <Layers size={16} className="text-slate-600" />
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-                {t('events.detail.api_key')}
+                {t('events.detail.environment')}
               </p>
-              {event.apiKeyName ? (
+              {event.environmentName ? (
                 <Badge variant="light" color="blue" size="sm">
-                  {event.apiKeyName}
+                  {event.environmentName}
                 </Badge>
               ) : (
-                <p className="text-sm text-slate-400">{t('events.no_api_key')}</p>
+                <p className="text-sm text-slate-400">{t('events.no_environment')}</p>
               )}
             </div>
           </div>

@@ -23,8 +23,8 @@ export function useCreateApiKeyMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ projectKey, name }: { projectKey: string; name: string }) => {
-      const response = await apiClient.projects.createApiKey(projectKey, { name });
+    mutationFn: async ({ projectKey, name, environmentName }: { projectKey: string; name: string; environmentName: string }) => {
+      const response = await apiClient.projects.createApiKey(projectKey, { name, environmentName });
       return response.data;
     },
     onSuccess: (_, variables) => {

@@ -612,6 +612,7 @@
         "showing_count": "Showing {{from}}-{{to}} of {{total}} keys",
         "table": {
           "name": "Name",
+          "environment": "Environment",
           "key_prefix": "Key",
           "created_at": "Created",
           "last_used": "Last Used",
@@ -622,11 +623,14 @@
           "modal_title": "Create API Key",
           "name_label": "Key Name",
           "name_placeholder": "Enter a descriptive name for this key",
+          "environment_label": "Environment",
+          "environment_placeholder": "Select an environment",
           "submit_button": "Create Key",
           "cancel_button": "Cancel",
           "success_message": "API key created successfully",
           "validation": {
-            "name_required": "Key name is required"
+            "name_required": "Key name is required",
+            "environment_required": "Environment is required"
           }
         },
         "created": {
@@ -724,10 +728,10 @@
     "search_placeholder": "Search by event name...",
     "refetch": "Refresh",
     "filters": {
-      "api_key": "API Key",
+      "environment": "Environment",
       "channel": "Channel",
-      "all_api_keys": "All API keys",
-      "api_key_placeholder": "Filter by API key...",
+      "all_environments": "All environments",
+      "environment_placeholder": "Filter by environment...",
       "channel_placeholder": "Filter by channel...",
       "user_id_placeholder": "Filter by user ID...",
       "clear_filters": "Clear filters",
@@ -744,7 +748,7 @@
     },
     "table": {
       "event": "Event",
-      "api_key": "API Key",
+      "environment": "Environment",
       "channel": "Channel",
       "user_id": "User ID",
       "timestamp": "Timestamp",
@@ -752,13 +756,13 @@
     },
     "no_user_id": "N/A",
     "no_channel": "N/A",
-    "no_api_key": "N/A",
+    "no_environment": "N/A",
     "no_description": "No description",
     "detail": {
       "page_title": "Event Details",
       "section_title": "Event Information",
       "event_name": "Event Name",
-      "api_key": "API Key",
+      "environment": "Environment",
       "channel": "Channel",
       "user_id": "User ID",
       "timestamp": "Timestamp",
@@ -784,7 +788,7 @@
       "group_by_label": "Group by",
       "group_by": {
         "event": "Event Name",
-        "api_key": "API Key",
+        "environment": "Environment",
         "channel": "Channel",
         "user_id": "User ID"
       }

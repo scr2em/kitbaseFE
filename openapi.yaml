@@ -1272,10 +1272,14 @@ components:
       description: Request to create an API key
       required:
         - name
+        - environmentName
       properties:
         name:
           type: string
           description: Name/description for the API key
+        environmentName:
+          type: string
+          description: The environment this API key is scoped to
 
     CreateEnvironmentRequest:
       type: object
@@ -1345,6 +1349,7 @@ components:
         - name
         - keyPrefix
         - projectKey
+        - environmentName
         - organizationId
         - createdBy
         - createdAt
@@ -1364,6 +1369,9 @@ components:
         projectKey:
           type: string
           description: Project key this API key is for
+        environmentName:
+          type: string
+          description: The environment this API key is scoped to
         organizationId:
           type: string
           description: Organization ID
@@ -1795,9 +1803,9 @@ components:
         event:
           type: string
           description: Event name
-        apiKeyName:
+        environmentName:
           type: string
-          description: Name of the API key that triggered this event
+          description: Name of the environment this event belongs to
         channel:
           type: string
           description: Channel/category
@@ -4311,6 +4319,41 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
 
   # ===========================
+  # Changelogs - SDK API
+  # ===========================
+
+  /v1/changelogs/{version}:
+    get:
+      operationId: getChangelogByVersion
+      summary: Get changelog by version
+      description: |
+        Get a published changelog by version. Authentication is via API key (Bearer token).
+        The project is automatically determined from the API key.
+        Only returns published changelogs.
+      tags:
+        - Changelogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Version string of the changelog (e.g., "1.0.0", "2.3.1")
+      responses:
+        '200':
+          description: Changelog retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ===========================
   # Custom Events - Dashboard API
   # ===========================
   
@@ -4330,11 +4373,11 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: api_key_name
+        - name: environment_name
           in: query
           schema:
             type: string
-          description: Filter by API key name (partial match)
+          description: Filter by environment name (partial match)
         - name: event
           in: query
           schema:
@@ -4451,14 +4494,14 @@ paths:
           in: query
           schema:
             type: string
-            enum: [event, api_key, channel, user_id]
+            enum: [event, environment, channel, user_id]
             default: event
           description: Field to group by
-        - name: api_key_name
+        - name: environment_name
           in: query
           schema:
             type: string
-          description: Filter by API key name (partial match)
+          description: Filter by environment name (partial match)
         - name: channel
           in: query
           schema:
@@ -4518,11 +4561,11 @@ paths:
           schema:
             type: string
           description: Filter by event name
-        - name: api_key_name
+        - name: environment_name
           in: query
           schema:
             type: string
-          description: Filter by API key name (partial match)
+          description: Filter by environment name (partial match)
         - name: from
           in: query
           schema:
