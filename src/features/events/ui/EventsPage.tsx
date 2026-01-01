@@ -19,7 +19,7 @@ import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { DatePicker } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Activity, Search, X, List, BarChart3, Calendar, RefreshCw } from 'lucide-react';
+import { AlertCircle, Activity, Search, X, List, BarChart3, Calendar, RefreshCw, Settings } from 'lucide-react';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { useParams, useNavigate } from 'react-router';
@@ -360,7 +360,6 @@ export function EventsPage() {
     parseAsStringLiteral(VIEW_MODES).withDefault('list')
   );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
-
   const { data: eventsStatusData, isLoading: isEventsStatusLoading } = useEventsStatusQuery(projectKey || '');
   const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
 

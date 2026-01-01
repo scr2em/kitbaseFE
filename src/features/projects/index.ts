@@ -11,6 +11,7 @@ export { CreateProjectModal } from './ui/CreateProjectModal';
 export { EditProjectModal } from './ui/EditProjectModal';
 export { CreateApiKeyModal } from './ui/CreateApiKeyModal';
 export { ApiKeyCreatedModal } from './ui/ApiKeyCreatedModal';
+export { ProjectSettingsPage } from './ui/ProjectSettingsPage';
 
 
 

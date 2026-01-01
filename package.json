@@ -18,6 +18,7 @@
     "@mantine/hooks": "^8.3.4",
     "@mantine/modals": "^8.3.4",
     "@mantine/notifications": "^8.3.4",
+    "@mantine/spotlight": "^8.3.10",
     "@scr2em/config": "^0.0.9",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.90.3",

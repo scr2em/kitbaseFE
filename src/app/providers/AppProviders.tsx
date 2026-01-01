@@ -6,9 +6,11 @@ import { Outlet } from 'react-router';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import { AuthProvider } from '../../shared/lib/auth/AuthContext';
 import { theme } from '../../shared/theme';
+import { SpotlightSearch } from '../../shared/components/SpotlightSearch';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
+import '@mantine/spotlight/styles.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +29,7 @@ export function AppProviders() {
           <ModalsProvider>
             <Notifications position="top-right" />
             <AuthProvider>
+              <SpotlightSearch />
               <Outlet />
             </AuthProvider>
           </ModalsProvider>

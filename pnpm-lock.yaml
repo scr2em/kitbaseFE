@@ -26,6 +26,9 @@ importers:
       '@mantine/notifications':
         specifier: ^8.3.4
         version: 8.3.4(@mantine/core@8.3.4(@mantine/hooks@8.3.4(react@19.2.0))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.4(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mantine/spotlight':
+        specifier: ^8.3.10
+        version: 8.3.10(@mantine/core@8.3.4(@mantine/hooks@8.3.4(react@19.2.0))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.4(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@scr2em/config':
         specifier: ^0.0.9
         version: 0.0.9(@typescript-eslint/utils@8.46.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(prettier@3.6.2)(typescript@5.9.3)
@@ -605,6 +608,19 @@ packages:
       '@mantine/hooks': 8.3.4
       react: ^18.x || ^19.x
       react-dom: ^18.x || ^19.x
+
+  '@mantine/spotlight@8.3.10':
+    resolution: {integrity: sha512-0GfQd/smRcd5u0o6Ad7J9ZEWLcZZ81h9/Z9qUnzIlJeYjXqJdr40MMqDxNsXgZEDKscPJkggZMqMiRZXhFbdNQ==}
+    peerDependencies:
+      '@mantine/core': 8.3.10
+      '@mantine/hooks': 8.3.10
+      react: ^18.x || ^19.x
+      react-dom: ^18.x || ^19.x
+
+  '@mantine/store@8.3.10':
+    resolution: {integrity: sha512-38t1UivcucZo9hQq27F/eqR5GvovNs4NHEz6DchOuZzV5IJWqO8+T07ivb8wct47ovYe42rPfLcaOdnIEvMsJA==}
+    peerDependencies:
+      react: ^18.x || ^19.x
 
   '@mantine/store@8.3.4':
     resolution: {integrity: sha512-EzHu8ZPtjs4fUsougpnNOZ03Oe/9sXY9Azgqu3uR7TjxyPhbY3p8Vmh+MfQDdAiKt3+rlJqSr980gtlHJFdKNw==}
@@ -3667,6 +3683,18 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       react-transition-group: 4.4.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+
+  '@mantine/spotlight@8.3.10(@mantine/core@8.3.4(@mantine/hooks@8.3.4(react@19.2.0))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.4(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@mantine/core': 8.3.4(@mantine/hooks@8.3.4(react@19.2.0))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mantine/hooks': 8.3.4(react@19.2.0)
+      '@mantine/store': 8.3.10(react@19.2.0)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+
+  '@mantine/store@8.3.10(react@19.2.0)':
+    dependencies:
+      react: 19.2.0
 
   '@mantine/store@8.3.4(react@19.2.0)':
     dependencies:

@@ -1,6 +1,5 @@
 import {
   Card,
-  Loader,
   Button,
   Alert,
   Badge,
@@ -8,7 +7,7 @@ import {
   ActionIcon,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Plus, MoreVertical, Trash2, Package, Building, Pencil } from 'lucide-react';
+import { AlertCircle, Plus, MoreVertical, Trash2, Package, Building, Pencil, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
@@ -20,6 +19,8 @@ import {
 import { useShowBackendError, usePermissions, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
 import { CreateProjectModal } from './CreateProjectModal';
 import { EditProjectModal } from './EditProjectModal';
+import { EmptyState } from '../../../shared/components/EmptyState';
+import { SkeletonProjectsGrid } from '../../../shared/components/Skeleton';
 import type { ProjectResponse } from '../../../generated-api';
 
 export function ProjectsPage() {
@@ -61,8 +62,15 @@ export function ProjectsPage() {
 
   if (isLoadingUser || isLoading) {
     return (
-      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
-        <Loader size="lg" />
+      <div className="flex flex-col gap-8">
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="h-8 w-32 bg-slate-200 rounded animate-pulse mb-2" />
+            <div className="h-5 w-48 bg-slate-100 rounded animate-pulse" />
+          </div>
+          <div className="h-10 w-32 bg-slate-200 rounded animate-pulse" />
+        </div>
+        <SkeletonProjectsGrid count={6} />
       </div>
     );
   }
@@ -136,22 +144,23 @@ export function ProjectsPage() {
         {/* Projects Grid */}
         {projectsList.length === 0 ? (
           <Card withBorder p="xl" radius="md">
-            <div className="flex justify-center">
-              <div className="flex flex-col items-center gap-4">
-                <Package size={48} strokeWidth={1.5} className="text-gray-400" />
-                <p className="text-lg text-gray-500">
-                  {t('projects.no_projects')}
-                </p>
-                {canCreateProject && (
-                  <Button
-                    leftSection={<Plus size={18} />}
-                    onClick={() => setCreateModalOpened(true)}
-                  >
-                    {t('projects.create_first_project')}
-                  </Button>
-                )}
-              </div>
-            </div>
+            <EmptyState
+              icon={Package}
+              title={t('projects.empty.title')}
+              description={t('projects.empty.description')}
+              illustration="projects"
+              primaryAction={canCreateProject ? {
+                label: t('projects.create_first_project'),
+                onClick: () => setCreateModalOpened(true),
+                icon: <Plus size={18} />,
+              } : undefined}
+              secondaryAction={{
+                label: t('projects.empty.learn_more'),
+                onClick: () => window.open('https://docs.kitbase.app/projects', '_blank'),
+                icon: <BookOpen size={18} />,
+                variant: 'subtle',
+              }}
+            />
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

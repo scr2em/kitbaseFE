@@ -1,4 +1,4 @@
-import { AppShell, Avatar, Menu, ActionIcon, rem, NavLink, ScrollArea, ThemeIcon, Divider } from '@mantine/core';
+import { AppShell, Avatar, Menu, ActionIcon, rem, NavLink, ScrollArea, ThemeIcon, Divider, Kbd } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -13,12 +13,15 @@ import {
   Plus,
   ChevronDown,
   Check,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useCurrentUserQuery } from '../api/queries/user';
 import { usePermissions, useCurrentOrganization } from '../hooks';
 import { CreateOrganizationModal } from '../../features/organization/create-organization';
 import { NotificationDropdown } from '../components/NotificationDropdown';
+import { Breadcrumb } from '../components/Breadcrumb';
+import { spotlight } from '@mantine/spotlight';
 
 export function AppLayout() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
@@ -153,6 +156,19 @@ export function AppLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Global Search Button */}
+            <button
+              onClick={() => spotlight.open()}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+            >
+              <Search size={16} />
+              <span className="hidden sm:inline">{t('search.placeholder')}</span>
+              <div className="hidden sm:flex items-center gap-0.5">
+                <Kbd size="xs">⌘</Kbd>
+                <Kbd size="xs">K</Kbd>
+              </div>
+            </button>
+
             <NotificationDropdown />
 
             <Menu shadow="md" width={200}>
@@ -345,6 +361,9 @@ export function AppLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
+        <div className="mb-4">
+          <Breadcrumb />
+        </div>
         <Outlet />
       </AppShell.Main>
 

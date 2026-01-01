@@ -14,6 +14,7 @@ import {
   FileText,
   Layers,
   Activity,
+  Settings,
 } from 'lucide-react';
 import { useProjectQuery } from '../../../shared/api/queries';
 
@@ -56,6 +57,11 @@ export function ProjectDetailPage() {
       label: t('projects.detail.nav.api_keys'),
       path: `/projects/${projectKey}/api-keys`,
       icon: <Key size={18} />,
+    },
+    {
+      label: t('projects.detail.nav.settings'),
+      path: `/projects/${projectKey}/settings`,
+      icon: <Settings size={18} />,
     },
   ];
 

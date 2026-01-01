@@ -10,7 +10,7 @@ import {
   Badge,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Plus, MoreVertical, Trash2, Eye, Webhook, Building, ExternalLink } from 'lucide-react';
+import { AlertCircle, Plus, MoreVertical, Trash2, Eye, Webhook, Building, ExternalLink, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
@@ -19,6 +19,7 @@ import {
   useDeleteWebhookMutation,
 } from '../../../shared/api/queries/webhooks';
 import { useShowBackendError, useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
+import { EmptyState } from '../../../shared/components/EmptyState';
 
 export function WebhooksPage() {
   const { t } = useTranslation();
@@ -144,20 +145,23 @@ export function WebhooksPage() {
         {/* Webhooks Table */}
         {webhooks.length === 0 ? (
           <Card withBorder p="xl" radius="md">
-            <div className="flex justify-center">
-              <div className="flex flex-col items-center gap-4">
-                <Webhook size={48} strokeWidth={1.5} className="text-gray-400" />
-                <p className="text-lg text-gray-500">
-                  {t('webhooks.no_webhooks')}
-                </p>
-                <Button
-                  leftSection={<Plus size={18} />}
-                  onClick={() => navigate('/organization/webhooks/create')}
-                >
-                  {t('webhooks.create_first_webhook')}
-                </Button>
-              </div>
-            </div>
+            <EmptyState
+              icon={Webhook}
+              title={t('webhooks.empty.title')}
+              description={t('webhooks.empty.description')}
+              illustration="webhooks"
+              primaryAction={{
+                label: t('webhooks.create_first_webhook'),
+                onClick: () => navigate('/organization/webhooks/create'),
+                icon: <Plus size={18} />,
+              }}
+              secondaryAction={{
+                label: t('webhooks.empty.learn_more'),
+                onClick: () => window.open('https://docs.kitbase.app/webhooks', '_blank'),
+                icon: <BookOpen size={18} />,
+                variant: 'subtle',
+              }}
+            />
           </Card>
         ) : (
           <>

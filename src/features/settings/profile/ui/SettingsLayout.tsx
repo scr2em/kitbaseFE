@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { User } from 'lucide-react';
+import { User, CreditCard } from 'lucide-react';
 
 export function SettingsLayout() {
   const { t } = useTranslation();
@@ -10,6 +10,11 @@ export function SettingsLayout() {
       to: '/settings/me',
       label: t('settings.nav.profile'),
       icon: User,
+    },
+    {
+      to: '/settings/billing',
+      label: t('settings.nav.billing'),
+      icon: CreditCard,
     },
   ];
 

@@ -99,8 +99,13 @@
   "dashboard": {
     "page_title": "Dashboard",
     "title": "Dashboard",
-    "welcome": "Welcome, {{name}}!",
-    "welcome_subtitle": "Here's what's happening with your business today",
+    "welcome": "Welcome back, {{name}}!",
+    "welcome_subtitle": "Here's an overview of your workspace",
+    "new_project": "New Project",
+    "recent_projects": "Recent Projects",
+    "view_all_projects": "View All",
+    "no_projects_yet": "You haven't created any projects yet",
+    "create_first_project": "Create Your First Project",
     "user_info": "User Information",
     "full_name": "Full Name",
     "email": "Email",
@@ -112,10 +117,37 @@
     "view_profile": "View Profile",
     "create_organization": "Create Organization",
     "stats": {
-      "active_projects": "Active Projects",
+      "active_projects": "Projects",
       "team_members": "Team Members",
-      "revenue": "Revenue",
-      "organizations": "Organizations"
+      "organization": "Organization",
+      "your_role": "Your Role",
+      "view_all": "View all",
+      "manage_team": "Manage team",
+      "view_org": "View details",
+      "view_settings": "Settings"
+    },
+    "onboarding": {
+      "title": "Getting Started",
+      "complete_title": "Setup Complete!",
+      "progress": "{{completed}} of {{total}} completed",
+      "create_organization": "Create your organization",
+      "create_organization_desc": "Set up your workspace to collaborate with your team",
+      "create_organization_action": "Create organization",
+      "create_project": "Create your first project",
+      "create_project_desc": "Projects help you organize features, events and releases",
+      "create_project_action": "Create project",
+      "invite_team": "Invite team members",
+      "invite_team_desc": "Collaborate with your team by inviting them to join",
+      "invite_team_action": "Invite members",
+      "setup_webhook": "Set up webhooks",
+      "setup_webhook_desc": "Get notified about important events in real-time",
+      "setup_webhook_action": "Create webhook"
+    },
+    "actions": {
+      "new_project": "New Project",
+      "invite_member": "Invite Member",
+      "view_events": "View Events",
+      "manage_webhooks": "Webhooks"
     }
   },
   "organization": {
@@ -187,7 +219,8 @@
     "error_with_code": "Error: {{code}}",
     "success": "Success",
     "warning": "Warning",
-    "error_generic": "An error occurred. Please try again."
+    "error_generic": "An error occurred. Please try again.",
+    "coming_soon": "Coming Soon"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -406,6 +439,64 @@
       "success_message": "Account created and invitation accepted!"
     }
   },
+  "project": {
+    "settings": {
+      "title": "Project Settings",
+      "subtitle": "Configure project-level settings and preferences",
+      "events": {
+        "title": "Events",
+        "description": "Control how events are collected and stored",
+        "events_enabled_success": "Event logging has been enabled",
+        "events_disabled_success": "Event logging has been disabled",
+        "update_error": "Failed to update settings",
+        "error_loading": "Failed to load event settings",
+        "event_logging": {
+          "title": "Event Logging",
+          "description": "When enabled, events from your app will be recorded and stored"
+        },
+        "ip_logging": {
+          "title": "IP Address Logging",
+          "description": "Capture and store the IP address of each event for analytics and security"
+        },
+        "retention": {
+          "title": "Data Retention",
+          "description": "Configure how long event data is kept before automatic deletion",
+          "configure": "Configure"
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Get notified when specific events occur",
+        "in_app": {
+          "title": "In-App Notifications",
+          "description": "Receive notifications in the dashboard when events occur"
+        },
+        "email": {
+          "title": "Email Notifications",
+          "description": "Send email alerts for important events",
+          "configure": "Configure"
+        },
+        "webhook": {
+          "title": "Webhook Notifications",
+          "description": "Trigger webhooks when events are logged",
+          "configure": "Manage Webhooks"
+        }
+      },
+      "privacy": {
+        "title": "Privacy & Security",
+        "description": "Manage data privacy and security settings",
+        "anonymize": {
+          "title": "Anonymize User Data",
+          "description": "Hash or remove personally identifiable information from events"
+        },
+        "data_export": {
+          "title": "Data Export",
+          "description": "Export all event data for this project",
+          "export": "Export Data"
+        }
+      }
+    }
+  },
   "projects": {
     "page_title": "Projects",
     "title": "Projects",
@@ -413,6 +504,11 @@
     "create_button": "Create Project",
     "create_first_project": "Create Your First Project",
     "no_projects": "No projects yet",
+    "empty": {
+      "title": "No projects yet",
+      "description": "Projects help you organize your app features, track events, manage releases, and more. Create your first project to get started.",
+      "learn_more": "Learn More"
+    },
     "no_organization_title": "No Organization",
     "no_organization_message": "You need to be part of an organization to manage projects.",
     "error_loading": "Failed to load projects. Please try again.",
@@ -470,7 +566,8 @@
         "changelog": "Changelog",
         "api_keys": "API Keys",
         "environments": "Environments",
-        "events": "Events"
+        "events": "Events",
+        "settings": "Settings"
       },
       "bundles": {
         "title": "Bundles",
@@ -616,6 +713,7 @@
   "events": {
     "page_title": "Events",
     "title": "Events",
+    "settings_button": "Settings",
     "subtitle": "View custom events ({{count}} events)",
     "subtitle_simple": "Track and analyze custom events from your app",
     "no_events": "No events recorded yet",
@@ -763,6 +861,11 @@
     "create_button": "Create Webhook",
     "create_first_webhook": "Create Your First Webhook",
     "no_webhooks": "No webhooks configured yet",
+    "empty": {
+      "title": "No webhooks configured",
+      "description": "Webhooks allow you to receive real-time notifications when important events happen in your organization, like new builds or team changes.",
+      "learn_more": "Learn More"
+    },
     "no_organization_title": "No Organization",
     "no_organization_message": "You need to be part of an organization to manage webhooks.",
     "error_loading": "Failed to load webhooks. Please try again.",
@@ -895,9 +998,40 @@
     "hours_ago": "{{count}}h ago",
     "days_ago": "{{count}}d ago"
   },
+  "billing": {
+    "page_title": "Billing",
+    "title": "Billing & Subscription",
+    "subtitle": "Manage your subscription plan and billing details",
+    "plan": "Plan",
+    "current_plan": "Current",
+    "next_billing": "Next billing",
+    "manage_subscription": "Manage Subscription",
+    "usage": {
+      "title": "Current Usage",
+      "projects": "Projects",
+      "team_members": "Team Members",
+      "events": "Events this month",
+      "near_limit": "You're approaching your limit"
+    },
+    "plans": {
+      "title": "Available Plans",
+      "popular": "Popular",
+      "current": "Current Plan",
+      "upgrade": "Upgrade"
+    },
+    "payment_method": {
+      "title": "Payment Method",
+      "update": "Update"
+    },
+    "history": {
+      "title": "Billing History",
+      "download_all": "Download All"
+    }
+  },
   "settings": {
     "nav": {
-      "profile": "Profile"
+      "profile": "Profile",
+      "billing": "Billing"
     },
     "profile": {
       "page_title": "Profile Settings",
@@ -913,6 +1047,50 @@
       "success_message": "Profile updated successfully",
       "error_loading": "Failed to load profile. Please try again."
     }
+  },
+  "onboarding": {
+    "welcome": "Welcome to Kitbase",
+    "subtitle": "Let's get you set up in a few steps",
+    "step_indicator": "Step {{current}} of {{total}}",
+    "steps": {
+      "organization": {
+        "title": "Create Organization",
+        "description": "Set up your workspace"
+      },
+      "project": {
+        "title": "Create Project",
+        "description": "Organize your app features"
+      },
+      "team": {
+        "title": "Invite Team",
+        "description": "Collaborate with others"
+      }
+    },
+    "tip_title": "Pro tip:",
+    "tip_content": "You can create multiple organizations for different teams or products."
+  },
+  "search": {
+    "placeholder": "Search...",
+    "no_results": "No results found",
+    "hint": "Search for projects, pages, and more",
+    "actions": {
+      "go_to_dashboard": "Go to Dashboard",
+      "go_to_projects": "Go to Projects",
+      "go_to_organization": "Go to Organization",
+      "go_to_team": "Go to Team",
+      "go_to_webhooks": "Go to Webhooks",
+      "go_to_settings": "Go to Settings",
+      "create_project": "Create New Project",
+      "invite_member": "Invite Team Member"
+    },
+    "groups": {
+      "navigation": "Navigation",
+      "actions": "Quick Actions",
+      "projects": "Projects"
+    }
+  },
+  "breadcrumb": {
+    "home": "Home"
   },
   "landing": {
     "page_title": "Home",

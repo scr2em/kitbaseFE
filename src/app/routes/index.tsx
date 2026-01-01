@@ -16,12 +16,14 @@ import {
   ChangelogPage,
   CreateChangelogPage,
   EditChangelogPage,
+  ProjectSettingsPage,
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { EnvironmentsPage } from '../../features/environments';
 import { EventsPage, EventDetailPage } from '../../features/events';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
+import { BillingPage } from '../../features/billing';
 import { LandingPage } from '../../features/landing';
 import { ProtectedRoute, PublicRoute } from '../../shared/lib/router';
 import { AppLayout, AuthLayout, OrganizationLayout } from '../../shared/layouts';
@@ -92,6 +94,7 @@ const routes: RouteObject[] = [
               { path: 'environments', element: <EnvironmentsPage /> },
               { path: 'events', element: <EventsPage /> },
               { path: 'events/:eventId', element: <EventDetailPage /> },
+              { path: 'settings', element: <ProjectSettingsPage /> },
             ],
           },
           { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },
@@ -113,6 +116,7 @@ const routes: RouteObject[] = [
             children: [
               { index: true, element: <Navigate to="me" replace /> },
               { path: 'me', element: <ProfileSettingsPage /> },
+              { path: 'billing', element: <BillingPage /> },
             ],
           },
         ],
