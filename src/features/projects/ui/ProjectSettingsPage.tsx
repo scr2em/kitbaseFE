@@ -22,9 +22,9 @@ import {
   Database,
 } from 'lucide-react';
 import {
-  useEventsStatusQuery,
-  useUpdateEventsStatusMutation,
-} from '../../../shared/api/queries/events';
+  useProjectSettingsQuery,
+  useUpdateProjectSettingsMutation,
+} from '../../../shared/api/queries/projects';
 
 interface SettingCardProps {
   icon: React.ReactNode;
@@ -65,17 +65,38 @@ export function ProjectSettingsPage() {
   const { t } = useTranslation();
   const { projectKey } = useParams<{ projectKey: string }>();
 
-  const { data: eventsStatus, isLoading, isError } = useEventsStatusQuery(projectKey || '');
-  const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
+  const { data: projectSettings, isLoading, isError } = useProjectSettingsQuery(projectKey || '');
+  const updateProjectSettingsMutation = useUpdateProjectSettingsMutation(projectKey || '');
 
   const handleEventsStatusToggle = (enabled: boolean) => {
-    updateEventsStatusMutation.mutate(enabled, {
+    updateProjectSettingsMutation.mutate({ eventsEnabled: enabled }, {
       onSuccess: () => {
         notifications.show({
           title: t('common.success'),
           message: enabled
             ? t('project.settings.events.events_enabled_success')
             : t('project.settings.events.events_disabled_success'),
+          color: 'green',
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: t('common.error'),
+          message: t('project.settings.events.update_error'),
+          color: 'red',
+        });
+      },
+    });
+  };
+
+  const handleIpLoggingToggle = (enabled: boolean) => {
+    updateProjectSettingsMutation.mutate({ ipLoggingEnabled: enabled }, {
+      onSuccess: () => {
+        notifications.show({
+          title: t('common.success'),
+          message: enabled
+            ? t('project.settings.events.ip_logging_enabled_success')
+            : t('project.settings.events.ip_logging_disabled_success'),
           color: 'green',
         });
       },
@@ -134,9 +155,9 @@ export function ProjectSettingsPage() {
           description={t('project.settings.events.event_logging.description')}
         >
           <Switch
-            checked={eventsStatus?.eventsEnabled ?? false}
+            checked={projectSettings?.eventsEnabled ?? false}
             onChange={(event) => handleEventsStatusToggle(event.currentTarget.checked)}
-            disabled={updateEventsStatusMutation.isPending}
+            disabled={updateProjectSettingsMutation.isPending}
             size="md"
             color="green"
           />
@@ -148,9 +169,14 @@ export function ProjectSettingsPage() {
           icon={<Globe size={20} />}
           title={t('project.settings.events.ip_logging.title')}
           description={t('project.settings.events.ip_logging.description')}
-          badge={{ text: t('common.coming_soon'), color: 'gray' }}
         >
-          <Switch disabled size="md" />
+          <Switch
+            checked={projectSettings?.ipLoggingEnabled ?? false}
+            onChange={(event) => handleIpLoggingToggle(event.currentTarget.checked)}
+            disabled={updateProjectSettingsMutation.isPending}
+            size="md"
+            color="green"
+          />
         </SettingCard>
 
         <Divider />

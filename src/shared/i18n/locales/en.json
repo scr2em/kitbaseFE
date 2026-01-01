@@ -448,6 +448,8 @@
         "description": "Control how events are collected and stored",
         "events_enabled_success": "Event logging has been enabled",
         "events_disabled_success": "Event logging has been disabled",
+        "ip_logging_enabled_success": "IP address logging has been enabled",
+        "ip_logging_disabled_success": "IP address logging has been disabled",
         "update_error": "Failed to update settings",
         "error_loading": "Failed to load event settings",
         "event_logging": {

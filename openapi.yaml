@@ -1146,6 +1146,35 @@ components:
           type: boolean
           description: Whether event logging is enabled for this project
 
+    ProjectSettingsResponse:
+      type: object
+      description: Project settings including event and IP logging configuration
+      required:
+        - projectKey
+        - eventsEnabled
+        - ipLoggingEnabled
+      properties:
+        projectKey:
+          type: string
+          description: Project key identifier
+        eventsEnabled:
+          type: boolean
+          description: Whether event logging is enabled for this project
+        ipLoggingEnabled:
+          type: boolean
+          description: Whether IP address logging is enabled for custom events
+
+    UpdateProjectSettingsRequest:
+      type: object
+      description: Request to update project settings. All fields are optional - only provided fields will be updated.
+      properties:
+        eventsEnabled:
+          type: boolean
+          description: Whether event logging should be enabled for this project
+        ipLoggingEnabled:
+          type: boolean
+          description: Whether IP address logging should be enabled for custom events
+
     UpdateEventsStatusRequest:
       type: object
       description: Request to update events status for a project
@@ -1837,6 +1866,9 @@ components:
           type: string
           format: date-time
           description: When the event was recorded on server
+        ipAddress:
+          type: string
+          description: IP address of the client that sent the event (if IP logging is enabled)
     
     PaginatedCustomEventResponse:
       type: object
@@ -3189,6 +3221,75 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /projects/{projectKey}/settings:
+    get:
+      operationId: getProjectSettings
+      summary: Get project settings
+      description: Get project settings including event logging and IP logging configuration. Organization context determined by subdomain.
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key identifier
+      responses:
+        '200':
+          description: Project settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSettingsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateProjectSettings
+      summary: Update project settings
+      description: Update project settings. Only provided fields will be updated. Organization context determined by subdomain. Requires Developer+ role.
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectSettingsRequest'
+      responses:
+        '200':
+          description: Project settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSettingsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
   /projects/{projectKey}/builds:
     get:
       operationId: getBuilds
@@ -3649,7 +3750,7 @@ paths:
           $ref: '#/components/responses/ConflictError'
     
     delete:
-      operationId: deleteEnvironment
+      operationId: deleteEnvironment  
       summary: Delete environment
       description: Delete environment by ID within a project. Organization context determined by subdomain. Requires Developer+ role.
       tags:

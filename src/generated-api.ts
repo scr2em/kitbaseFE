@@ -780,6 +780,24 @@ export interface EventsStatusResponse {
   eventsEnabled: boolean;
 }
 
+/** Project settings including event and IP logging configuration */
+export interface ProjectSettingsResponse {
+  /** Project key identifier */
+  projectKey: string;
+  /** Whether event logging is enabled for this project */
+  eventsEnabled: boolean;
+  /** Whether IP address logging is enabled for custom events */
+  ipLoggingEnabled: boolean;
+}
+
+/** Request to update project settings. All fields are optional - only provided fields will be updated. */
+export interface UpdateProjectSettingsRequest {
+  /** Whether event logging should be enabled for this project */
+  eventsEnabled?: boolean;
+  /** Whether IP address logging should be enabled for custom events */
+  ipLoggingEnabled?: boolean;
+}
+
 /** Request to update events status for a project */
 export interface UpdateEventsStatusRequest {
   /** Whether event logging should be enabled for this project */
@@ -1243,6 +1261,8 @@ export interface CustomEventResponse {
    * @format date-time
    */
   createdAt: string;
+  /** IP address of the client that sent the event (if IP logging is enabled) */
+  ipAddress?: string;
 }
 
 /** Paginated list of custom events */
@@ -2184,6 +2204,48 @@ export class Api<
       this.request<EventsStatusResponse, ErrorResponse>({
         path: `/projects/${projectKey}/events-status`,
         method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get project settings including event logging and IP logging configuration. Organization context determined by subdomain.
+     *
+     * @tags Projects
+     * @name GetProjectSettings
+     * @summary Get project settings
+     * @request GET:/projects/{projectKey}/settings
+     * @secure
+     */
+    getProjectSettings: (projectKey: string, params: RequestParams = {}) =>
+      this.request<ProjectSettingsResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/settings`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update project settings. Only provided fields will be updated. Organization context determined by subdomain. Requires Developer+ role.
+     *
+     * @tags Projects
+     * @name UpdateProjectSettings
+     * @summary Update project settings
+     * @request PATCH:/projects/{projectKey}/settings
+     * @secure
+     */
+    updateProjectSettings: (
+      projectKey: string,
+      data: UpdateProjectSettingsRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ProjectSettingsResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/settings`,
+        method: "PATCH",
         body: data,
         secure: true,
         type: ContentType.Json,
