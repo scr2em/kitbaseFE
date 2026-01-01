@@ -18,7 +18,7 @@ import {
   Download,
   Calendar,
 } from 'lucide-react';
-import { useCurrentOrganization, usePageTitle } from '../../../shared/hooks';
+import { usePageTitle } from '../../../shared/hooks';
 import { useProjectsQuery } from '../../../shared/api/queries';
 import { useOrganizationMembersQuery } from '../../../shared/api/queries/organization';
 
@@ -96,7 +96,6 @@ const plans: Plan[] = [
 export function BillingPage() {
   const { t } = useTranslation();
   usePageTitle(t('billing.page_title'));
-  const { currentOrganization } = useCurrentOrganization();
   const { data: projects } = useProjectsQuery();
   const { data: membersData } = useOrganizationMembersQuery();
 
@@ -164,23 +163,23 @@ export function BillingPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold text-slate-900">
-                  {currentPlan.name} {t('billing.plan')}
+                  {currentPlan?.name} {t('billing.plan')}
                 </h2>
                 <Badge color="blue" variant="light">
                   {t('billing.current_plan')}
                 </Badge>
               </div>
               <p className="text-sm text-slate-500">
-                {currentPlan.description}
+                {currentPlan?.description}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900">
-                ${currentPlan.price}
+                ${currentPlan?.price}
                 <span className="text-sm font-normal text-slate-500">
-                  /{currentPlan.interval}
+                  /{currentPlan?.interval}
                 </span>
               </p>
               <p className="text-xs text-slate-500">
@@ -303,13 +302,13 @@ export function BillingPage() {
                 </ul>
 
                 <Button
-                  variant={plan.id === currentPlan.id ? 'light' : plan.highlighted ? 'filled' : 'outline'}
+                  variant={plan.id === currentPlan?.id ? 'light' : plan.highlighted ? 'filled' : 'outline'}
                   color="blue"
                   fullWidth
-                  disabled={plan.id === currentPlan.id}
-                  rightSection={plan.id !== currentPlan.id && <ArrowUpRight size={16} />}
+                  disabled={plan.id === currentPlan?.id}
+                  rightSection={plan.id !== currentPlan?.id && <ArrowUpRight size={16} />}
                 >
-                  {plan.id === currentPlan.id
+                  {plan.id === currentPlan?.id
                     ? t('billing.plans.current')
                     : t('billing.plans.upgrade')}
                 </Button>

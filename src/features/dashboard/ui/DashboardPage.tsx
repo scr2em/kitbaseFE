@@ -1,7 +1,6 @@
 import {
   Card,
   Button,
-  Badge,
   ThemeIcon,
   Progress,
   Checkbox,
@@ -62,7 +61,7 @@ export function DashboardPage() {
       label: t('dashboard.onboarding.create_organization'),
       description: t('dashboard.onboarding.create_organization_desc'),
       icon: <Building size={18} />,
-      completed: hasOrganizations,
+      completed: Boolean(hasOrganizations),
       action: () => navigate('/create-organization'),
       actionLabel: t('dashboard.onboarding.create_organization_action'),
     },
@@ -423,7 +422,7 @@ export function DashboardPage() {
               color="violet"
               onClick={() => {
                 if (projectsList.length > 0) {
-                  navigate(`/projects/${projectsList[0].projectKey}/events`);
+                  navigate(`/projects/${projectsList[0]?.projectKey}/events`);
                 }
               }}
               disabled={projectsList.length === 0}

@@ -1,4 +1,4 @@
-import { Button, ThemeIcon } from '@mantine/core';
+import { Button } from '@mantine/core';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
