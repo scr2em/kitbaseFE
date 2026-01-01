@@ -1,31 +1,31 @@
-name: CI Workflow
+# name: CI Workflow
 
-on:
-    push:
-        branches:
-            - main
+# on:
+#     push:
+#         branches:
+#             - main
 
-jobs:
-    build:
-        runs-on: [self-hosted]
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
+# jobs:
+#     build:
+#         runs-on: [self-hosted]
+#         steps:
+#             - name: Checkout code
+#               uses: actions/checkout@v2
 
-            - name: Install dependencies
-              run: pnpm install
+#             - name: Install dependencies
+#               run: pnpm install
 
-            - name: Build project
-              run: pnpm run build:prod
+#             - name: Build project
+#               run: pnpm run build:prod
 
-            - name: Build Docs
-              run: pnpm run docs:build
+#             - name: Build Docs
+#               run: pnpm run docs:build
 
-            - name: Deploy to nginx
-              run: |
-                sudo cp -r dist/* /usr/share/nginx/html
+#             - name: Deploy to nginx
+#               run: |
+#                 sudo cp -r dist/* /usr/share/nginx/html
 
-            - name: Verify deployment
-              run: |
-                echo "Deployment completed successfully " 
-                ls -la /usr/share/nginx/html
+#             - name: Verify deployment
+#               run: |
+#                 echo "Deployment completed successfully " 
+#                 ls -la /usr/share/nginx/html
