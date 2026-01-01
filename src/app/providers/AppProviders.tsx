@@ -7,6 +7,7 @@ import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import { AuthProvider } from '../../shared/lib/auth/AuthContext';
 import { theme } from '../../shared/theme';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 
 const queryClient = new QueryClient({

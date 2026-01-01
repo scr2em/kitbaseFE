@@ -13,12 +13,15 @@ import {
   Progress,
   Switch,
   Tooltip,
+  Popover,
 } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
+import { DatePicker } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Activity, Search, X, List, BarChart3 } from 'lucide-react';
+import { AlertCircle, Activity, Search, X, List, BarChart3, Calendar } from 'lucide-react';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 import { useParams, useNavigate } from 'react-router';
 import { useQueryState, parseAsStringLiteral, parseAsString } from 'nuqs';
 import {
@@ -341,6 +344,8 @@ export function EventsPage() {
     parseAsString.withDefault('')
   );
   const [debouncedUserId] = useDebouncedValue(userIdValue, 300);
+  const [dateRange, setDateRange] = useState<[string | null, string | null]>([null, null]);
+  const [datePickerOpened, { open: openDatePicker, close: closeDatePicker }] = useDisclosure(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useQueryState(
     'view',
@@ -350,6 +355,37 @@ export function EventsPage() {
 
   const { data: eventsStatusData, isLoading: isEventsStatusLoading } = useEventsStatusQuery(projectKey || '');
   const updateEventsStatusMutation = useUpdateEventsStatusMutation(projectKey || '');
+
+  const datePresets: Array<{ value: [string, string]; label: string }> = [
+    {
+      value: [dayjs().startOf('day').format('YYYY-MM-DD'), dayjs().endOf('day').format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.today'),
+    },
+    {
+      value: [dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DD'), dayjs().subtract(1, 'day').endOf('day').format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.yesterday'),
+    },
+    {
+      value: [dayjs().subtract(7, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.last_7_days'),
+    },
+    {
+      value: [dayjs().subtract(30, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.last_30_days'),
+    },
+    {
+      value: [dayjs().startOf('month').format('YYYY-MM-DD'), dayjs().endOf('month').format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.this_month'),
+    },
+    {
+      value: [dayjs().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'), dayjs().subtract(1, 'month').endOf('month').format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.last_month'),
+    },
+    {
+      value: [dayjs().startOf('year').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+      label: t('events.filters.date_presets.this_year'),
+    },
+  ];
 
   const handleEventsStatusToggle = (enabled: boolean) => {
     updateEventsStatusMutation.mutate(enabled, {
@@ -377,11 +413,15 @@ export function EventsPage() {
     channel: debouncedChannel || undefined,
     api_key_name: debouncedApiKeyName || undefined,
     user_id: debouncedUserId || undefined,
+    from: dateRange[0] || undefined,
+    to: dateRange[1] || undefined,
   };
 
   const statsFilters: EventStatsFilters = {
     api_key_name: debouncedApiKeyName || undefined,
     channel: debouncedChannel || undefined,
+    from: dateRange[0] || undefined,
+    to: dateRange[1] || undefined,
   };
 
   const handleApiKeyNameChange = (value: string) => {
@@ -409,15 +449,41 @@ export function EventsPage() {
     setCurrentPage(1);
   };
 
+  const handleDateRangeChange = (value: [string | null, string | null]) => {
+    setDateRange(value);
+    setCurrentPage(1);
+    if (value[0] && value[1]) {
+      closeDatePicker();
+    }
+  };
+
+  const clearDateRange = () => {
+    setDateRange([null, null]);
+    setCurrentPage(1);
+  };
+
   const clearFilters = () => {
     setSearchValue('');
     setChannelValue('');
     setApiKeyNameValue('');
     setUserIdValue(null);
+    setDateRange([null, null]);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchValue || apiKeyNameValue || channelValue || userIdValue;
+  const hasActiveFilters = searchValue || apiKeyNameValue || channelValue || userIdValue || dateRange[0] || dateRange[1];
+
+  const formatDateRangeDisplay = () => {
+    if (!dateRange[0] && !dateRange[1]) return null;
+    
+    const fromDate = dateRange[0] ? dayjs(dateRange[0]).format('MMM D, YYYY') : '';
+    const toDate = dateRange[1] ? dayjs(dateRange[1]).format('MMM D, YYYY') : '';
+    
+    if (fromDate && toDate) {
+      return `${fromDate} - ${toDate}`;
+    }
+    return fromDate || toDate;
+  };
 
   const groupByOptions = [
     { value: 'event', label: t('events.aggregated.group_by.event') },
@@ -526,6 +592,41 @@ export function EventsPage() {
             onChange={(e) => handleUserIdChange(e.currentTarget.value)}
             className="w-48"
           />
+          <Popover
+            opened={datePickerOpened}
+            onClose={closeDatePicker}
+            position="bottom-start"
+            shadow="md"
+          >
+            <Popover.Target>
+              <Button
+                variant={dateRange[0] || dateRange[1] ? 'light' : 'default'}
+                leftSection={<Calendar size={16} />}
+                rightSection={dateRange[0] || dateRange[1] ? (
+                  <X 
+                    size={14} 
+                    className="cursor-pointer hover:text-red-500" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearDateRange();
+                    }}
+                  />
+                ) : null}
+                onClick={openDatePicker}
+              >
+                {formatDateRangeDisplay() || t('events.filters.date_range_placeholder')}
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown p={0}>
+              <DatePicker
+                type="range"
+                value={dateRange}
+                onChange={handleDateRangeChange}
+                presets={datePresets}
+                numberOfColumns={2}
+              />
+            </Popover.Dropdown>
+          </Popover>
           {hasActiveFilters && (
             <Button
               variant="subtle"
