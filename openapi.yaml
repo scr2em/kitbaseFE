@@ -880,6 +880,10 @@ components:
         - event.create
         - event.update
         - event.delete
+        - ota.view
+        - ota.create
+        - ota.update
+        - ota.delete
         - analytics.view
         - support.operations
         - webhook.view
@@ -1247,6 +1251,7 @@ components:
       required:
         - id
         - organizationId
+        - projectId
         - projectKey
         - commitHash
         - branchName
@@ -1262,9 +1267,15 @@ components:
         organizationId:
           type: string
           description: Organization ID
+        projectId:
+          type: string
+          description: Project ID
         projectKey:
           type: string
           description: Project key identifier
+        environmentId:
+          type: string
+          description: Environment ID (optional, null if not associated with an environment)
         commitHash:
           type: string
           description: Git commit hash (unique identifier)
@@ -1357,14 +1368,14 @@ components:
       description: Request to create an API key
       required:
         - name
-        - environmentName
+        - environmentId
       properties:
         name:
           type: string
           description: Name/description for the API key
-        environmentName:
+        environmentId:
           type: string
-          description: The environment this API key is scoped to
+          description: The environment ID this API key is scoped to
 
     CreateEnvironmentRequest:
       type: object
@@ -1396,6 +1407,7 @@ components:
       required:
         - version
         - markdown
+        - environmentId
       properties:
         version:
           type: string
@@ -1409,6 +1421,9 @@ components:
           type: boolean
           default: false
           description: Whether the changelog is published
+        environmentId:
+          type: string
+          description: Environment ID to associate this changelog with
 
     UpdateChangelogRequest:
       type: object
@@ -1425,6 +1440,9 @@ components:
         isPublished:
           type: boolean
           description: Whether the changelog is published
+        environmentId:
+          type: string
+          description: Environment ID to associate this changelog with
 
     ApiKeyResponse:
       type: object
@@ -1433,10 +1451,9 @@ components:
         - id
         - name
         - keyPrefix
-        - projectKey
+        - projectId
         - environmentId
         - environmentName
-        - organizationId
         - createdBy
         - createdAt
       properties:
@@ -1451,19 +1468,16 @@ components:
           description: The actual API key (only returned on creation)
         keyPrefix:
           type: string
-          description: Masked key display (e.g., "flyw...xyz")
-        projectKey:
+          description: Key prefix for identification
+        projectId:
           type: string
-          description: Project key this API key is for
+          description: Project ID this API key is for
         environmentId:
           type: string
           description: The environment ID this API key is scoped to
         environmentName:
           type: string
           description: The environment name this API key is scoped to
-        organizationId:
-          type: string
-          description: Organization ID
         createdBy:
           type: string
           description: User ID who created the key
@@ -1765,6 +1779,9 @@ components:
         projectId:
           type: string
           description: Project ID
+        environmentId:
+          type: string
+          description: Environment ID (optional, null if not associated with an environment)
         createdAt:
           type: string
           format: date-time
@@ -3566,6 +3583,12 @@ paths:
             enum: [asc, desc]
             default: desc
           description: Sort direction by createdAt (default desc)
+        - name: environmentId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter builds by environment ID
       responses:
         '200':
           description: Builds retrieved successfully
@@ -3737,6 +3760,12 @@ paths:
             enum: [asc, desc]
             default: desc
           description: Sort direction by createdAt (default desc)
+        - name: environmentId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter API keys by environment ID
       responses:
         '200':
           description: API keys retrieved successfully
@@ -4324,6 +4353,12 @@ paths:
             enum: [asc, desc]
             default: desc
           description: Sort direction by creation date
+        - name: environmentId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter changelogs by environment ID
       responses:
         '200':
           description: Changelogs retrieved successfully
@@ -4984,11 +5019,11 @@ paths:
           schema:
             type: string
           description: Project key
-        - name: environment_name
+        - name: environmentId
           in: query
           schema:
             type: string
-          description: Filter by environment name (partial match)
+          description: Filter by environment ID
         - name: event
           in: query
           schema:
@@ -5108,11 +5143,11 @@ paths:
             enum: [event, environment, channel, user_id]
             default: event
           description: Field to group by
-        - name: environment_name
+        - name: environmentId
           in: query
           schema:
             type: string
-          description: Filter by environment name (partial match)
+          description: Filter by environment ID
         - name: channel
           in: query
           schema:
@@ -5172,11 +5207,11 @@ paths:
           schema:
             type: string
           description: Filter by event name
-        - name: environment_name
+        - name: environmentId
           in: query
           schema:
             type: string
-          description: Filter by environment name (partial match)
+          description: Filter by environment ID
         - name: from
           in: query
           schema:

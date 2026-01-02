@@ -21,15 +21,16 @@ import { ApiKeyCreatedModal } from './ApiKeyCreatedModal';
 
 export function ApiKeysPage() {
   const { t } = useTranslation();
-  const { projectKey } = useParams<{ projectKey: string }>();
+  const { projectKey, environmentId } = useParams<{ projectKey: string; environmentId: string }>();
   const [createModalOpened, setCreateModalOpened] = useState(false);
   const [createdKeyData, setCreatedKeyData] = useState<{ key: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
-
+  
   const pageSize = 10;
   const { data, isLoading, isError } = useApiKeysQuery(
     projectKey || '',
+    environmentId,
     currentPage - 1, // API uses 0-based pagination
     pageSize
   );
@@ -39,12 +40,12 @@ export function ApiKeysPage() {
   const apiKeys = data?.data || [];
   const totalPages = data?.totalPages || 0;
 
-  const handleCreateKey = async (name: string, environmentName: string) => {
+  const handleCreateKey = async (name: string, environmentId: string) => {
     try {
       const result = await createApiKeyMutation.mutateAsync({
         projectKey: projectKey || '',
         name,
-        environmentName,
+        environmentId,
       });
       
       setCreateModalOpened(false);
@@ -166,7 +167,6 @@ export function ApiKeysPage() {
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>{t('projects.detail.api_keys.table.name')}</Table.Th>
-                    <Table.Th>{t('projects.detail.api_keys.table.environment')}</Table.Th>
                     <Table.Th>{t('projects.detail.api_keys.table.key_prefix')}</Table.Th>
                     <Table.Th>{t('projects.detail.api_keys.table.created_at')}</Table.Th>
                     <Table.Th>{t('projects.detail.api_keys.table.last_used')}</Table.Th>
@@ -178,9 +178,6 @@ export function ApiKeysPage() {
                     <Table.Tr key={key.id}>
                       <Table.Td>
                         <p className="font-medium">{key.name}</p>
-                      </Table.Td>
-                      <Table.Td>
-                        <p className="text-sm">{key.environmentName}</p>
                       </Table.Td>
                       <Table.Td>
                         <div className="flex gap-2 items-center">
@@ -245,6 +242,7 @@ export function ApiKeysPage() {
           onSubmit={handleCreateKey}
           isLoading={createApiKeyMutation.isPending}
           projectKey={projectKey || ''}
+          defaultEnvironmentId={environmentId}
         />
       )}
       {createdKeyData && (

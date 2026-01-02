@@ -19,7 +19,7 @@ import { TargetingConditionsBuilder } from './TargetingConditionsBuilder';
 
 export function OtaUpdateFormPage() {
   const { t } = useTranslation();
-  const { projectKey, otaUpdateId } = useParams<{ projectKey: string; otaUpdateId?: string }>();
+  const { projectKey, environmentId, otaUpdateId } = useParams<{ projectKey: string; environmentId: string; otaUpdateId?: string }>();
   const navigate = useNavigate();
   const { showError } = useShowBackendError();
 
@@ -43,7 +43,7 @@ export function OtaUpdateFormPage() {
       name: '',
       version: '',
       buildId: '',
-      environmentId: '',
+      environmentId: environmentId || '',
       minNativeVersion: '',
       updateMode: 'silent',
       targetPlatform: 'both',
@@ -87,14 +87,14 @@ export function OtaUpdateFormPage() {
       }
       
       reset();
-      navigate(`/projects/${projectKey}/ota-updates`);
+      navigate(`/projects/${projectKey}/${environmentId}/ota-updates`);
     } catch (error) {
       showError(error);
     }
   };
 
   const handleBack = () => {
-    navigate(`/projects/${projectKey}/ota-updates`);
+    navigate(`/projects/${projectKey}/${environmentId}/ota-updates`);
   };
 
   const buildOptions = buildsData?.data?.map((build) => ({

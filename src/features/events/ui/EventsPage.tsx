@@ -31,23 +31,23 @@ import {
   type EventsFilters,
   type EventStatsFilters,
 } from '../../../shared/api/queries/events';
-import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/environments';
 
 const PAGE_SIZE = 20;
 
 const VIEW_MODES = ['list', 'aggregated'] as const;
 type ViewMode = (typeof VIEW_MODES)[number];
-type GroupByOption = 'event' | 'environment' | 'channel' | 'user_id';
+type GroupByOption = 'event' | 'channel' | 'user_id';
 
 interface EventsTableProps {
   projectKey: string;
+  environmentId: string;
   filters: EventsFilters;
   currentPage: number;
   onPageChange: (page: number) => void;
   onUserIdClick: (userId: string) => void;
 }
 
-function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdClick }: EventsTableProps) {
+function EventsTable({ projectKey, environmentId, filters, currentPage, onPageChange, onUserIdClick }: EventsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -108,7 +108,6 @@ function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdC
                 <Table.Thead>
                 <Table.Tr>
                 <Table.Th>{t('events.table.event')}</Table.Th>
-                <Table.Th>{t('events.table.environment')}</Table.Th>
                 <Table.Th>{t('events.table.channel')}</Table.Th>
                 <Table.Th>{t('events.table.user_id')}</Table.Th>
                 <Table.Th>{t('events.table.timestamp')}</Table.Th>
@@ -118,8 +117,8 @@ function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdC
               {events.map((event) => (
                 <Table.Tr 
                   key={event.id}
-                  onClick={() => navigate(`/projects/${projectKey}/events/${event.id}`)}
-                  className="cursor-pointer"
+                  onClick={() => navigate(`/projects/${projectKey}/${environmentId}/events/${event.id}`)}
+                  className="cursor-pointer hover:bg-slate-50"
                 >
                   <Table.Td>
                     <div className="flex gap-2 items-center">
@@ -137,17 +136,6 @@ function EventsTable({ projectKey, filters, currentPage, onPageChange, onUserIdC
                         )}
                       </div>
                     </div>
-                  </Table.Td>
-                  <Table.Td>
-                    {event.environmentName ? (
-                      <Badge variant="light" color="blue" size="sm">
-                        {event.environmentName}
-                      </Badge>
-                    ) : (
-                      <span className="text-sm text-slate-400">
-                        {t('events.no_environment')}
-                      </span>
-                    )}
                   </Table.Td>
                   <Table.Td>
                     {event.channel ? (
@@ -332,15 +320,13 @@ function AggregatedEventsTable({ projectKey, groupBy, filters }: AggregatedEvent
 
 export function EventsPage() {
   const { t } = useTranslation();
-  const { projectKey } = useParams<{ projectKey: string }>();
+  const { projectKey, environmentId } = useParams<{ projectKey: string; environmentId: string }>();
   const queryClient = useQueryClient();
   const [isRefetching, setIsRefetching] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
   const [channelValue, setChannelValue] = useState('');
   const [debouncedChannel] = useDebouncedValue(channelValue, 300);
-  const [environmentNameValue, setEnvironmentNameValue] = useState('');
-  const [debouncedEnvironmentName] = useDebouncedValue(environmentNameValue, 300);
   const [userIdValue, setUserIdValue] = useQueryState(
     'user_id',
     parseAsString.withDefault('')
@@ -357,7 +343,6 @@ export function EventsPage() {
     parseAsStringLiteral(VIEW_MODES).withDefault('list')
   );
   const [groupBy, setGroupBy] = useState<GroupByOption>('event');
-  const { data: environmentsData } = useEnvironmentsInfiniteQuery(projectKey || '');
 
   const datePresets: Array<{ value: [string, string]; label: string }> = [
     {
@@ -394,22 +379,15 @@ export function EventsPage() {
   const activeFilters: EventsFilters = {
     event: debouncedSearch || undefined,
     channel: debouncedChannel || undefined,
-    environment_name: debouncedEnvironmentName || undefined,
     user_id: debouncedUserId || undefined,
     from: dateRange[0] || undefined,
     to: dateRange[1] || undefined,
   };
 
   const statsFilters: EventStatsFilters = {
-    environment_name: debouncedEnvironmentName || undefined,
     channel: debouncedChannel || undefined,
     from: dateRange[0] || undefined,
     to: dateRange[1] || undefined,
-  };
-
-  const handleEnvironmentNameChange = (value: string) => {
-    setEnvironmentNameValue(value);
-    setCurrentPage(1);
   };
 
   const handleChannelChange = (value: string) => {
@@ -448,13 +426,12 @@ export function EventsPage() {
   const clearFilters = () => {
     setSearchValue('');
     setChannelValue('');
-    setEnvironmentNameValue('');
     setUserIdValue(null);
     setDateRange([null, null]);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchValue || environmentNameValue || channelValue || userIdValue || dateRange[0] || dateRange[1];
+  const hasActiveFilters = searchValue || channelValue || userIdValue || dateRange[0] || dateRange[1];
 
   const handleRefetch = async () => {
     setIsRefetching(true);
@@ -487,15 +464,9 @@ export function EventsPage() {
 
   const groupByOptions = [
     { value: 'event', label: t('events.aggregated.group_by.event') },
-    { value: 'environment', label: t('events.aggregated.group_by.environment') },
     { value: 'channel', label: t('events.aggregated.group_by.channel') },
     { value: 'user_id', label: t('events.aggregated.group_by.user_id') },
   ];
-
-  const environmentOptions = (environmentsData?.pages.flatMap((page) => page.data) || []).map((env) => ({
-    value: env.name,
-    label: env.name,
-  }));
 
   return (
     <div>
@@ -570,15 +541,6 @@ export function EventsPage() {
               className="w-48"
             />
           )}
-          <Select
-            placeholder={t('events.filters.all_environments')}
-            data={environmentOptions}
-            value={environmentNameValue || null}
-            onChange={(value) => handleEnvironmentNameChange(value || '')}
-            clearable
-            searchable
-            className="w-48"
-          />
           <TextInput
             placeholder={t('events.filters.channel_placeholder')}
             value={channelValue}
@@ -642,6 +604,7 @@ export function EventsPage() {
         {viewMode === 'list' ? (
           <EventsTable 
             projectKey={projectKey || ''} 
+            environmentId={environmentId || ''}
             filters={activeFilters} 
             currentPage={currentPage}
             onPageChange={setCurrentPage}

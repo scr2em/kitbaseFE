@@ -23,7 +23,7 @@ import type { OtaUpdateResponse } from '../../../generated-api';
 
 export function OtaUpdatesPage() {
   const { t } = useTranslation();
-  const { projectKey } = useParams<{ projectKey: string }>();
+  const { projectKey, environmentId } = useParams<{ projectKey: string; environmentId: string }>();
   const navigate = useNavigate();
 
   const {
@@ -33,7 +33,7 @@ export function OtaUpdatesPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useOtaUpdatesInfiniteQuery(projectKey || '');
+  } = useOtaUpdatesInfiniteQuery(projectKey || '', environmentId);
 
   const deleteOtaUpdateMutation = useDeleteOtaUpdateMutation(projectKey || '');
   const { showError } = useShowBackendError();
@@ -64,11 +64,11 @@ export function OtaUpdatesPage() {
   };
 
   const handleEditOtaUpdate = (otaUpdate: OtaUpdateResponse) => {
-    navigate(`/projects/${projectKey}/ota-updates/${otaUpdate.id}/edit`);
+    navigate(`/projects/${projectKey}/${environmentId}/ota-updates/${otaUpdate.id}/edit`);
   };
 
   const handleCreateOtaUpdate = () => {
-    navigate(`/projects/${projectKey}/ota-updates/create`);
+    navigate(`/projects/${projectKey}/${environmentId}/ota-updates/create`);
   };
 
   const getPlatformIcon = (platform: string) => {

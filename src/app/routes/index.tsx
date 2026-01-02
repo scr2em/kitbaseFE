@@ -18,9 +18,9 @@ import {
   CreateChangelogPage,
   EditChangelogPage,
   ProjectSettingsPage,
+  ProjectEnvironmentRedirect,
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
-import { EnvironmentsPage } from '../../features/environments';
 import { EventsPage, EventDetailPage } from '../../features/events';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
@@ -82,22 +82,32 @@ const routes: RouteObject[] = [
           { path: '/projects', element: <ProjectsPage /> },
           {
             path: '/projects/:projectKey',
-            element: <ProjectDetailPage />,
             children: [
-              { index: true, element: <Navigate to="ota-updates" replace /> },
-              { path: 'ota-updates', element: <OtaUpdatesPage /> },
-              { path: 'ota-updates/create', element: <OtaUpdateFormPage /> },
-              { path: 'ota-updates/:otaUpdateId/edit', element: <OtaUpdateFormPage /> },
-              { path: 'builds', element: <ProjectBuildsPage /> },
-              { path: 'access', element: <AccessPage /> },
-              { path: 'changelog', element: <ChangelogPage /> },
-              { path: 'changelog/create', element: <CreateChangelogPage /> },
-              { path: 'changelog/:changelogId/edit', element: <EditChangelogPage /> },
-              { path: 'api-keys', element: <ApiKeysPage /> },
-              { path: 'environments', element: <EnvironmentsPage /> },
-              { path: 'events', element: <EventsPage /> },
-              { path: 'events/:eventId', element: <EventDetailPage /> },
-              { path: 'settings', element: <ProjectSettingsPage /> },
+              // Redirect to first environment
+              { index: true, element: <ProjectEnvironmentRedirect /> },
+              // Settings at project level (no environment)
+              { path: 'settings', element: <ProjectDetailPage />, children: [
+                { index: true, element: <ProjectSettingsPage /> },
+              ]},
+              // Environment-scoped routes
+              {
+                path: ':environmentId',
+                element: <ProjectDetailPage />,
+                children: [
+                  { index: true, element: <Navigate to="ota-updates" replace /> },
+                  { path: 'ota-updates', element: <OtaUpdatesPage /> },
+                  { path: 'ota-updates/create', element: <OtaUpdateFormPage /> },
+                  { path: 'ota-updates/:otaUpdateId/edit', element: <OtaUpdateFormPage /> },
+                  { path: 'builds', element: <ProjectBuildsPage /> },
+                  { path: 'access', element: <AccessPage /> },
+                  { path: 'changelog', element: <ChangelogPage /> },
+                  { path: 'changelog/create', element: <CreateChangelogPage /> },
+                  { path: 'changelog/:changelogId/edit', element: <EditChangelogPage /> },
+                  { path: 'api-keys', element: <ApiKeysPage /> },
+                  { path: 'events', element: <EventsPage /> },
+                  { path: 'events/:eventId', element: <EventDetailPage /> },
+                ],
+              },
             ],
           },
           { path: '/analytics', element: <div>Analytics Page (Coming Soon)</div> },

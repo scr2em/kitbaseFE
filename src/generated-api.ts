@@ -37,6 +37,10 @@ export type PermissionCode =
   | "event.create"
   | "event.update"
   | "event.delete"
+  | "ota.view"
+  | "ota.create"
+  | "ota.update"
+  | "ota.delete"
   | "analytics.view"
   | "support.operations"
   | "webhook.view"
@@ -839,8 +843,12 @@ export interface BuildResponse {
   id: string;
   /** Organization ID */
   organizationId: string;
+  /** Project ID */
+  projectId: string;
   /** Project key identifier */
   projectKey: string;
+  /** Environment ID (optional, null if not associated with an environment) */
+  environmentId?: string;
   /** Git commit hash (unique identifier) */
   commitHash: string;
   /** Git branch name */
@@ -902,8 +910,8 @@ export interface PaginatedApiKeyResponse {
 export interface CreateApiKeyRequest {
   /** Name/description for the API key */
   name: string;
-  /** The environment this API key is scoped to */
-  environmentName: string;
+  /** The environment ID this API key is scoped to */
+  environmentId: string;
 }
 
 /** Request to create a new environment */
@@ -937,6 +945,8 @@ export interface CreateChangelogRequest {
    * @default false
    */
   isPublished?: boolean;
+  /** Environment ID to associate this changelog with */
+  environmentId: string;
 }
 
 /** Request to update a changelog */
@@ -951,6 +961,8 @@ export interface UpdateChangelogRequest {
   markdown?: string;
   /** Whether the changelog is published */
   isPublished?: boolean;
+  /** Environment ID to associate this changelog with */
+  environmentId?: string;
 }
 
 /** API key information */
@@ -961,16 +973,14 @@ export interface ApiKeyResponse {
   name: string;
   /** The actual API key (only returned on creation) */
   key?: string;
-  /** Masked key display (e.g., "flyw...xyz") */
+  /** Key prefix for identification */
   keyPrefix: string;
-  /** Project key this API key is for */
-  projectKey: string;
+  /** Project ID this API key is for */
+  projectId: string;
   /** The environment ID this API key is scoped to */
   environmentId: string;
   /** The environment name this API key is scoped to */
   environmentName: string;
-  /** Organization ID */
-  organizationId: string;
   /** User ID who created the key */
   createdBy: string;
   /**
@@ -1189,6 +1199,8 @@ export interface ChangelogResponse {
   isPublished: boolean;
   /** Project ID */
   projectId: string;
+  /** Environment ID (optional, null if not associated with an environment) */
+  environmentId?: string;
   /**
    * When the changelog was created
    * @format date-time
@@ -2450,6 +2462,8 @@ export class Api<
          * @default "desc"
          */
         sort?: "asc" | "desc";
+        /** Filter builds by environment ID */
+        environmentId?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -2489,6 +2503,8 @@ export class Api<
          * @default "desc"
          */
         sort?: "asc" | "desc";
+        /** Filter API keys by environment ID */
+        environmentId?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -2837,6 +2853,8 @@ export class Api<
          * @default "desc"
          */
         sort?: "asc" | "desc";
+        /** Filter changelogs by environment ID */
+        environmentId?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -2953,8 +2971,8 @@ export class Api<
     listEvents: (
       projectKey: string,
       query?: {
-        /** Filter by environment name (partial match) */
-        environment_name?: string;
+        /** Filter by environment ID */
+        environmentId?: string;
         /** Filter by event name */
         event?: string;
         /** Filter by channel */
@@ -3037,8 +3055,8 @@ export class Api<
          * @default "event"
          */
         group_by?: "event" | "environment" | "channel" | "user_id";
-        /** Filter by environment name (partial match) */
-        environment_name?: string;
+        /** Filter by environment ID */
+        environmentId?: string;
         /** Filter by channel */
         channel?: string;
         /**
@@ -3082,8 +3100,8 @@ export class Api<
         interval?: "hour" | "day" | "week" | "month";
         /** Filter by event name */
         event?: string;
-        /** Filter by environment name (partial match) */
-        environment_name?: string;
+        /** Filter by environment ID */
+        environmentId?: string;
         /**
          * Start of time range
          * @format date-time

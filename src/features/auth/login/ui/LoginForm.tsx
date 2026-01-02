@@ -29,12 +29,12 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       const response = await loginMutation.mutateAsync(data);
-      setIsAuthenticated(true);
-      notifications.show({
-        title: t('common.success'),
-        message: t('auth.login.title'),
-        color: 'green',
-      });
+      // setIsAuthenticated(true);
+      // notifications.show({
+      //   title: t('common.success'),
+      //   message: t('auth.login.title'),
+      //   color: 'green',
+      // });
       
       // If returnUrl is provided, redirect there
       if (returnUrl) {

@@ -21,7 +21,7 @@ import { useEventQuery } from '../../../shared/api/queries/events';
 
 export function EventDetailPage() {
   const { t } = useTranslation();
-  const { projectKey, eventId } = useParams<{ projectKey: string; eventId: string }>();
+  const { projectKey, environmentId, eventId } = useParams<{ projectKey: string; environmentId: string; eventId: string }>();
   const navigate = useNavigate();
 
   const { data: event, isLoading, isError } = useEventQuery(projectKey || '', eventId || '');
@@ -64,7 +64,7 @@ export function EventDetailPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => navigate(`/projects/${projectKey}/events`)}
+          onClick={() => navigate(`/projects/${projectKey}/${environmentId}/events`)}
           className="p-1.5 -ml-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft size={18} />

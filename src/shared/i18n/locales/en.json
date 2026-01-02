@@ -552,6 +552,16 @@
       "success_message": "Project deleted successfully",
       "menu_item": "Delete project"
     },
+    "environment_redirect": {
+      "no_environments_title": "No Environments Yet",
+      "no_environments_description": "Create your first environment to start managing OTA updates, builds, and more."
+    },
+    "environment_selector": {
+      "switch_environment": "Switch Environment",
+      "edit_environment": "Edit Environment",
+      "delete_environment": "Delete Environment",
+      "create_environment": "Create Environment"
+    },
     "detail": {
       "back_to_projects": "Back to Projects",
       "error_loading": "Failed to load project details. Please try again.",
@@ -795,6 +805,25 @@
         "channel": "Channel",
         "user_id": "User ID"
       }
+    },
+    "timeline": {
+      "title": "Event Timeline",
+      "no_data": "No timeline data available",
+      "no_data_description": "Timeline data will appear here once events are tracked",
+      "interval_label": "Interval",
+      "intervals": {
+        "hour": "Hourly",
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
+    },
+    "user_activity": {
+      "title": "User Activity",
+      "subtitle": "Events for user {{userId}}",
+      "back_button": "Back to Events",
+      "no_events": "No events found for this user",
+      "no_events_description": "Events from this user will appear here"
     },
     "logging": {
       "label": "Event Logging",

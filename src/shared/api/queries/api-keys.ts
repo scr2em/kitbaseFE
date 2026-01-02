@@ -3,14 +3,20 @@ import { apiClient } from '../client';
 
 export const API_KEYS_QUERY_KEY = ['apiKeys'];
 
-export function useApiKeysQuery(projectKey: string, page: number = 0, size: number = 20) {
+export function useApiKeysQuery(
+  projectKey: string,
+  environmentId?: string,
+  page: number = 0,
+  size: number = 20
+) {
   return useQuery({
-    queryKey: [...API_KEYS_QUERY_KEY, projectKey, page, size],
+    queryKey: [...API_KEYS_QUERY_KEY, projectKey, environmentId, page, size],
     queryFn: async () => {
       const response = await apiClient.projects.getApiKeys(projectKey, {
         page,
         size,
         sort: 'desc',
+        environmentId,
       });
       return response.data;
     },
@@ -23,8 +29,8 @@ export function useCreateApiKeyMutation() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ projectKey, name, environmentName }: { projectKey: string; name: string; environmentName: string }) => {
-      const response = await apiClient.projects.createApiKey(projectKey, { name, environmentName });
+    mutationFn: async ({ projectKey, name, environmentId }: { projectKey: string; name: string; environmentId: string }) => {
+      const response = await apiClient.projects.createApiKey(projectKey, { name, environmentId });
       return response.data;
     },
     onSuccess: (_, variables) => {

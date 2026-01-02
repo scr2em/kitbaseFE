@@ -9,18 +9,19 @@ import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/enviro
 interface CreateApiKeyModalProps {
   opened: boolean;
   onClose: () => void;
-  onSubmit: (name: string, environmentName: string) => void;
+  onSubmit: (name: string, environmentId: string) => void;
   isLoading: boolean;
   projectKey: string;
+  defaultEnvironmentId?: string;
 }
 
-export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projectKey }: CreateApiKeyModalProps) {
+export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projectKey, defaultEnvironmentId }: CreateApiKeyModalProps) {
   const { t } = useTranslation();
   const { data: environmentsData, isLoading: isLoadingEnvironments } = useEnvironmentsInfiniteQuery(projectKey);
 
   const environments = environmentsData?.pages.flatMap((page) => page.data) || [];
   const environmentOptions = environments.map((env) => ({
-    value: env.name,
+    value: env.id,
     label: env.name,
   }));
 
@@ -28,12 +29,12 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projec
     resolver: zodResolver(createApiKeySchema),
     defaultValues: {
       name: '',
-      environmentName: '',
+      environmentId: defaultEnvironmentId || '',
     },
   });
 
   const handleSubmit = (data: CreateApiKeyFormData) => {
-    onSubmit(data.name, data.environmentName);
+    onSubmit(data.name, data.environmentId);
   };
 
   const handleClose = () => {
@@ -60,7 +61,7 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projec
 
           <ControlledSelect
             control={form.control}
-            name="environmentName"
+            name="environmentId"
             label={t('projects.detail.api_keys.create.environment_label')}
             placeholder={t('projects.detail.api_keys.create.environment_placeholder')}
             options={environmentOptions}

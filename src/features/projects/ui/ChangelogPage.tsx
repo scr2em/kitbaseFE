@@ -24,7 +24,7 @@ import type { ChangelogResponse } from '../../../generated-api';
 
 export function ChangelogPage() {
   const { t } = useTranslation();
-  const { projectKey } = useParams<{ projectKey: string }>();
+  const { projectKey, environmentId } = useParams<{ projectKey: string; environmentId: string }>();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
@@ -116,7 +116,7 @@ export function ChangelogPage() {
           </div>
           <Button
             leftSection={<FileText size={16} />}
-            onClick={() => navigate(`/projects/${projectKey}/changelog/create`)}
+            onClick={() => navigate(`/projects/${projectKey}/${environmentId}/changelog/create`)}
           >
             {t('projects.detail.changelog.create_button')}
           </Button>
@@ -179,7 +179,7 @@ export function ChangelogPage() {
                           <Menu.Dropdown>
                             <Menu.Item
                               leftSection={<Edit size={16} />}
-                              onClick={() => navigate(`/projects/${projectKey}/changelog/${changelog.id}/edit`)}
+                              onClick={() => navigate(`/projects/${projectKey}/${environmentId}/changelog/${changelog.id}/edit`)}
                             >
                               {t('projects.detail.changelog.edit.menu_item')}
                             </Menu.Item>

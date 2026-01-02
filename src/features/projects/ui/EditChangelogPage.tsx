@@ -14,7 +14,7 @@ import { useShowBackendError } from '../../../shared/hooks';
 
 export function EditChangelogPage() {
   const { t } = useTranslation();
-  const { projectKey, changelogId } = useParams<{ projectKey: string; changelogId: string }>();
+  const { projectKey, environmentId, changelogId } = useParams<{ projectKey: string; environmentId: string; changelogId: string }>();
   const navigate = useNavigate();
   const { showError } = useShowBackendError();
   const updateChangelogMutation = useUpdateChangelogMutation(projectKey || '', changelogId || '');
@@ -48,14 +48,14 @@ export function EditChangelogPage() {
         color: 'green',
       });
 
-      navigate(`/projects/${projectKey}/changelog`);
+      navigate(`/projects/${projectKey}/${environmentId}/changelog`);
     } catch (error) {
       showError(error);
     }
   };
 
   const handleCancel = () => {
-    navigate(`/projects/${projectKey}/changelog`);
+    navigate(`/projects/${projectKey}/${environmentId}/changelog`);
   };
 
   if (isLoadingProject || isLoadingChangelog) {

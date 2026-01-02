@@ -136,3 +136,100 @@ export function useUpdateEventsStatusMutation(projectKey: string) {
   });
 }
 
+// Event Timeline Query - for chart visualization
+export interface EventTimelineFilters {
+  event?: string;
+  environment_name?: string;
+  from?: string;
+  to?: string;
+}
+
+export const getEventTimelineQueryKey = (
+  projectKey: string, 
+  interval: 'hour' | 'day' | 'week' | 'month',
+  filters?: EventTimelineFilters
+) => ['eventTimeline', projectKey, interval, filters] as const;
+
+export function useEventTimelineQuery(
+  projectKey: string,
+  interval: 'hour' | 'day' | 'week' | 'month' = 'day',
+  filters?: EventTimelineFilters
+) {
+  return useQuery({
+    queryKey: getEventTimelineQueryKey(projectKey, interval, filters),
+    queryFn: async () => {
+      const response = await apiClient.projects.getEventTimeline(projectKey, {
+        interval,
+        ...filters,
+      });
+      return response.data;
+    },
+    staleTime: 60 * 1000,
+    enabled: !!projectKey,
+  });
+}
+
+// Events by User ID Query - for user activity tracking
+export interface EventsByUserIdFilters {
+  event?: string;
+  from?: string;
+  to?: string;
+}
+
+export const getEventsByUserIdQueryKey = (
+  projectKey: string,
+  userId: string,
+  filters?: EventsByUserIdFilters
+) => ['eventsByUserId', projectKey, userId, filters] as const;
+
+export function useEventsByUserIdQuery(
+  projectKey: string,
+  userId: string,
+  page: number = 0,
+  size: number = 20,
+  filters?: EventsByUserIdFilters
+) {
+  return useQuery({
+    queryKey: [...getEventsByUserIdQueryKey(projectKey, userId, filters), page, size],
+    queryFn: async () => {
+      const response = await apiClient.projects.listEventsByUserId(projectKey, userId, {
+        page,
+        size,
+        sort: 'desc',
+        ...filters,
+      });
+      return response.data;
+    },
+    staleTime: 30 * 1000,
+    enabled: !!projectKey && !!userId,
+  });
+}
+
+export function useEventsByUserIdInfiniteQuery(
+  projectKey: string,
+  userId: string,
+  filters?: EventsByUserIdFilters
+) {
+  return useInfiniteQuery({
+    queryKey: getEventsByUserIdQueryKey(projectKey, userId, filters),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await apiClient.projects.listEventsByUserId(projectKey, userId, {
+        page: pageParam,
+        size: 20,
+        sort: 'desc',
+        ...filters,
+      });
+      return response.data;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page + 1 < lastPage.totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    staleTime: 30 * 1000,
+    enabled: !!projectKey && !!userId,
+  });
+}
+

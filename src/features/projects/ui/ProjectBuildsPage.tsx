@@ -21,7 +21,7 @@ import type { BuildResponse } from '../../../generated-api';
 
 export function ProjectBuildsPage() {
   const { t } = useTranslation();
-  const { projectKey } = useParams<{ projectKey: string }>();
+  const { projectKey, environmentId } = useParams<{ projectKey: string; environmentId: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const { showError } = useShowBackendError();
 
@@ -226,6 +226,7 @@ export function ProjectBuildsPage() {
     </div>
   );
 }
+
 
 
 
