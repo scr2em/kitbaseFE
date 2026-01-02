@@ -7,6 +7,7 @@ import {
   ActionIcon,
   Table,
   ScrollArea,
+  Tooltip,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Plus, MoreVertical, Trash2, Edit, Layers } from 'lucide-react';
@@ -97,6 +98,7 @@ export function EnvironmentsPage() {
 
   const environments = data?.pages.flatMap((page) => page.data) || [];
   const totalElements = data?.pages[0]?.totalElements || 0;
+  const isLastEnvironment = totalElements === 1;
 
   return (
     <div>
@@ -204,13 +206,20 @@ export function EnvironmentsPage() {
                               >
                                 {t('environments.update.menu_item')}
                               </Menu.Item>
-                              <Menu.Item
-                                color="red"
-                                leftSection={<Trash2 size={16} />}
-                                onClick={() => handleDeleteEnvironment(environment)}
+                              <Tooltip
+                                label={t('environments.delete.last_environment_warning')}
+                                disabled={!isLastEnvironment}
+                                position="left"
                               >
-                                {t('environments.delete.menu_item')}
-                              </Menu.Item>
+                                <Menu.Item
+                                  color="red"
+                                  leftSection={<Trash2 size={16} />}
+                                  onClick={() => handleDeleteEnvironment(environment)}
+                                  disabled={isLastEnvironment}
+                                >
+                                  {t('environments.delete.menu_item')}
+                                </Menu.Item>
+                              </Tooltip>
                             </Menu.Dropdown>
                           </Menu>
                         </Table.Td>

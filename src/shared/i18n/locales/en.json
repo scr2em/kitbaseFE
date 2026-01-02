@@ -887,7 +887,8 @@
       "confirm": "Delete",
       "cancel": "Cancel",
       "success_message": "Environment deleted successfully",
-      "menu_item": "Delete environment"
+      "menu_item": "Delete environment",
+      "last_environment_warning": "Cannot delete the last environment"
     }
   },
   "ota_updates": {
