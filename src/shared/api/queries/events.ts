@@ -10,7 +10,7 @@ export const getEventsInfiniteQueryKey = (projectKey: string, filters?: EventsFi
   ['eventsInfinite', projectKey, filters] as const;
 
 export interface EventStatsFilters {
-  environment_name?: string;
+  environmentId?: string;
   channel?: string;
   from?: string;
   to?: string;
@@ -20,7 +20,7 @@ export const getEventStatsQueryKey = (projectKey: string, groupBy: string, filte
   ['eventStats', projectKey, groupBy, filters] as const;
 
 export interface EventsFilters {
-  environment_name?: string;
+  environmentId?: string;
   event?: string;
   channel?: string;
   user_id?: string;
@@ -139,7 +139,7 @@ export function useUpdateEventsStatusMutation(projectKey: string) {
 // Event Timeline Query - for chart visualization
 export interface EventTimelineFilters {
   event?: string;
-  environment_name?: string;
+  environmentId?: string;
   from?: string;
   to?: string;
 }

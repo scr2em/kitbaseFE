@@ -377,6 +377,7 @@ export function EventsPage() {
 
 
   const activeFilters: EventsFilters = {
+    environmentId: environmentId || undefined,
     event: debouncedSearch || undefined,
     channel: debouncedChannel || undefined,
     user_id: debouncedUserId || undefined,
@@ -385,6 +386,7 @@ export function EventsPage() {
   };
 
   const statsFilters: EventStatsFilters = {
+    environmentId: environmentId || undefined,
     channel: debouncedChannel || undefined,
     from: dateRange[0] || undefined,
     to: dateRange[1] || undefined,

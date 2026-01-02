@@ -31,11 +31,22 @@ export function CreateChangelogPage() {
   });
 
   const handleSubmit = async (data: ChangelogFormData) => {
+
+    if(!environmentId) {
+      notifications.show({
+        title: t('common.error'),
+        message: t('projects.detail.changelog.create.environment_required'),
+        color: 'red',
+      });
+      return;
+    }
+    
     try {
       await createChangelogMutation.mutateAsync({
         version: data.version,
         markdown: data.markdown,
         isPublished: data.isPublished,
+        environmentId: environmentId,
       });
 
       notifications.show({
