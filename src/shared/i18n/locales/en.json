@@ -440,6 +440,33 @@
     }
   },
   "project": {
+    "analytics": {
+      "title": "Project Analytics",
+      "subtitle": "Track and analyze your project's performance",
+      "error_loading": "Failed to load analytics data. Please try again.",
+      "date_presets": {
+        "7d": "7 days",
+        "30d": "30 days",
+        "90d": "90 days",
+        "custom": "Custom"
+      },
+      "select_date_range": "Select date range",
+      "stats": {
+        "total_events": "Total Events",
+        "unique_users": "Unique Users",
+        "build_storage": "Build Storage",
+        "events_in_period": "Events in selected period",
+        "users_in_period": "Active users in period",
+        "total_storage": "Total build size"
+      },
+      "summary": {
+        "title": "Summary",
+        "project_key": "Project Key",
+        "date_range": "Date Range",
+        "avg_events_per_day": "Avg. Events/Day",
+        "events_per_user": "Events per User"
+      }
+    },
     "settings": {
       "title": "Project Settings",
       "subtitle": "Configure project-level settings and preferences",
@@ -580,6 +607,7 @@
         "api_keys": "API Keys",
         "environments": "Environments",
         "events": "Events",
+        "analytics": "Analytics",
         "settings": "Settings"
       },
       "bundles": {

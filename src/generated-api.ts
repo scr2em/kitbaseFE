@@ -837,6 +837,33 @@ export interface UpdateEventsStatusRequest {
   enabled: boolean;
 }
 
+/** Events analytics data for a project within a time period */
+export interface EventsAnalytics {
+  /**
+   * Total number of events logged in the specified period
+   * @format int64
+   */
+  totalEvents: number;
+  /**
+   * Total number of unique users in the specified period
+   * @format int64
+   */
+  uniqueUsers: number;
+}
+
+/** Project analytics data including events and storage metrics */
+export interface ProjectAnalyticsResponse {
+  /** Project key identifier */
+  projectKey: string;
+  /** Events analytics data for a project within a time period */
+  events: EventsAnalytics;
+  /**
+   * Total bytes used by all builds for this project (regardless of time period)
+   * @format int64
+   */
+  totalBuildSizeBytes: number;
+}
+
 /** Build information */
 export interface BuildResponse {
   /** Unique UUID identifier for the build */
@@ -2431,6 +2458,40 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get analytics data for a project including event metrics and storage usage. - Events data (total events and unique users) is filtered by the from/to date range - Total build size is calculated for all builds regardless of time period Organization context determined by subdomain.
+     *
+     * @tags Projects
+     * @name GetProjectAnalytics
+     * @summary Get project analytics
+     * @request GET:/projects/{projectKey}/analytics
+     * @secure
+     */
+    getProjectAnalytics: (
+      projectKey: string,
+      query: {
+        /**
+         * Start date for events analytics (ISO 8601 format)
+         * @format date-time
+         */
+        from: string;
+        /**
+         * End date for events analytics (ISO 8601 format)
+         * @format date-time
+         */
+        to: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ProjectAnalyticsResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/analytics`,
+        method: "GET",
+        query: query,
+        secure: true,
         format: "json",
         ...params,
       }),

@@ -95,6 +95,21 @@ export function useUpdateProjectSettingsMutation(projectKey: string) {
   });
 }
 
+export const getProjectAnalyticsQueryKey = (projectKey: string, from: string, to: string) =>
+  ['projectAnalytics', projectKey, from, to] as const;
+
+export function useProjectAnalyticsQuery(projectKey: string, from: string, to: string) {
+  return useQuery({
+    queryKey: getProjectAnalyticsQueryKey(projectKey, from, to),
+    queryFn: async () => {
+      const response = await apiClient.projects.getProjectAnalytics(projectKey, { from, to });
+      return response.data;
+    },
+    staleTime: 60 * 1000, // 1 minute
+    enabled: !!projectKey && !!from && !!to,
+  });
+}
+
 
 
 

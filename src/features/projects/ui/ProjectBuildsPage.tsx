@@ -27,6 +27,7 @@ export function ProjectBuildsPage() {
 
   const pageSize = 10;
   const { data, isLoading, isError } = useBuildsQuery(
+    environmentId || '',
     projectKey || '',
     currentPage - 1, // API uses 0-based pagination
     pageSize

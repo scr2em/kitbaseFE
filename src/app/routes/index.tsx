@@ -19,6 +19,7 @@ import {
   EditChangelogPage,
   ProjectSettingsPage,
   ProjectEnvironmentRedirect,
+  ProjectAnalyticsPage,
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { EventsPage, EventDetailPage } from '../../features/events';
@@ -88,6 +89,10 @@ const routes: RouteObject[] = [
               // Settings at project level (no environment)
               { path: 'settings', element: <ProjectDetailPage />, children: [
                 { index: true, element: <ProjectSettingsPage /> },
+              ]},
+              // Analytics at project level (no environment)
+              { path: 'analytics', element: <ProjectDetailPage />, children: [
+                { index: true, element: <ProjectAnalyticsPage /> },
               ]},
               // Environment-scoped routes
               {

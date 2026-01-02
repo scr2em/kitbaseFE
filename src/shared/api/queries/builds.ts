@@ -5,17 +5,19 @@ export const BUILDS_QUERY_KEY = 'builds';
 
 export function useBuildsQuery(
   projectKey: string,
+  environmentId: string,
   page: number,
   size: number,
   sort: 'asc' | 'desc' = 'desc'
 ) {
   return useQuery({
-    queryKey: [BUILDS_QUERY_KEY, projectKey, page, size, sort],
+    queryKey: [BUILDS_QUERY_KEY, projectKey, environmentId, page, size, sort],
     queryFn: async () => {
       const response = await apiClient.projects.getBuilds(projectKey, {
         page,
         size,
         sort,
+        environmentId,
       });
       return response.data;
     },

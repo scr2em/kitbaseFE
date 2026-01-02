@@ -1245,6 +1245,41 @@ components:
           type: boolean
           description: Whether event logging should be enabled for this project
 
+    # Project Analytics
+    EventsAnalytics:
+      type: object
+      description: Events analytics data for a project within a time period
+      required:
+        - totalEvents
+        - uniqueUsers
+      properties:
+        totalEvents:
+          type: integer
+          format: int64
+          description: Total number of events logged in the specified period
+        uniqueUsers:
+          type: integer
+          format: int64
+          description: Total number of unique users in the specified period
+
+    ProjectAnalyticsResponse:
+      type: object
+      description: Project analytics data including events and storage metrics
+      required:
+        - projectKey
+        - events
+        - totalBuildSizeBytes
+      properties:
+        projectKey:
+          type: string
+          description: Project key identifier
+        events:
+          $ref: '#/components/schemas/EventsAnalytics'
+        totalBuildSizeBytes:
+          type: integer
+          format: int64
+          description: Total bytes used by all builds for this project (regardless of time period)
+
     BuildResponse:
       type: object
       description: Build information
@@ -3535,6 +3570,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectSettingsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /projects/{projectKey}/analytics:
+    get:
+      operationId: getProjectAnalytics
+      summary: Get project analytics
+      description: |
+        Get analytics data for a project including event metrics and storage usage.
+        - Events data (total events and unique users) is filtered by the from/to date range
+        - Total build size is calculated for all builds regardless of time period
+        Organization context determined by subdomain.
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key identifier
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Start date for events analytics (ISO 8601 format)
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: End date for events analytics (ISO 8601 format)
+      responses:
+        '200':
+          description: Project analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectAnalyticsResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':

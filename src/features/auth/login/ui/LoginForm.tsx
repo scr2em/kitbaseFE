@@ -6,14 +6,12 @@ import { notifications } from '@mantine/notifications';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { loginSchema, type LoginFormData } from '../model/schema';
 import { useLoginMutation } from '../../../../shared/api/queries/auth';
-import { useAuth } from '../../../../shared/lib/auth/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router';
 
 export function LoginForm() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setIsAuthenticated } = useAuth();
   const loginMutation = useLoginMutation();
 
   const returnUrl = searchParams.get('returnUrl');

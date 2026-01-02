@@ -26,6 +26,7 @@ import {
   Trash2,
   Plus,
   Layers,
+  BarChart3,
 } from 'lucide-react';
 import { useProjectQuery } from '../../../shared/api/queries';
 import { 
@@ -56,8 +57,8 @@ export function ProjectDetailPage() {
   const environments = environmentsData?.pages.flatMap((page) => page.data) || [];
   const currentEnvironment = environments.find((env) => env.id === environmentId);
   
-  // Check if we're on the settings page (no environmentId)
-  const isSettingsPage = !environmentId || location.pathname.endsWith('/settings');
+  // Check if we're on a project-level page (no environmentId) like settings or analytics
+  const isProjectLevelPage = !environmentId || location.pathname.endsWith('/settings') || location.pathname.endsWith('/analytics');
   
   // For navigation, use the first environment if we don't have one selected
   const navEnvironmentId = environmentId || environments[0]?.id;
@@ -92,6 +93,12 @@ export function ProjectDetailPage() {
       path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/api-keys` : '#',
       icon: <Key size={18} />,
       requiresEnvironment: true,
+    },
+    {
+      label: t('projects.detail.nav.analytics'),
+      path: `/projects/${projectKey}/analytics`,
+      icon: <BarChart3 size={18} />,
+      requiresEnvironment: false,
     },
     {
       label: t('projects.detail.nav.settings'),
@@ -140,7 +147,7 @@ export function ProjectDetailPage() {
           // Navigate to another environment or redirect to project root
           const remainingEnvironments = environments.filter((env) => env.id !== currentEnvironment.id);
           if (remainingEnvironments.length > 0) {
-            navigate(`/projects/${projectKey}/${remainingEnvironments[0].id}/ota-updates`);
+            navigate(`/projects/${projectKey}/${remainingEnvironments[0]?.id}/ota-updates`);
           } else {
             navigate(`/projects/${projectKey}`);
           }
@@ -196,7 +203,7 @@ export function ProjectDetailPage() {
         </div>
 
         {/* Environment Selector Dropdown - only show when on environment-scoped pages */}
-        {!isSettingsPage && environments.length > 0 && (
+        {!isProjectLevelPage && environments.length > 0 && (
           <Menu shadow="md" width={260} position="bottom-end">
             <Menu.Target>
               <Button
