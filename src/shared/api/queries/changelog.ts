@@ -4,14 +4,15 @@ import type { CreateChangelogRequest, UpdateChangelogRequest } from '../../../ge
 
 export const getChangelogsQueryKey = (projectKey: string) => ['changelogs', projectKey];
 
-export function useChangelogsQuery(projectKey: string, page: number = 0, size: number = 10) {
+export function useChangelogsQuery(projectKey: string, environmentId?: string, page: number = 0, size: number = 10) {
   return useQuery({
-    queryKey: [...getChangelogsQueryKey(projectKey), page, size],
+    queryKey: [...getChangelogsQueryKey(projectKey),environmentId, page, size],
     queryFn: async () => {
       const response = await apiClient.projects.listChangelogs(projectKey, {
         page,
         size,
         sort: 'desc',
+        environmentId,
       });
       return response.data;
     },

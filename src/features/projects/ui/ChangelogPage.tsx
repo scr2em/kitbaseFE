@@ -30,8 +30,11 @@ export function ChangelogPage() {
   const { showError } = useShowBackendError();
 
   const pageSize = 10;
+  console.log(environmentId);
+  
   const { data, isLoading, isError } = useChangelogsQuery(
     projectKey || '',
+    environmentId,
     currentPage - 1,
     pageSize
   );
