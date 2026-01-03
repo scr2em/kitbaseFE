@@ -6,14 +6,16 @@ import {
   Table,
   Alert,
   ScrollArea,
-  ActionIcon,
   Modal,
   TextInput,
+  Popover,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DatePicker } from '@mantine/dates';
+import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, RefreshCw, Search, Filter, X } from 'lucide-react';
+import { AlertCircle, Search, Filter, X, Calendar } from 'lucide-react';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 import { useAuditLogsQuery } from '../../../shared/api/queries/audit-logs';
 import { usePageTitle } from '../../../shared/hooks';
 import type { AuditLogResponse } from '../../../generated-api';
@@ -403,28 +405,37 @@ interface FiltersState {
   action?: string;
   resourceType?: string;
   userId?: string;
-  startDate?: string | null;
-  endDate?: string | null;
 }
 
-export function AuditTrailPage() {
+interface AuditLogsFilters {
+  action?: string;
+  resourceType?: string;
+  userId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+interface AuditLogsTableProps {
+  filters: AuditLogsFilters;
+}
+
+function getActionBadgeColor(action: string) {
+  if (action.includes('CREATE') || action.includes('UPLOAD')) return 'green';
+  if (action.includes('DELETE') || action.includes('REMOVE')) return 'red';
+  if (action.includes('UPDATE') || action.includes('EDIT')) return 'blue';
+  return 'gray';
+}
+
+function formatAction(action: string) {
+  return action.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+}
+
+function AuditLogsTable({ filters }: AuditLogsTableProps) {
   const { t } = useTranslation();
-  usePageTitle(t('audit_trail.page_title'));
-  
-  const [filters, setFilters] = useState<FiltersState>({});
-  const [showFilters, setShowFilters] = useState(false);
   const [detailModal, setDetailModal] = useState<{
     opened: boolean;
     log: AuditLogResponse | null;
   }>({ opened: false, log: null });
-
-  const queryFilters = {
-    action: filters.action || undefined,
-    resourceType: filters.resourceType || undefined,
-    userId: filters.userId || undefined,
-    startDate: filters.startDate || undefined,
-    endDate: filters.endDate || undefined,
-  };
 
   const {
     data,
@@ -433,30 +444,11 @@ export function AuditTrailPage() {
     isFetchingNextPage,
     isLoading,
     isError,
-    refetch,
-    isFetching,
-  } = useAuditLogsQuery(queryFilters);
-
-  const getActionBadgeColor = (action: string) => {
-    if (action.includes('CREATE') || action.includes('UPLOAD')) return 'green';
-    if (action.includes('DELETE') || action.includes('REMOVE')) return 'red';
-    if (action.includes('UPDATE') || action.includes('EDIT')) return 'blue';
-    return 'gray';
-  };
-
-  const formatAction = (action: string) => {
-    return action.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
-  };
-
-  const clearFilters = () => {
-    setFilters({});
-  };
-
-  const hasActiveFilters = Object.values(filters).some((v) => v !== undefined && v !== null && v !== '');
+  } = useAuditLogsQuery(filters);
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-120px)] flex items-center justify-center">
+      <div className="h-64 flex items-center justify-center">
         <Loader size="lg" />
       </div>
     );
@@ -464,195 +456,101 @@ export function AuditTrailPage() {
 
   if (isError) {
     return (
-      <div>
-        <Alert
-          icon={<AlertCircle size={16} />}
-          title={t('common.error')}
-          color="red"
-        >
-          {t('audit_trail.error_loading')}
-        </Alert>
-      </div>
+      <Alert
+        icon={<AlertCircle size={16} />}
+        title={t('common.error')}
+        color="red"
+      >
+        {t('audit_trail.error_loading')}
+      </Alert>
     );
   }
 
   const allLogs = data?.pages.flatMap((page) => page.data) || [];
-  const totalLogs = data?.pages[0]?.totalElements || 0;
 
   return (
-    <div>
-      <div className="flex flex-col gap-8">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              {t('audit_trail.title')}
-            </h1>
-            <p className="text-lg text-gray-500">
-              {t('audit_trail.subtitle', { count: totalLogs })}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              onClick={() => refetch()}
-              loading={isFetching && !isLoading}
-              aria-label={t('audit_trail.refetch')}
-            >
-              <RefreshCw size={18} />
-            </ActionIcon>
-            <Button
-              leftSection={<Filter size={18} />}
-              variant={showFilters ? 'filled' : 'light'}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              {t('audit_trail.filters.toggle')}
-            </Button>
-          </div>
-        </div>
-
-        {/* Filters */}
-        {showFilters && (
-          <Card withBorder padding="md" radius="md">
-            <div className="flex flex-wrap gap-4 items-end">
-              <TextInput
-                label={t('audit_trail.filters.action_label')}
-                placeholder={t('audit_trail.filters.action_placeholder')}
-                value={filters.action || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value }))}
-                leftSection={<Search size={16} />}
-                className="w-48"
-              />
-              <TextInput
-                label={t('audit_trail.filters.resource_type_label')}
-                placeholder={t('audit_trail.filters.resource_type_placeholder')}
-                value={filters.resourceType || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, resourceType: e.target.value }))}
-                className="w-48"
-              />
-              <TextInput
-                label={t('audit_trail.filters.user_id_label')}
-                placeholder={t('audit_trail.filters.user_id_placeholder')}
-                value={filters.userId || ''}
-                onChange={(e) => setFilters((prev) => ({ ...prev, userId: e.target.value }))}
-                className="w-48"
-              />
-              <DatePickerInput
-                label={t('audit_trail.filters.start_date_label')}
-                placeholder={t('audit_trail.filters.date_placeholder')}
-                value={filters.startDate ? new Date(filters.startDate) : null}
-                onChange={(date) => setFilters((prev) => ({ ...prev, startDate: date ? new Date(date as unknown as string).toISOString() : null }))}
-                clearable
-                className="w-44"
-              />
-              <DatePickerInput
-                label={t('audit_trail.filters.end_date_label')}
-                placeholder={t('audit_trail.filters.date_placeholder')}
-                value={filters.endDate ? new Date(filters.endDate) : null}
-                onChange={(date) => setFilters((prev) => ({ ...prev, endDate: date ? new Date(date as unknown as string).toISOString() : null }))}
-                clearable
-                className="w-44"
-              />
-              {hasActiveFilters && (
-                <Button
-                  variant="subtle"
-                  color="gray"
-                  leftSection={<X size={16} />}
-                  onClick={clearFilters}
-                >
-                  {t('audit_trail.filters.clear')}
-                </Button>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Audit Logs Table */}
-        <Card withBorder padding={0} radius="md">
-          <ScrollArea>
-            <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="md">
-              <Table.Thead>
+    <>
+      <Card withBorder padding={0} radius="md">
+        <ScrollArea>
+          <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="md">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{t('audit_trail.table.action')}</Table.Th>
+                <Table.Th>{t('audit_trail.table.resource')}</Table.Th>
+                <Table.Th>{t('audit_trail.table.timestamp')}</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {allLogs.length === 0 ? (
                 <Table.Tr>
-                  <Table.Th>{t('audit_trail.table.action')}</Table.Th>
-                  <Table.Th>{t('audit_trail.table.resource')}</Table.Th>
-                  <Table.Th>{t('audit_trail.table.timestamp')}</Table.Th>
+                  <Table.Td colSpan={3}>
+                    <div className="text-center py-8 text-gray-500">
+                      {t('audit_trail.no_logs')}
+                    </div>
+                  </Table.Td>
                 </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {allLogs.length === 0 ? (
-                  <Table.Tr>
-                    <Table.Td colSpan={3}>
-                      <div className="text-center py-8 text-gray-500">
-                        {t('audit_trail.no_logs')}
+              ) : (
+                allLogs.map((log) => (
+                  <Table.Tr 
+                    key={log.id} 
+                    className="cursor-pointer"
+                    onClick={() => setDetailModal({ opened: true, log })}
+                  >
+                    <Table.Td>
+                      <Badge
+                        color={getActionBadgeColor(log.action)}
+                        variant="light"
+                        size="sm"
+                      >
+                        {formatAction(log.action)}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <div className="flex items-center gap-2">
+                        {log.resourceType && (
+                          <Badge variant="outline" size="xs" color="gray">
+                            {log.resourceType}
+                          </Badge>
+                        )}
+                        <span className="text-sm">
+                          {log.resourceName || log.resourceId || '-'}
+                        </span>
                       </div>
                     </Table.Td>
+                    <Table.Td>
+                      <span className="text-sm text-gray-500">
+                        {new Date(log.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </Table.Td>
                   </Table.Tr>
-                ) : (
-                  allLogs.map((log) => (
-                    <Table.Tr 
-                      key={log.id} 
-                      className="cursor-pointer"
-                      onClick={() => setDetailModal({ opened: true, log })}
-                    >
-                      <Table.Td>
-                        <Badge
-                          color={getActionBadgeColor(log.action)}
-                          variant="light"
-                          size="sm"
-                        >
-                          {formatAction(log.action)}
-                        </Badge>
-                      </Table.Td>
-                      <Table.Td>
-                        <div className="flex items-center gap-2">
-                          {log.resourceType && (
-                            <Badge variant="outline" size="xs" color="gray">
-                              {log.resourceType}
-                            </Badge>
-                          )}
-                          <span className="text-sm">
-                            {log.resourceName || log.resourceId || '-'}
-                          </span>
-                        </div>
-                      </Table.Td>
-                      <Table.Td>
-                        <span className="text-sm text-gray-500">
-                          {new Date(log.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      </Table.Td>
-                    </Table.Tr>
-                  ))
-                )}
-              </Table.Tbody>
-            </Table>
-          </ScrollArea>
+                ))
+              )}
+            </Table.Tbody>
+          </Table>
+        </ScrollArea>
 
-          {/* Load More Button */}
-          {hasNextPage && (
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex justify-center">
-                <Button
-                  onClick={() => fetchNextPage()}
-                  loading={isFetchingNextPage}
-                  variant="subtle"
-                >
-                  {isFetchingNextPage
-                    ? t('audit_trail.loading_more')
-                    : t('audit_trail.load_more')}
-                </Button>
-              </div>
+        {hasNextPage && (
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex justify-center">
+              <Button
+                onClick={() => fetchNextPage()}
+                loading={isFetchingNextPage}
+                variant="subtle"
+              >
+                {isFetchingNextPage
+                  ? t('audit_trail.loading_more')
+                  : t('audit_trail.load_more')}
+              </Button>
             </div>
-          )}
-        </Card>
-      </div>
+          </div>
+        )}
+      </Card>
 
-      {/* Detail Modal */}
       <Modal
         opened={detailModal.opened}
         onClose={() => setDetailModal({ opened: false, log: null })}
@@ -706,6 +604,196 @@ export function AuditTrailPage() {
           </div>
         )}
       </Modal>
+    </>
+  );
+}
+
+export function AuditTrailPage() {
+  const { t } = useTranslation();
+  usePageTitle(t('audit_trail.page_title'));
+  
+  const [filters, setFilters] = useState<FiltersState>({});
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateRange, setDateRange] = useState<[string | null, string | null]>([
+    dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+    dayjs().format('YYYY-MM-DD'),
+  ]);
+  const [datePickerOpened, { open: openDatePicker, close: closeDatePicker }] = useDisclosure(false);
+
+  const datePresets: Array<{ value: [string, string]; label: string }> = [
+    {
+      value: [dayjs().startOf('day').format('YYYY-MM-DD'), dayjs().endOf('day').format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.today'),
+    },
+    {
+      value: [dayjs().subtract(1, 'day').startOf('day').format('YYYY-MM-DD'), dayjs().subtract(1, 'day').endOf('day').format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.yesterday'),
+    },
+    {
+      value: [dayjs().subtract(7, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.last_7_days'),
+    },
+    {
+      value: [dayjs().subtract(30, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.last_30_days'),
+    },
+    {
+      value: [dayjs().startOf('month').format('YYYY-MM-DD'), dayjs().endOf('month').format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.this_month'),
+    },
+    {
+      value: [dayjs().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'), dayjs().subtract(1, 'month').endOf('month').format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.last_month'),
+    },
+    {
+      value: [dayjs().startOf('year').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+      label: t('audit_trail.filters.date_presets.this_year'),
+    },
+  ];
+
+  const queryFilters: AuditLogsFilters = {
+    action: filters.action || undefined,
+    resourceType: filters.resourceType || undefined,
+    userId: filters.userId || undefined,
+    startDate: dateRange[0] ? dayjs(dateRange[0]).startOf('day').toISOString() : undefined,
+    endDate: dateRange[1] ? dayjs(dateRange[1]).endOf('day').toISOString() : undefined,
+  };
+
+  const handleDateRangeChange = (value: [string | null, string | null]) => {
+    setDateRange(value);
+    if (value[0] && value[1]) {
+      closeDatePicker();
+    }
+  };
+
+  const clearDateRange = () => {
+    setDateRange([null, null]);
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+    setDateRange([null, null]);
+  };
+
+  const formatDateRangeDisplay = () => {
+    if (!dateRange[0] && !dateRange[1]) return null;
+    
+    const fromDate = dateRange[0] ? dayjs(dateRange[0]).format('MMM D, YYYY') : '';
+    const toDate = dateRange[1] ? dayjs(dateRange[1]).format('MMM D, YYYY') : '';
+    
+    if (fromDate && toDate) {
+      return `${fromDate} - ${toDate}`;
+    }
+    return fromDate || toDate;
+  };
+
+  const hasActiveFilters = Object.values(filters).some((v) => v !== undefined && v !== null && v !== '') || dateRange[0] || dateRange[1];
+
+  return (
+    <div>
+      <div className="flex flex-col gap-8">
+        {/* Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
+              {t('audit_trail.title')}
+            </h1>
+            <p className="text-lg text-gray-500">
+              {t('audit_trail.subtitle_simple')}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              leftSection={<Filter size={18} />}
+              variant={showFilters ? 'filled' : 'light'}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {t('audit_trail.filters.toggle')}
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        {showFilters && (
+          <Card withBorder padding="md" radius="md">
+            <div className="flex flex-wrap gap-4 items-end">
+              <TextInput
+                label={t('audit_trail.filters.action_label')}
+                placeholder={t('audit_trail.filters.action_placeholder')}
+                value={filters.action || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value }))}
+                leftSection={<Search size={16} />}
+                className="w-48"
+              />
+              <TextInput
+                label={t('audit_trail.filters.resource_type_label')}
+                placeholder={t('audit_trail.filters.resource_type_placeholder')}
+                value={filters.resourceType || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, resourceType: e.target.value }))}
+                className="w-48"
+              />
+              <TextInput
+                label={t('audit_trail.filters.user_id_label')}
+                placeholder={t('audit_trail.filters.user_id_placeholder')}
+                value={filters.userId || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, userId: e.target.value }))}
+                className="w-48"
+              />
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium">{t('audit_trail.filters.date_range_label')}</span>
+                <Popover
+                  opened={datePickerOpened}
+                  onChange={(opened) => opened ? openDatePicker() : closeDatePicker()}
+                  position="bottom-start"
+                  shadow="md"
+                >
+                  <Popover.Target>
+                    <Button
+                      variant={dateRange[0] || dateRange[1] ? 'light' : 'default'}
+                      leftSection={<Calendar size={16} />}
+                      rightSection={dateRange[0] || dateRange[1] ? (
+                        <X 
+                          size={14} 
+                          className="cursor-pointer hover:text-red-500" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearDateRange();
+                          }}
+                        />
+                      ) : null}
+                      onClick={openDatePicker}
+                    >
+                      {formatDateRangeDisplay() || t('audit_trail.filters.date_range_placeholder')}
+                    </Button>
+                  </Popover.Target>
+                  <Popover.Dropdown p={0}>
+                    <DatePicker
+                      type="range"
+                      value={dateRange}
+                      onChange={handleDateRangeChange}
+                      presets={datePresets}
+                      numberOfColumns={2}
+                    />
+                  </Popover.Dropdown>
+                </Popover>
+              </div>
+              {hasActiveFilters && (
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  leftSection={<X size={16} />}
+                  onClick={clearFilters}
+                >
+                  {t('audit_trail.filters.clear')}
+                </Button>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Audit Logs Table */}
+        <AuditLogsTable filters={queryFilters} />
+      </div>
     </div>
   );
 }

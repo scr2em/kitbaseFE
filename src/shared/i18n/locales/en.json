@@ -1496,6 +1496,7 @@
     "page_title": "Audit Trail",
     "title": "Audit Trail",
     "subtitle": "Track organization activity ({{count}} logs)",
+    "subtitle_simple": "Track organization activity",
     "refetch": "Refresh",
     "no_logs": "No audit logs recorded yet",
     "error_loading": "Failed to load audit logs. Please try again.",
@@ -1509,10 +1510,18 @@
       "resource_type_placeholder": "e.g., PROJECT",
       "user_id_label": "User ID",
       "user_id_placeholder": "Filter by user ID...",
-      "start_date_label": "Start Date",
-      "end_date_label": "End Date",
-      "date_placeholder": "Select date",
-      "clear": "Clear"
+      "date_range_label": "Date Range",
+      "date_range_placeholder": "Select date range",
+      "clear": "Clear",
+      "date_presets": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last_7_days": "Last 7 days",
+        "last_30_days": "Last 30 days",
+        "this_month": "This month",
+        "last_month": "Last month",
+        "this_year": "This year"
+      }
     },
     "table": {
       "action": "Action",
