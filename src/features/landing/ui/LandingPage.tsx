@@ -13,15 +13,19 @@ import {
   Rocket, 
   Code,
   Zap,
-  Shield,
   BarChart3,
   Smartphone,
   RefreshCw,
-  Bell,
   Menu,
   ArrowRight,
   Github,
   ExternalLink,
+  Flag,
+  Users,
+  ChevronRight,
+  Check,
+  ToggleRight,
+  Activity,
 } from 'lucide-react';
 import { usePageTitle, useDarkMode } from '../../../shared/hooks';
 
@@ -33,81 +37,84 @@ export function LandingPage() {
 
   const features = [
     {
-      icon: '📊',
-      lucideIcon: BarChart3,
+      icon: Flag,
+      title: t('landing.features.feature_flags.title'),
+      description: t('landing.features.feature_flags.description'),
+      gradient: 'from-violet-500 to-purple-600',
+      bgGradient: 'from-violet-500/10 to-purple-600/10',
+    },
+    {
+      icon: BarChart3,
       title: t('landing.features.event_tracking.title'),
       description: t('landing.features.event_tracking.description'),
+      gradient: 'from-cyan-500 to-blue-600',
+      bgGradient: 'from-cyan-500/10 to-blue-600/10',
     },
     {
-      icon: '📝',
-      lucideIcon: RefreshCw,
+      icon: RefreshCw,
       title: t('landing.features.ota_updates.title'),
       description: t('landing.features.ota_updates.description'),
+      gradient: 'from-emerald-500 to-teal-600',
+      bgGradient: 'from-emerald-500/10 to-teal-600/10',
     },
     {
-      icon: '🔒',
-      lucideIcon: Shield,
-      title: t('landing.features.fully_typed.title'),
-      description: t('landing.features.fully_typed.description'),
+      icon: Users,
+      title: t('landing.features.segments.title'),
+      description: t('landing.features.segments.description'),
+      gradient: 'from-orange-500 to-amber-600',
+      bgGradient: 'from-orange-500/10 to-amber-600/10',
     },
     {
-      icon: '📱',
-      lucideIcon: Smartphone,
+      icon: Smartphone,
       title: t('landing.features.multi_platform.title'),
       description: t('landing.features.multi_platform.description'),
+      gradient: 'from-pink-500 to-rose-600',
+      bgGradient: 'from-pink-500/10 to-rose-600/10',
     },
     {
-      icon: '🔔',
-      lucideIcon: Bell,
-      title: t('landing.features.notifications.title'),
-      description: t('landing.features.notifications.description'),
-    },
-    {
-      icon: '⚡',
-      lucideIcon: Zap,
-      title: t('landing.features.simple_integration.title'),
-      description: t('landing.features.simple_integration.description'),
+      icon: Activity,
+      title: t('landing.features.analytics.title'),
+      description: t('landing.features.analytics.description'),
+      gradient: 'from-indigo-500 to-violet-600',
+      bgGradient: 'from-indigo-500/10 to-violet-600/10',
     },
   ];
 
   const stats = [
-    { value: '10K+', label: t('landing.stats.events') },
+    { value: '50K+', label: t('landing.stats.flags') },
+    { value: '1M+', label: t('landing.stats.events') },
     { value: '99.9%', label: t('landing.stats.uptime') },
     { value: '<50ms', label: t('landing.stats.latency') },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0a0a0f]">
-      {/* Animated Background Pattern */}
+    <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#09090b]">
+      {/* Subtle Grid Pattern */}
       <div 
-        className="fixed inset-0 pointer-events-none opacity-40"
+        className="fixed inset-0 pointer-events-none opacity-30 dark:opacity-20"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(139, 92, 246, 0.08) 1px, transparent 0)`,
-          backgroundSize: '40px 40px',
+          backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px',
         }}
       />
 
-      {/* Gradient Orbs */}
+      {/* Gradient Glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div 
-          className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl opacity-20"
-          style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)' }}
-        />
-        <div 
-          className="absolute top-1/2 -left-40 w-96 h-96 rounded-full blur-3xl opacity-15"
-          style={{ background: 'linear-gradient(135deg, #f472b6 0%, #8b5cf6 100%)' }}
+          className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] rounded-full opacity-20 dark:opacity-30 blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(6, 182, 212, 0.2) 50%, transparent 70%)' }}
         />
       </div>
 
       {/* Header */}
-      <header className="h-16 border-b sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-[#0a0a0f]/80 border-gray-100 dark:border-white/5">
+      <header className="h-16 border-b sticky top-0 z-50 backdrop-blur-xl bg-[#fafafa]/80 dark:bg-[#09090b]/80 border-zinc-200 dark:border-zinc-800">
         <div className="max-w-6xl mx-auto h-full px-4 sm:px-6">
           <div className="flex justify-between items-center h-full">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
                 <Rocket className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                 Kitbase
               </span>
             </Link>
@@ -116,7 +123,7 @@ export function LandingPage() {
               <Anchor 
                 component={Link} 
                 to="#features" 
-                className="text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                className="text-sm font-medium transition-colors text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                 underline="never"
               >
                 {t('landing.navigation.features')}
@@ -124,17 +131,17 @@ export function LandingPage() {
               <Anchor 
                 href="https://docs.kitbase.dev" 
                 target="_blank"
-                className=" text-sm font-medium transition-colors flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                className="text-sm font-medium transition-colors flex items-center gap-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                 underline="never"
                 display="flex"
               >
                 {t('landing.navigation.docs')}
-             <div>   <ExternalLink className="w-3 h-3" /></div>
+                <ExternalLink className="w-3 h-3" />
               </Anchor>
               <Anchor 
                 component={Link} 
                 to="#pricing" 
-                className="text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                className="text-sm font-medium transition-colors text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                 underline="never"
               >
                 {t('landing.navigation.pricing')}
@@ -163,14 +170,6 @@ export function LandingPage() {
                 >
                   {t('landing.navigation.login')}
                 </Button>
-                {/* <Button 
-                  component={Link} 
-                  to="/signup"
-                  radius="lg"
-                  className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 border-0"
-                >
-                  {t('landing.navigation.signup')}
-                </Button> */}
               </div>
 
               <ActionIcon
@@ -196,7 +195,7 @@ export function LandingPage() {
         position="right"
         size="xs"
         title={
-          <span className="font-bold text-gray-900 dark:text-white">
+          <span className="font-bold text-zinc-900 dark:text-white">
             Kitbase
           </span>
         }
@@ -206,7 +205,7 @@ export function LandingPage() {
             component={Link} 
             to="#features" 
             onClick={closeDrawer}
-            className="text-base font-medium text-gray-700 dark:text-gray-300"
+            className="text-base font-medium text-zinc-700 dark:text-zinc-300"
             underline="never"
           >
             {t('landing.navigation.features')}
@@ -214,7 +213,7 @@ export function LandingPage() {
           <Anchor 
             href="https://docs.kitbase.dev" 
             target="_blank"
-            className="text-base font-medium flex items-center gap-1 text-gray-700 dark:text-gray-300"
+            className="text-base font-medium flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300"
             underline="never"
           >
             {t('landing.navigation.docs')}
@@ -224,12 +223,12 @@ export function LandingPage() {
             component={Link} 
             to="#pricing" 
             onClick={closeDrawer}
-            className="text-base font-medium text-gray-700 dark:text-gray-300"
+            className="text-base font-medium text-zinc-700 dark:text-zinc-300"
             underline="never"
           >
             {t('landing.navigation.pricing')}
           </Anchor>
-          <hr className="my-2 border-gray-200 dark:border-gray-800" />
+          <hr className="my-2 border-zinc-200 dark:border-zinc-800" />
           <Button 
             component={Link} 
             to="/login" 
@@ -254,21 +253,19 @@ export function LandingPage() {
       {/* Main Content */}
       <main className="flex-1 relative z-10">
         {/* Hero Section */}
-        <section className="pt-20 pb-24 sm:pt-28 sm:pb-32">
+        <section className="pt-16 pb-20 sm:pt-24 sm:pb-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-3xl mx-auto">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-8 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-500/20">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
-                </span>
-                {t('landing.hero.badge')}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8 bg-gradient-to-r from-violet-500/10 to-cyan-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20">
+                <Flag className="w-4 h-4" />
+                <span>{t('landing.hero.badge')}</span>
+                <ChevronRight className="w-4 h-4" />
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white">
-                <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-zinc-900 dark:text-white leading-[1.1]">
+                <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
                   {t('landing.hero.title_gradient')}
                 </span>
                 <br />
@@ -276,7 +273,7 @@ export function LandingPage() {
               </h1>
               
               {/* Subtitle */}
-              <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 text-gray-600 dark:text-gray-400">
+              <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 {t('landing.hero.subtitle')}
               </p>
               
@@ -286,9 +283,9 @@ export function LandingPage() {
                   size="lg"
                   component={Link}
                   to="/signup"
-                  radius="lg"
+                  radius="xl"
                   rightSection={<ArrowRight size={18} />}
-                  className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 border-0 px-8 h-12 text-base"
+                  className="bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 border-0 px-8 h-12 text-base shadow-lg shadow-violet-500/25"
                 >
                   {t('landing.hero.cta_primary')}
                 </Button>
@@ -298,89 +295,226 @@ export function LandingPage() {
                   component="a"
                   href="https://github.com/scr2em/kitbase-sdk"
                   target="_blank"
-                  radius="lg"
+                  radius="xl"
                   leftSection={<Github size={18} />}
-                  className="px-8 h-12 text-base border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="px-8 h-12 text-base border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
                   {t('landing.hero.cta_secondary')}
                 </Button>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Code Preview */}
-            <div className="mt-16 sm:mt-20 max-w-2xl mx-auto">
-              <div className="rounded-xl overflow-hidden shadow-2xl bg-gray-900 dark:bg-[#0d0d14] dark:border dark:border-white/10">
-                {/* Window Controls */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800 dark:border-white/5">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="ml-3 text-sm text-gray-500 font-mono">
-                    app.ts
-                  </span>
+         {/* Event Tracking Section */}
+         <section className="py-16 sm:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-6 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20">
+                  <BarChart3 className="w-4 h-4" />
+                  <span>{t('landing.showcase.events.label')}</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
+                  {t('landing.showcase.events.title')}
+                </h2>
+                <p className="text-lg mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  {t('landing.showcase.events.description')}
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    t('landing.showcase.events.benefit_1'),
+                    t('landing.showcase.events.benefit_2'),
+                    t('landing.showcase.events.benefit_3'),
+                    t('landing.showcase.events.benefit_4'),
+                  ].map((benefit, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-zinc-700 dark:text-zinc-300">
+                        {benefit}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Events Code Preview */}
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-cyan-500/10 bg-[#0f0f17] border border-zinc-800">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-[#0a0a10]">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  <span className="ml-3 text-sm text-zinc-500 font-mono">app.ts</span>
                 </div>
                 
-                {/* Code Content */}
                 <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
                   <div>
-                    <span className="text-fuchsia-400">import</span>
-                    <span className="text-gray-300"> {'{ Kitbase }'} </span>
-                    <span className="text-fuchsia-400">from</span>
-                    <span className="text-green-400"> '@kitbase/sdk/events'</span>
-                    <span className="text-gray-300">;</span>
+                    <span className="text-pink-400">import</span>
+                    <span className="text-zinc-300"> {'{ Kitbase }'} </span>
+                    <span className="text-pink-400">from</span>
+                    <span className="text-emerald-400"> '@kitbase/sdk/events'</span>
+                    <span className="text-zinc-400">;</span>
                   </div>
                   
                   <div className="mt-4">
-                    <span className="text-fuchsia-400">const</span>
-                    <span className="text-gray-300"> kitbase = </span>
-                    <span className="text-fuchsia-400">new</span>
+                    <span className="text-pink-400">const</span>
+                    <span className="text-zinc-300"> kitbase = </span>
+                    <span className="text-pink-400">new</span>
                     <span className="text-cyan-400"> Kitbase</span>
-                    <span className="text-gray-300">{'({'}</span>
+                    <span className="text-zinc-300">{'({'}</span>
                   </div>
-                  <div className="pl-4 text-gray-300">
-                    token: <span className="text-green-400">'&lt;YOUR_API_KEY&gt;'</span>,
+                  <div className="pl-4 text-zinc-300">
+                    token: <span className="text-emerald-400">'pk_live_...'</span>,
                   </div>
-                  <div className="text-gray-300">{'});'}</div>
+                  <div className="text-zinc-300">{'});'}</div>
                   
-                  <div className="mt-4">
-                    <span className="text-fuchsia-400">await</span>
-                    <span className="text-gray-300"> kitbase.</span>
-                    <span className="text-yellow-400">track</span>
-                    <span className="text-gray-300">{'({'}</span>
+                  <div className="mt-4 text-zinc-500">{'// Track a custom event'}</div>
+                  <div>
+                    <span className="text-pink-400">await</span>
+                    <span className="text-zinc-300"> kitbase.</span>
+                    <span className="text-amber-400">track</span>
+                    <span className="text-zinc-300">{'({'}</span>
                   </div>
-                  <div className="pl-4 text-gray-300">
-                    channel: <span className="text-green-400">'payments'</span>,
+                  <div className="pl-4 text-zinc-300">
+                    channel: <span className="text-emerald-400">'payments'</span>,
                   </div>
-                  <div className="pl-4 text-gray-300">
-                    event: <span className="text-green-400">'New Subscription'</span>,
+                  <div className="pl-4 text-zinc-300">
+                    event: <span className="text-emerald-400">'subscription_created'</span>,
                   </div>
-                  <div className="pl-4 text-gray-300 ">
+                  <div className="pl-4 text-zinc-300">
                     tags: {'{'}
                   </div>
-                  <div className="pl-8 text-gray-300">
-                    plan: <span className="text-green-400">'pro'</span>,
+                  <div className="pl-8 text-zinc-300">
+                    plan: <span className="text-emerald-400">'pro'</span>,
                   </div>
-                  <div className="pl-8 text-gray-300">
-                    source: <span className="text-green-400">'landing_page'</span>
+                  <div className="pl-8 text-zinc-300">
+                    amount: <span className="text-amber-400">99</span>
                   </div>
-                  <div className="pl-4 text-gray-300">{'}'}</div>
-                  <div className="text-gray-300">{'});'}</div>
+                  <div className="pl-4 text-zinc-300">{'}'}</div>
+                  <div className="text-zinc-300">{'});'}</div>
                   
-                  <div className="mt-4 text-green-400">
-                    ✓ Event tracked successfully
+                  <div className="mt-4 flex items-center gap-2 text-emerald-400">
+                    <Check className="w-4 h-4" />
+                    <span>Event tracked successfully</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+        {/* Feature Flags Section */}
+        <section className="py-16 sm:py-24 bg-white dark:bg-zinc-900/30 border-y border-zinc-200 dark:border-zinc-800">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Feature Flags Code Preview */}
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-violet-500/10 bg-[#0f0f17] border border-zinc-800 order-2 lg:order-1">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-[#0a0a10]">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  <span className="ml-3 text-sm text-zinc-500 font-mono">app.ts</span>
+                </div>
+                
+                <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
+                  <div>
+                    <span className="text-pink-400">import</span>
+                    <span className="text-zinc-300"> {'{ KitbaseFlags }'} </span>
+                    <span className="text-pink-400">from</span>
+                    <span className="text-emerald-400"> '@kitbase/sdk/flags'</span>
+                    <span className="text-zinc-400">;</span>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <span className="text-pink-400">const</span>
+                    <span className="text-zinc-300"> flags = </span>
+                    <span className="text-pink-400">new</span>
+                    <span className="text-cyan-400"> KitbaseFlags</span>
+                    <span className="text-zinc-300">{'({'}</span>
+                  </div>
+                  <div className="pl-4 text-zinc-300">
+                    token: <span className="text-emerald-400">'pk_live_...'</span>,
+                  </div>
+                  <div className="text-zinc-300">{'});'}</div>
+                  
+                  <div className="mt-4 text-zinc-500">{'// Evaluate a feature flag'}</div>
+                  <div>
+                    <span className="text-pink-400">const</span>
+                    <span className="text-zinc-300"> showNewUI = </span>
+                    <span className="text-pink-400">await</span>
+                    <span className="text-zinc-300"> flags.</span>
+                    <span className="text-amber-400">evaluate</span>
+                    <span className="text-zinc-300">{'('}</span>
+                  </div>
+                  <div className="pl-4 text-emerald-400">'new_dashboard_ui'</div>
+                  <div className="text-zinc-300">{');'}</div>
+                  
+                  <div className="mt-4 text-zinc-500">{'// With user context for targeting'}</div>
+                  <div>
+                    <span className="text-pink-400">const</span>
+                    <span className="text-zinc-300"> premiumFeature = </span>
+                    <span className="text-pink-400">await</span>
+                    <span className="text-zinc-300"> flags.</span>
+                    <span className="text-amber-400">evaluate</span>
+                    <span className="text-zinc-300">{'('}</span>
+                  </div>
+                  <div className="pl-4 text-emerald-400">'premium_analytics'</div>
+                  <div className="pl-4 text-zinc-300">{', { '}<span className="text-cyan-300">userId</span>: <span className="text-emerald-400">'user_123'</span>{' }'}</div>
+                  <div className="text-zinc-300">{');'}</div>
+                  
+                  <div className="mt-4 flex items-center gap-2 text-emerald-400">
+                    <ToggleRight className="w-4 h-4" />
+                    <span>Flag evaluated: true</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* Stats */}
-            <div className="mt-16 sm:mt-20 grid grid-cols-3 gap-8 max-w-xl mx-auto">
+              <div className="order-1 lg:order-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-6 bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20">
+                  <Flag className="w-4 h-4" />
+                  <span>{t('landing.showcase.feature_flags.label')}</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
+                  {t('landing.showcase.feature_flags.title')}
+                </h2>
+                <p className="text-lg mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  {t('landing.showcase.feature_flags.description')}
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    t('landing.showcase.feature_flags.benefit_1'),
+                    t('landing.showcase.feature_flags.benefit_2'),
+                    t('landing.showcase.feature_flags.benefit_3'),
+                    t('landing.showcase.feature_flags.benefit_4'),
+                  ].map((benefit, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-zinc-700 dark:text-zinc-300">
+                        {benefit}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+     
+
+        {/* Stats Section */}
+        <section className="py-12 sm:py-16 bg-zinc-50 dark:bg-zinc-900/30 border-y border-zinc-200 dark:border-zinc-800">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold mb-1 text-gray-900 dark:text-white">
+                <div key={index} className="text-center p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                  <div className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-zinc-500 dark:text-zinc-400">
                     {stat.label}
                   </div>
                 </div>
@@ -390,13 +524,13 @@ export function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20 sm:py-28 bg-gray-50/50 dark:bg-[#0d0d14]/50">
+        <section id="features" className="py-16 sm:py-24">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
                 {t('landing.features.title')}
               </h2>
-              <p className="text-lg max-w-2xl mx-auto text-gray-600 dark:text-gray-400">
+              <p className="text-lg max-w-2xl mx-auto text-zinc-600 dark:text-zinc-400">
                 {t('landing.features.subtitle')}
               </p>
             </div>
@@ -405,13 +539,15 @@ export function LandingPage() {
               {features.map((feature, index) => (
                 <div
                   key={index}
-                  className="group p-6 rounded-xl transition-all duration-300 hover:-translate-y-1 bg-white dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 hover:shadow-lg hover:shadow-gray-100/50 dark:hover:bg-white/[0.04] dark:hover:border-white/10 dark:hover:shadow-none"
+                  className="group relative p-6 rounded-2xl transition-all duration-300 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xl hover:shadow-zinc-200/50 dark:hover:shadow-none"
                 >
-                  <div className="text-3xl mb-4">{feature.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.bgGradient} dark:${feature.bgGradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className={`w-6 h-6 bg-gradient-to-r ${feature.gradient} [&>*]:stroke-violet-500`} style={{ color: 'inherit' }} />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 text-zinc-900 dark:text-white">
                     {feature.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                  <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                     {feature.description}
                   </p>
                 </div>
@@ -421,14 +557,14 @@ export function LandingPage() {
         </section>
 
         {/* Integration Section */}
-        <section className="py-20 sm:py-28">
+        <section className="py-16 sm:py-24 bg-white dark:bg-zinc-900/30 border-y border-zinc-200 dark:border-zinc-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-zinc-900 dark:text-white">
                   {t('landing.integration.title')}
                 </h2>
-                <p className="text-lg mb-8 text-gray-600 dark:text-gray-400">
+                <p className="text-lg mb-8 text-zinc-600 dark:text-zinc-400">
                   {t('landing.integration.description')}
                 </p>
                 <ul className="space-y-4">
@@ -440,33 +576,38 @@ export function LandingPage() {
                   ].map((benefit, index) => (
                     <li key={index} className="flex items-center gap-3">
                       <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <Check className="w-3 h-3 text-white" />
                       </div>
-                      <span className="text-gray-700 dark:text-gray-300">
+                      <span className="text-zinc-700 dark:text-zinc-300">
                         {benefit}
                       </span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="flex justify-center gap-6 flex-wrap">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
-                  { name: 'React Native', icon: Code },
-                  { name: 'Flutter', icon: Smartphone },
-                  { name: 'TypeScript', icon: Code },
-                  { name: 'REST API', icon: Zap },
+                  { name: 'React', icon: Code, gradient: 'from-sky-400 to-cyan-500', href: 'https://docs.kitbase.dev/sdks/react.html' },
+                  { name: 'React Native', icon: Smartphone, gradient: 'from-cyan-500 to-blue-500', href: 'https://docs.kitbase.dev/sdks/react.html' },
+                  { name: 'Flutter', icon: Smartphone, gradient: 'from-blue-500 to-indigo-500', href: 'https://docs.kitbase.dev/sdks/dart.html' },
+                  { name: 'TypeScript', icon: Code, gradient: 'from-violet-500 to-purple-500', href: 'https://docs.kitbase.dev/sdks/typescript.html' },
+                  { name: 'REST API', icon: Zap, gradient: 'from-amber-500 to-orange-500', href: 'https://docs.kitbase.dev/reference/api.html' },
+                  { name: 'PHP', icon: Code, gradient: 'from-emerald-500 to-green-600', href: 'https://docs.kitbase.dev/sdks/php.html' },
                 ].map((tech, index) => (
-                  <div 
+                  <a 
                     key={index}
-                    className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5"
+                    href={tech.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer"
                   >
-                    <tech.icon className="w-8 h-8 text-violet-500 dark:text-violet-400" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${tech.gradient} flex items-center justify-center`}>
+                      <tech.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                       {tech.name}
                     </span>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -474,27 +615,36 @@ export function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 sm:py-28 bg-gray-50/50 dark:bg-[#0d0d14]/50">
+        <section className="py-16 sm:py-24">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="relative overflow-hidden rounded-2xl p-8 sm:p-12 text-center bg-gradient-to-br from-violet-50 to-cyan-50 dark:from-violet-500/10 dark:to-cyan-500/10 border border-violet-100/50 dark:border-white/10">
+            <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center bg-gradient-to-br from-violet-600 to-cyan-600">
               {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-500/20 to-transparent rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-cyan-500/20 to-transparent rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+              <div className="absolute inset-0 opacity-30">
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+                    backgroundSize: '32px 32px',
+                  }}
+                />
+              </div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
               
               <div className="relative z-10 max-w-2xl mx-auto">
-                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white">
                   {t('landing.cta.title')}
                 </h2>
-                <p className="text-lg mb-8 text-gray-600 dark:text-gray-400">
+                <p className="text-lg mb-8 text-white/80">
                   {t('landing.cta.subtitle')}
                 </p>
                 <Button
                   size="lg"
                   component={Link}
                   to="/signup"
-                  radius="lg"
+                  radius="xl"
                   rightSection={<ArrowRight size={18} />}
-                  className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 border-0 px-8 h-12 text-base"
+                  className="bg-white text-violet-600 hover:bg-zinc-100 border-0 px-8 h-12 text-base shadow-lg"
                 >
                   {t('landing.cta.button')}
                 </Button>
@@ -505,14 +655,14 @@ export function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-12 bg-white dark:bg-[#0a0a0f] border-gray-100 dark:border-white/5">
+      <footer className="border-t py-12 bg-white dark:bg-[#09090b] border-zinc-200 dark:border-zinc-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
                 <Rocket className="w-3 h-3 text-white" />
               </div>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-zinc-500">
                 © {new Date().getFullYear()} Kitbase. {t('landing.footer.rights')}
               </span>
             </div>
@@ -520,14 +670,14 @@ export function LandingPage() {
             <div className="flex items-center gap-6">
               <Anchor 
                 href="#" 
-                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                 underline="never"
               >
                 {t('landing.footer.privacy')}
               </Anchor>
               <Anchor 
                 href="#" 
-                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                 underline="never"
               >
                 {t('landing.footer.terms')}
@@ -535,7 +685,7 @@ export function LandingPage() {
               <Anchor 
                 href="https://github.com/scr2em/kitbase-sdk" 
                 target="_blank"
-                className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                 underline="never"
               >
                 <Github size={18} />
