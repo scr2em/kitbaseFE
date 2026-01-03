@@ -47,11 +47,14 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
             <p className="text-sm font-medium">
               {t('projects.detail.api_keys.created.key_label')}
             </p>
+
+            
             <CopyButton value={apiKey}>
               {({ copied, copy }) => (
                 <Button
+                  type="button"
                   variant="light"
-                  onClick={copy}
+                  onClick={() => copy()}
                   color={copied ? 'green' : 'blue'}
                   size="xs"
                 >

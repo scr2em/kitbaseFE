@@ -1,40 +1,31 @@
-import { Modal, Button } from '@mantine/core';
+import { Modal, Button, Alert } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { Info } from 'lucide-react';
 import { createApiKeySchema, type CreateApiKeyFormData } from '../model/api-key-schema';
-import { ControlledTextInput, ControlledSelect } from '../../../shared/controlled-form-fields';
-import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/environments';
+import { ControlledTextInput } from '../../../shared/controlled-form-fields';
 
 interface CreateApiKeyModalProps {
   opened: boolean;
   onClose: () => void;
-  onSubmit: (name: string, environmentId: string) => void;
+  onSubmit: (name: string) => void;
   isLoading: boolean;
-  projectKey: string;
-  defaultEnvironmentId?: string;
+  environmentName: string;
 }
 
-export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projectKey, defaultEnvironmentId }: CreateApiKeyModalProps) {
+export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, environmentName }: CreateApiKeyModalProps) {
   const { t } = useTranslation();
-  const { data: environmentsData, isLoading: isLoadingEnvironments } = useEnvironmentsInfiniteQuery(projectKey);
-
-  const environments = environmentsData?.pages.flatMap((page) => page.data) || [];
-  const environmentOptions = environments.map((env) => ({
-    value: env.id,
-    label: env.name,
-  }));
 
   const form = useForm<CreateApiKeyFormData>({
     resolver: zodResolver(createApiKeySchema),
     defaultValues: {
       name: '',
-      environmentId: defaultEnvironmentId || '',
     },
   });
 
   const handleSubmit = (data: CreateApiKeyFormData) => {
-    onSubmit(data.name, data.environmentId);
+    onSubmit(data.name);
   };
 
   const handleClose = () => {
@@ -51,23 +42,20 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projec
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <div className="flex flex-col gap-4">
+          <Alert
+            icon={<Info size={16} />}
+            color="blue"
+            variant="light"
+          >
+            {t('projects.detail.api_keys.create.environment_info', { environmentName })}
+          </Alert>
+
           <ControlledTextInput
             control={form.control}
             name="name"
             label={t('projects.detail.api_keys.create.name_label')}
             placeholder={t('projects.detail.api_keys.create.name_placeholder')}
             required
-          />
-
-          <ControlledSelect
-            control={form.control}
-            name="environmentId"
-            label={t('projects.detail.api_keys.create.environment_label')}
-            placeholder={t('projects.detail.api_keys.create.environment_placeholder')}
-            options={environmentOptions}
-            disabled={isLoadingEnvironments}
-            required
-            searchable
           />
 
           <Button
@@ -83,13 +71,3 @@ export function CreateApiKeyModal({ opened, onClose, onSubmit, isLoading, projec
     </Modal>
   );
 }
-
-
-
-
-
-
-
-
-
-

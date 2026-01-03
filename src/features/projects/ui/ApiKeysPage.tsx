@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { MoreVertical, Trash2, AlertCircle, Key } from 'lucide-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { useApiKeysQuery, useCreateApiKeyMutation, useDeleteApiKeyMutation } from '../../../shared/api/queries';
+import { useApiKeysQuery, useCreateApiKeyMutation, useDeleteApiKeyMutation, useEnvironmentsInfiniteQuery } from '../../../shared/api/queries';
 import { useShowBackendError } from '../../../shared/hooks';
 import { CreateApiKeyModal } from './CreateApiKeyModal';
 import { ApiKeyCreatedModal } from './ApiKeyCreatedModal';
@@ -34,13 +34,20 @@ export function ApiKeysPage() {
     currentPage - 1, // API uses 0-based pagination
     pageSize
   );
+  const { data: environmentsData } = useEnvironmentsInfiniteQuery(projectKey || '');
   const createApiKeyMutation = useCreateApiKeyMutation();
   const deleteApiKeyMutation = useDeleteApiKeyMutation();
+
+  const environments = environmentsData?.pages.flatMap((page) => page.data) || [];
+  const currentEnvironment = environments.find((env) => env.id === environmentId);
+  const environmentName = currentEnvironment?.name || '';
 
   const apiKeys = data?.data || [];
   const totalPages = data?.totalPages || 0;
 
-  const handleCreateKey = async (name: string, environmentId: string) => {
+  const handleCreateKey = async (name: string) => {
+    if (!environmentId) return;
+    
     try {
       const result = await createApiKeyMutation.mutateAsync({
         projectKey: projectKey || '',
@@ -241,8 +248,7 @@ export function ApiKeysPage() {
           onClose={() => setCreateModalOpened(false)}
           onSubmit={handleCreateKey}
           isLoading={createApiKeyMutation.isPending}
-          projectKey={projectKey || ''}
-          defaultEnvironmentId={environmentId}
+          environmentName={environmentName}
         />
       )}
       {createdKeyData && (
@@ -256,13 +262,3 @@ export function ApiKeysPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-

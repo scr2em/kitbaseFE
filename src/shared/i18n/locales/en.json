@@ -672,14 +672,12 @@
           "modal_title": "Create API Key",
           "name_label": "Key Name",
           "name_placeholder": "Enter a descriptive name for this key",
-          "environment_label": "Environment",
-          "environment_placeholder": "Select an environment",
+          "environment_info": "You are creating an API key for the \"{{environmentName}}\" environment.",
           "submit_button": "Create Key",
           "cancel_button": "Cancel",
           "success_message": "API key created successfully",
           "validation": {
-            "name_required": "Key name is required",
-            "environment_required": "Environment is required"
+            "name_required": "Key name is required"
           }
         },
         "created": {
