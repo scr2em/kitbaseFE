@@ -11,7 +11,7 @@ export function useEnvironmentsInfiniteQuery(projectKey: string) {
       const response = await apiClient.projects.listEnvironments(projectKey, {
         page: pageParam,
         size: 20,
-        sort: 'desc',
+        sort: 'asc',
       });
       return response.data;
     },
@@ -68,9 +68,3 @@ export function useDeleteEnvironmentMutation(projectKey: string) {
     },
   });
 }
-
-
-
-
-
-
