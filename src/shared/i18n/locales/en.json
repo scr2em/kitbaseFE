@@ -1087,7 +1087,8 @@
     "create": {
       "title": "Create Feature Flag",
       "submit_button": "Create Flag",
-      "success_message": "Feature flag created successfully"
+      "success_message": "Feature flag created successfully",
+      "auto_create_other_environments_hint": "This flag will also be created automatically in your other environments."
     },
     "update": {
       "title": "Update Feature Flag",

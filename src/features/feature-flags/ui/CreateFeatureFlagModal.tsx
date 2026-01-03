@@ -1,8 +1,9 @@
-import { Modal, Button, Textarea, Select } from '@mantine/core';
+import { Modal, Button, Textarea, Select, Alert } from '@mantine/core';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { notifications } from '@mantine/notifications';
+import { Info } from 'lucide-react';
 import { useCreateFeatureFlagMutation } from '../../../shared/api/queries/feature-flags';
 import { useShowBackendError } from '../../../shared/hooks';
 import { ControlledTextInput } from '../../../shared/controlled-form-fields';
@@ -149,6 +150,15 @@ export function CreateFeatureFlagModal({
             />
           )}
         />
+
+        <Alert
+          icon={<Info size={16} />}
+          color="blue"
+          variant="light"
+          className="text-sm"
+        >
+          {t('feature_flags.create.auto_create_other_environments_hint')}
+        </Alert>
 
         <div className="flex justify-end gap-3 mt-4">
           <Button variant="subtle" onClick={handleClose}>
