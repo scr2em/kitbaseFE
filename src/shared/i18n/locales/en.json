@@ -223,7 +223,8 @@
     "coming_soon": "Coming Soon",
     "cancel": "Cancel",
     "true": "True",
-    "false": "False"
+    "false": "False",
+    "refresh": "Refresh"
   },
   "navigation": {
     "docs": "Documentation",

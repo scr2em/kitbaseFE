@@ -1,4 +1,4 @@
-import { Card, Loader, Alert, SegmentedControl } from '@mantine/core';
+import { Card, Loader, Alert, SegmentedControl, ActionIcon, Tooltip } from '@mantine/core';
 import { DatePickerInput, type DatesRangeValue } from '@mantine/dates';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import {
   Users,
   Layers,
   Calendar,
+  RefreshCw,
 } from 'lucide-react';
 import { useFeatureFlagUsageQuery } from '../../../shared/api/queries/feature-flags';
 import { useParams } from 'react-router';
@@ -97,7 +98,7 @@ export function FeatureFlagsAnalyticsPage() {
 
   const { fromStr, toStr } = dateRangeStrings;
 
-  const { data, isLoading, isError } = useFeatureFlagUsageQuery({projectKey: projectKey || '', fromDate: fromStr, toDate: toStr});
+  const { data, isLoading, isError, refetch, isFetching } = useFeatureFlagUsageQuery({projectKey: projectKey || '', fromDate: fromStr, toDate: toStr});
 
   if (isLoading) {
     return (
@@ -145,6 +146,16 @@ export function FeatureFlagsAnalyticsPage() {
             ]}
             size="xs"
           />
+          <Tooltip label={t('common.refresh')}>
+            <ActionIcon
+              variant="light"
+              onClick={() => refetch()}
+              loading={isFetching}
+              aria-label={t('common.refresh')}
+            >
+              <RefreshCw size={16} />
+            </ActionIcon>
+          </Tooltip>
         </div>
       </div>
 
