@@ -4946,7 +4946,7 @@ export class Api<
   };
   featureFlags = {
     /**
-     * @description Get usage statistics for feature flags in the current organization. Returns evaluation counts, snapshot counts, and MAU (monthly active users) for the specified date range. Useful for billing and analytics dashboards.
+     * @description Get usage statistics for feature flags in the current organization or a specific project. Returns evaluation counts, snapshot counts, and MAU (monthly active users) for the specified date range. Useful for billing and analytics dashboards.
      *
      * @tags Feature Flags
      * @name GetFeatureFlagUsage
@@ -4956,6 +4956,8 @@ export class Api<
      */
     getFeatureFlagUsage: (
       query: {
+        /** Optional project ID to filter usage by a specific project. If not provided, returns organization-wide usage. */
+        projectId?: string;
         /**
          * Start date for the usage period (inclusive, YYYY-MM-DD)
          * @format date

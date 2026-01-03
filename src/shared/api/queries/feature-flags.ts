@@ -105,17 +105,18 @@ export function useUpdateFeatureFlagRulesMutation(projectKey: string, environmen
 
 export const FEATURE_FLAG_USAGE_QUERY_KEY = 'feature-flag-usage';
 
-export function useFeatureFlagUsageQuery(fromDate: string, toDate: string) {
+export function useFeatureFlagUsageQuery({projectKey, fromDate, toDate}: {projectKey: string, fromDate: string, toDate: string}) {
   return useQuery({
-    queryKey: [FEATURE_FLAG_USAGE_QUERY_KEY, fromDate, toDate],
+    queryKey: [FEATURE_FLAG_USAGE_QUERY_KEY, projectKey, fromDate, toDate],
     queryFn: async () => {
       const response = await apiClient.featureFlags.getFeatureFlagUsage({
+        projectId: projectKey,
         fromDate,
         toDate,
       });
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
-    enabled: !!fromDate && !!toDate,
+    enabled: !!projectKey && !!fromDate && !!toDate,
   });
 }

@@ -11,6 +11,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { useFeatureFlagUsageQuery } from '../../../shared/api/queries/feature-flags';
+import { useParams } from 'react-router';
 
 type DatePreset = '7d' | '30d' | '90d' | 'custom';
 type DateRange = DatesRangeValue;
@@ -70,7 +71,8 @@ function StatCard({ icon, label, value, description, colorClass = 'bg-blue-50 te
 
 export function FeatureFlagsAnalyticsPage() {
   const { t } = useTranslation();
-
+  const { projectKey } = useParams<{ projectKey: string }>();
+  
   const [datePreset, setDatePreset] = useState<DatePreset>('30d');
   const [customDateRange, setCustomDateRange] = useState<DateRange>([null, null]);
   const [dateRangeStrings, setDateRangeStrings] = useState(initialDateRange);
@@ -95,7 +97,7 @@ export function FeatureFlagsAnalyticsPage() {
 
   const { fromStr, toStr } = dateRangeStrings;
 
-  const { data, isLoading, isError } = useFeatureFlagUsageQuery(fromStr, toStr);
+  const { data, isLoading, isError } = useFeatureFlagUsageQuery({projectKey: projectKey || '', fromDate: fromStr, toDate: toStr});
 
   if (isLoading) {
     return (

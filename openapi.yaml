@@ -7635,7 +7635,7 @@ paths:
       operationId: getFeatureFlagUsage
       summary: Get feature flag usage statistics
       description: |
-        Get usage statistics for feature flags in the current organization.
+        Get usage statistics for feature flags in the current organization or a specific project.
         Returns evaluation counts, snapshot counts, and MAU (monthly active users) for the specified date range.
         Useful for billing and analytics dashboards.
       tags:
@@ -7644,6 +7644,12 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional project ID to filter usage by a specific project. If not provided, returns organization-wide usage.
         - name: fromDate
           in: query
           required: true
