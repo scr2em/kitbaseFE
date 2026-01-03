@@ -3,13 +3,21 @@ import { apiClient } from '../client';
 
 export const BUILDS_QUERY_KEY = 'builds';
 
-export function useBuildsQuery(
-  projectKey: string,
-  environmentId: string,
-  page: number,
-  size: number,
-  sort: 'asc' | 'desc' = 'desc'
-) {
+interface UseBuildsQueryParams {
+  projectKey: string;
+  environmentId: string;
+  page: number;
+  size: number;
+  sort?: 'asc' | 'desc';
+}
+
+export function useBuildsQuery({
+  projectKey,
+  environmentId,
+  page,
+  size,
+  sort = 'desc',
+}: UseBuildsQueryParams) {
   return useQuery({
     queryKey: [BUILDS_QUERY_KEY, projectKey, environmentId, page, size, sort],
     queryFn: async () => {

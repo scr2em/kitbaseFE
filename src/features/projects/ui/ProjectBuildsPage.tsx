@@ -26,12 +26,12 @@ export function ProjectBuildsPage() {
   const { showError } = useShowBackendError();
 
   const pageSize = 10;
-  const { data, isLoading, isError } = useBuildsQuery(
-    environmentId || '',
-    projectKey || '',
-    currentPage - 1, // API uses 0-based pagination
-    pageSize
-  );
+  const { data, isLoading, isError } = useBuildsQuery({
+    projectKey: projectKey || '',
+    environmentId: environmentId || '',
+    page: currentPage - 1, // API uses 0-based pagination
+    size: pageSize,
+  });
   const deleteBuildMutation = useDeleteBuildMutation();
 
   const builds = data?.data || [];

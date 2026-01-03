@@ -34,7 +34,13 @@ export function OtaUpdateFormPage() {
   const createMutation = useCreateOtaUpdateMutation(projectKey || '');
   const updateMutation = useUpdateOtaUpdateMutation(projectKey || '', otaUpdateId || '');
 
-  const { data: buildsData, isLoading: isLoadingBuilds } = useBuildsQuery(projectKey || '', environmentId || '', 0, 100, 'desc');
+  const { data: buildsData, isLoading: isLoadingBuilds } = useBuildsQuery({
+    projectKey: projectKey || '',
+    environmentId: environmentId || '',
+    page: 0,
+    size: 100,
+    sort: 'desc',
+  });
   const { data: environmentsData, isLoading: isLoadingEnvironments } = useEnvironmentsInfiniteQuery(projectKey || '');
 
   const { control, handleSubmit, reset } = useForm<CreateOtaUpdateFormData>({
