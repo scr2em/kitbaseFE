@@ -1047,6 +1047,33 @@
       "segments": "Segments",
       "analytics": "Analytics"
     },
+    "analytics": {
+      "title": "Feature Flag Analytics",
+      "subtitle": "Track and analyze feature flag usage across your organization",
+      "error_loading": "Failed to load analytics data. Please try again.",
+      "date_presets": {
+        "7d": "7 days",
+        "30d": "30 days",
+        "90d": "90 days",
+        "custom": "Custom"
+      },
+      "select_date_range": "Select date range",
+      "stats": {
+        "evaluations": "Evaluations",
+        "evaluations_desc": "Single flag evaluations in period",
+        "snapshots": "Snapshots",
+        "snapshots_desc": "Bulk evaluations in period",
+        "mau": "Active Users",
+        "mau_desc": "Unique identities this period"
+      },
+      "summary": {
+        "title": "Summary",
+        "date_range": "Date Range",
+        "total_requests": "Total Requests",
+        "avg_daily_evaluations": "Avg. Daily Evaluations",
+        "evaluations_per_user": "Evaluations per User"
+      }
+    },
     "subtitle": "Manage feature flags ({{count}} flags)",
     "create_button": "Create Flag",
     "create_first": "Create Your First Feature Flag",
