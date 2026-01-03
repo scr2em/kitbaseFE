@@ -112,7 +112,8 @@ export type PermissionCode =
   | "feature_flag.view"
   | "feature_flag.create"
   | "feature_flag.update"
-  | "feature_flag.delete";
+  | "feature_flag.delete"
+  | "audit.read";
 
 /** Target platform for the OTA update */
 export type OtaTargetPlatformEnum = "ios" | "android" | "both";
@@ -1320,44 +1321,556 @@ export interface PaginatedChangelogResponse {
   totalPages: number;
 }
 
-/** Audit log entry */
-export interface AuditLogResponse {
+/** Audit log entry - type varies based on action */
+export type AuditLogResponse =
+  | ApiKeyCreatedAuditLog
+  | ApiKeyDeletedAuditLog
+  | ProjectCreatedAuditLog
+  | ProjectUpdatedAuditLog
+  | ProjectDeletedAuditLog
+  | BuildUploadedAuditLog
+  | BuildDeletedAuditLog
+  | ChangelogCreatedAuditLog
+  | ChangelogUpdatedAuditLog
+  | ChangelogDeletedAuditLog
+  | EnvironmentCreatedAuditLog
+  | EnvironmentUpdatedAuditLog
+  | EnvironmentDeletedAuditLog
+  | FeatureFlagCreatedAuditLog
+  | FeatureFlagUpdatedAuditLog
+  | FeatureFlagDeletedAuditLog
+  | FeatureFlagRulesUpdatedAuditLog
+  | SegmentCreatedAuditLog
+  | SegmentUpdatedAuditLog
+  | SegmentDeletedAuditLog
+  | WebhookCreatedAuditLog
+  | WebhookUpdatedAuditLog
+  | WebhookDeletedAuditLog
+  | InvitationCreatedAuditLog
+  | InvitationAcceptedAuditLog
+  | InvitationCanceledAuditLog
+  | InvitationRevokedAuditLog
+  | MemberRemovedAuditLog
+  | MemberRoleUpdatedAuditLog
+  | OrganizationCreatedAuditLog
+  | OrganizationUpdatedAuditLog
+  | OtaUpdateDeployedAuditLog
+  | UserLoginSuccessAuditLog
+  | UserLoginFailedAuditLog
+  | PasswordChangedAuditLog
+  | LogRateExceededAuditLog;
+
+export interface AuditLogBase {
   /** Unique identifier for the audit log entry */
   id: string;
   /** ID of the user who performed the action */
   userId?: string;
   /** ID of the organization */
   organizationId?: string;
-  /** Action performed (e.g., PROJECT_CREATED, BUILD_UPLOADED) */
+  /** Action performed */
   action: string;
-  /** Type of resource affected (e.g., PROJECT, BUILD) */
+  /** Type of resource affected */
   resourceType?: string;
   /** ID of the affected resource */
   resourceId?: string;
   /** Name of the affected resource */
   resourceName?: string;
-  /** HTTP method used (GET, POST, PUT, DELETE) */
-  httpMethod?: string;
-  /** API endpoint called */
-  endpoint?: string;
-  /** IP address of the user */
-  ipAddress?: string;
-  /** User agent string */
-  userAgent?: string;
-  /** Request body (if applicable) */
-  requestBody?: string;
-  /** HTTP response status code */
-  responseStatus?: number;
-  /** Error message (if action failed) */
-  errorMessage?: string;
-  /** Additional metadata in JSON format */
-  metadata?: string;
   /**
    * When the action occurred
    * @format date-time
    */
   createdAt: string;
 }
+
+export type ApiKeyCreatedAuditLog = AuditLogBase & {
+  action?: "API_KEY_CREATED";
+  resourceType?: "API_KEY";
+  metadata?: ApiKeyCreatedMetadata;
+};
+
+export interface ApiKeyCreatedMetadata {
+  after?: {
+    name?: string;
+    keyPrefix?: string;
+    projectId?: string;
+    environmentId?: string;
+  };
+}
+
+export type ApiKeyDeletedAuditLog = AuditLogBase & {
+  action?: "API_KEY_DELETED";
+  resourceType?: "API_KEY";
+  metadata?: ApiKeyDeletedMetadata;
+};
+
+export interface ApiKeyDeletedMetadata {
+  before?: {
+    name?: string;
+    keyPrefix?: string;
+    projectId?: string;
+    environmentId?: string;
+  };
+}
+
+export type ProjectCreatedAuditLog = AuditLogBase & {
+  action?: "PROJECT_CREATED";
+  resourceType?: "PROJECT";
+};
+
+export type ProjectUpdatedAuditLog = AuditLogBase & {
+  action?: "PROJECT_UPDATED";
+  resourceType?: "PROJECT";
+};
+
+export type ProjectDeletedAuditLog = AuditLogBase & {
+  action?: "PROJECT_DELETED";
+  resourceType?: "PROJECT";
+};
+
+export type BuildUploadedAuditLog = AuditLogBase & {
+  action?: "BUILD_UPLOADED";
+  resourceType?: "BUILD";
+};
+
+export type BuildDeletedAuditLog = AuditLogBase & {
+  action?: "BUILD_DELETED";
+  resourceType?: "BUILD";
+};
+
+export type ChangelogCreatedAuditLog = AuditLogBase & {
+  action?: "CHANGELOG_CREATED";
+  resourceType?: "CHANGELOG";
+  metadata?: ChangelogCreatedMetadata;
+};
+
+export interface ChangelogCreatedMetadata {
+  after?: {
+    version?: string;
+    title?: string;
+    content?: string;
+    status?: string;
+    projectId?: string;
+    environmentId?: string;
+  };
+}
+
+export type ChangelogUpdatedAuditLog = AuditLogBase & {
+  action?: "CHANGELOG_UPDATED";
+  resourceType?: "CHANGELOG";
+  metadata?: ChangelogUpdatedMetadata;
+};
+
+export interface ChangelogUpdatedMetadata {
+  before?: {
+    version?: string;
+    title?: string;
+    content?: string;
+    status?: string;
+  };
+  after?: {
+    version?: string;
+    title?: string;
+    content?: string;
+    status?: string;
+  };
+}
+
+export type ChangelogDeletedAuditLog = AuditLogBase & {
+  action?: "CHANGELOG_DELETED";
+  resourceType?: "CHANGELOG";
+  metadata?: ChangelogDeletedMetadata;
+};
+
+export interface ChangelogDeletedMetadata {
+  before?: {
+    version?: string;
+    title?: string;
+    content?: string;
+    status?: string;
+    projectId?: string;
+    environmentId?: string;
+  };
+}
+
+export type EnvironmentCreatedAuditLog = AuditLogBase & {
+  action?: "ENVIRONMENT_CREATED";
+  resourceType?: "ENVIRONMENT";
+  metadata?: EnvironmentCreatedMetadata;
+};
+
+export interface EnvironmentCreatedMetadata {
+  after?: {
+    name?: string;
+    description?: string;
+    projectId?: string;
+  };
+}
+
+export type EnvironmentUpdatedAuditLog = AuditLogBase & {
+  action?: "ENVIRONMENT_UPDATED";
+  resourceType?: "ENVIRONMENT";
+  metadata?: EnvironmentUpdatedMetadata;
+};
+
+export interface EnvironmentUpdatedMetadata {
+  before?: {
+    name?: string;
+    description?: string;
+  };
+  after?: {
+    name?: string;
+    description?: string;
+  };
+}
+
+export type EnvironmentDeletedAuditLog = AuditLogBase & {
+  action?: "ENVIRONMENT_DELETED";
+  resourceType?: "ENVIRONMENT";
+  metadata?: EnvironmentDeletedMetadata;
+};
+
+export interface EnvironmentDeletedMetadata {
+  before?: {
+    name?: string;
+    description?: string;
+    projectId?: string;
+  };
+}
+
+export type FeatureFlagCreatedAuditLog = AuditLogBase & {
+  action?: "FEATURE_FLAG_CREATED";
+  resourceType?: "FEATURE_FLAG";
+  metadata?: FeatureFlagCreatedMetadata;
+};
+
+export interface FeatureFlagCreatedMetadata {
+  after?: {
+    flagKey?: string;
+    name?: string;
+    description?: string;
+    valueType?: string;
+    enabled?: boolean;
+    projectId?: string;
+    environmentId?: string;
+  };
+}
+
+export type FeatureFlagUpdatedAuditLog = AuditLogBase & {
+  action?: "FEATURE_FLAG_UPDATED";
+  resourceType?: "FEATURE_FLAG";
+  metadata?: FeatureFlagUpdatedMetadata;
+};
+
+export interface FeatureFlagUpdatedMetadata {
+  before?: {
+    name?: string;
+    description?: string;
+    enabled?: boolean;
+  };
+  after?: {
+    name?: string;
+    description?: string;
+    enabled?: boolean;
+  };
+}
+
+export type FeatureFlagDeletedAuditLog = AuditLogBase & {
+  action?: "FEATURE_FLAG_DELETED" | "FEATURE_FLAG_DELETED_ALL_ENVIRONMENTS";
+  resourceType?: "FEATURE_FLAG";
+};
+
+export type FeatureFlagRulesUpdatedAuditLog = AuditLogBase & {
+  action?: "FEATURE_FLAG_RULES_UPDATED";
+  resourceType?: "FEATURE_FLAG";
+  metadata?: FeatureFlagRulesUpdatedMetadata;
+};
+
+export interface FeatureFlagRulesUpdatedMetadata {
+  before?: {
+    ruleCount?: number;
+    rules?: object[];
+  };
+  after?: {
+    ruleCount?: number;
+    rules?: object[];
+  };
+}
+
+export type SegmentCreatedAuditLog = AuditLogBase & {
+  action?: "SEGMENT_CREATED";
+  resourceType?: "SEGMENT";
+  metadata?: SegmentCreatedMetadata;
+};
+
+export interface SegmentCreatedMetadata {
+  after?: {
+    name?: string;
+    key?: string;
+    description?: string;
+    projectId?: string;
+  };
+}
+
+export type SegmentUpdatedAuditLog = AuditLogBase & {
+  action?: "SEGMENT_UPDATED";
+  resourceType?: "SEGMENT";
+  metadata?: SegmentUpdatedMetadata;
+};
+
+export interface SegmentUpdatedMetadata {
+  before?: {
+    name?: string;
+    description?: string;
+    matchType?: string;
+  };
+  after?: {
+    name?: string;
+    description?: string;
+    matchType?: string;
+  };
+}
+
+export type SegmentDeletedAuditLog = AuditLogBase & {
+  action?: "SEGMENT_DELETED";
+  resourceType?: "SEGMENT";
+  metadata?: SegmentDeletedMetadata;
+};
+
+export interface SegmentDeletedMetadata {
+  before?: {
+    name?: string;
+    key?: string;
+    description?: string;
+    projectId?: string;
+  };
+}
+
+export type WebhookCreatedAuditLog = AuditLogBase & {
+  action?: "WEBHOOK_CREATED";
+  resourceType?: "WEBHOOK";
+  metadata?: WebhookCreatedMetadata;
+};
+
+export interface WebhookCreatedMetadata {
+  after?: {
+    name?: string;
+    url?: string;
+    enabled?: boolean;
+    events?: string[];
+  };
+}
+
+export type WebhookUpdatedAuditLog = AuditLogBase & {
+  action?: "WEBHOOK_UPDATED";
+  resourceType?: "WEBHOOK";
+  metadata?: WebhookUpdatedMetadata;
+};
+
+export interface WebhookUpdatedMetadata {
+  before?: {
+    name?: string;
+    url?: string;
+    enabled?: boolean;
+    events?: string[];
+  };
+  after?: {
+    name?: string;
+    url?: string;
+    enabled?: boolean;
+    events?: string[];
+  };
+}
+
+export type WebhookDeletedAuditLog = AuditLogBase & {
+  action?: "WEBHOOK_DELETED";
+  resourceType?: "WEBHOOK";
+  metadata?: WebhookDeletedMetadata;
+};
+
+export interface WebhookDeletedMetadata {
+  before?: {
+    name?: string;
+    url?: string;
+    enabled?: boolean;
+    events?: string[];
+  };
+}
+
+export type InvitationCreatedAuditLog = AuditLogBase & {
+  action?: "INVITATION_CREATED";
+  resourceType?: "INVITATION";
+};
+
+export type InvitationAcceptedAuditLog = AuditLogBase & {
+  action?: "INVITATION_ACCEPTED";
+  resourceType?: "INVITATION";
+  metadata?: InvitationAcceptedMetadata;
+};
+
+export interface InvitationAcceptedMetadata {
+  after?: {
+    email?: string;
+    roleId?: string;
+    roleName?: string;
+    acceptedByUserId?: string;
+    status?: string;
+  };
+}
+
+export type InvitationCanceledAuditLog = AuditLogBase & {
+  action?: "INVITATION_CANCELED";
+  resourceType?: "INVITATION";
+  metadata?: InvitationCanceledMetadata;
+};
+
+export interface InvitationCanceledMetadata {
+  before?: {
+    email?: string;
+    roleId?: string;
+    roleName?: string;
+    status?: string;
+  };
+  after?: {
+    status?: string;
+  };
+}
+
+export type InvitationRevokedAuditLog = AuditLogBase & {
+  action?: "INVITATION_REVOKED";
+  resourceType?: "INVITATION";
+  metadata?: InvitationRevokedMetadata;
+};
+
+export interface InvitationRevokedMetadata {
+  before?: {
+    email?: string;
+    roleId?: string;
+    roleName?: string;
+    status?: string;
+  };
+}
+
+export type MemberRemovedAuditLog = AuditLogBase & {
+  action?: "MEMBER_REMOVED";
+  resourceType?: "MEMBER";
+  metadata?: MemberRemovedMetadata;
+};
+
+export interface MemberRemovedMetadata {
+  before?: {
+    userId?: string;
+    email?: string;
+    roleId?: string;
+    roleName?: string;
+  };
+}
+
+export type MemberRoleUpdatedAuditLog = AuditLogBase & {
+  action?: "MEMBER_ROLE_UPDATED";
+  resourceType?: "MEMBER";
+  metadata?: MemberRoleUpdatedMetadata;
+};
+
+export interface MemberRoleUpdatedMetadata {
+  before?: {
+    roleId?: string;
+    roleName?: string;
+  };
+  after?: {
+    roleId?: string;
+    roleName?: string;
+  };
+}
+
+export type OrganizationCreatedAuditLog = AuditLogBase & {
+  action?: "ORGANIZATION_CREATED";
+  resourceType?: "ORGANIZATION";
+};
+
+export type OrganizationUpdatedAuditLog = AuditLogBase & {
+  action?: "ORGANIZATION_UPDATED";
+  resourceType?: "ORGANIZATION";
+  metadata?: OrganizationUpdatedMetadata;
+};
+
+export interface OrganizationUpdatedMetadata {
+  before?: {
+    name?: string;
+    subdomain?: string;
+  };
+  after?: {
+    name?: string;
+    subdomain?: string;
+  };
+}
+
+export type OtaUpdateDeployedAuditLog = AuditLogBase & {
+  action?: "OTA_UPDATE_DEPLOYED";
+  resourceType?: "OTA_UPDATE";
+  metadata?: OtaUpdateDeployedMetadata;
+};
+
+export interface OtaUpdateDeployedMetadata {
+  after?: {
+    projectKey?: string;
+    environmentId?: string;
+    buildId?: string;
+    nativeVersion?: string;
+    updateStrategy?: string;
+    rolloutPercentage?: number;
+  };
+}
+
+export type UserLoginSuccessAuditLog = AuditLogBase & {
+  action?: "USER_LOGIN_SUCCESS";
+  resourceType?: "USER";
+  metadata?: UserLoginMetadata;
+};
+
+export type UserLoginFailedAuditLog = AuditLogBase & {
+  action?: "USER_LOGIN_FAILED";
+  resourceType?: "USER";
+  metadata?: UserLoginFailedMetadata;
+};
+
+export interface UserLoginMetadata {
+  after?: {
+    email?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    success?: boolean;
+  };
+}
+
+export interface UserLoginFailedMetadata {
+  after?: {
+    email?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    success?: boolean;
+    failureReason?: string;
+  };
+}
+
+export type PasswordChangedAuditLog = AuditLogBase & {
+  action?: "PASSWORD_CHANGED";
+  resourceType?: "USER";
+  metadata?: PasswordChangedMetadata;
+};
+
+export interface PasswordChangedMetadata {
+  after?: {
+    email?: string;
+    /** Type of password change (self_change, reset, admin_reset) */
+    changeType?: string;
+    ipAddress?: string;
+  };
+}
+
+export type LogRateExceededAuditLog = AuditLogBase & {
+  action?: "LOG_RATE_EXCEEDED";
+  resourceType?: "PROJECT";
+};
 
 /** Paginated audit log response */
 export interface PaginatedAuditLogResponse {

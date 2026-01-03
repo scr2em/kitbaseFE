@@ -1517,8 +1517,6 @@
     "table": {
       "action": "Action",
       "resource": "Resource",
-      "method": "Method",
-      "status": "Status",
       "timestamp": "Timestamp",
       "actions": "Actions"
     },
@@ -1529,15 +1527,15 @@
       "resource_type": "Resource Type",
       "resource_name": "Resource Name",
       "resource_id": "Resource ID",
-      "user_id": "User ID",
-      "http_method": "HTTP Method",
-      "response_status": "Response Status",
-      "endpoint": "Endpoint",
-      "ip_address": "IP Address",
-      "user_agent": "User Agent",
-      "error_message": "Error",
-      "metadata": "Metadata",
-      "request_body": "Request Body"
+      "user_id": "User ID"
+    },
+    "metadata": {
+      "created_with": "Created With",
+      "deleted_state": "Deleted State",
+      "changes": "Changes",
+      "field": "Field",
+      "before": "Before",
+      "after": "After"
     }
   },
   "landing": {

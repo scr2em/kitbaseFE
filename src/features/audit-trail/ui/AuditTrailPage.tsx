@@ -12,11 +12,392 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, RefreshCw, Search, Filter, X, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertCircle, RefreshCw, Search, Filter, X } from 'lucide-react';
 import { useState } from 'react';
 import { useAuditLogsQuery } from '../../../shared/api/queries/audit-logs';
 import { usePageTitle } from '../../../shared/hooks';
 import type { AuditLogResponse } from '../../../generated-api';
+
+// Helper to render a simple field
+function MetadataField({ label, value }: { label: string; value?: string | number | boolean | null }) {
+  if (value === undefined || value === null) return null;
+  const displayValue = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
+  return (
+    <div>
+      <span className="text-xs text-gray-500">{label}</span>
+      <p className="text-sm font-medium">{displayValue}</p>
+    </div>
+  );
+}
+
+// Helper to render a diff between before/after
+function MetadataDiff({ label, before, after }: { label: string; before?: string; after?: string }) {
+  if (before === after) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-gray-500 w-20">{label}:</span>
+      {before && <span className="text-sm text-red-500 line-through">{before}</span>}
+      {before && after && <span className="text-gray-400">→</span>}
+      {after && <span className="text-sm text-green-600 font-medium">{after}</span>}
+    </div>
+  );
+}
+
+// API Key Created
+function ApiKeyCreatedMetadata({ metadata }: { metadata: { after?: { name?: string; keyPrefix?: string; projectId?: string; environmentId?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={after.name} />
+      <MetadataField label="Key Prefix" value={after.keyPrefix} />
+    </div>
+  );
+}
+
+// API Key Deleted
+function ApiKeyDeletedMetadata({ metadata }: { metadata: { before?: { name?: string; keyPrefix?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={before.name} />
+      <MetadataField label="Key Prefix" value={before.keyPrefix} />
+    </div>
+  );
+}
+
+// Member Role Updated
+function MemberRoleUpdatedMetadata({ metadata }: { metadata: { before?: { roleName?: string }; after?: { roleName?: string } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Role" before={metadata.before?.roleName} after={metadata.after?.roleName} />
+    </div>
+  );
+}
+
+// Member Removed
+function MemberRemovedMetadata({ metadata }: { metadata: { before?: { email?: string; roleName?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Email" value={before.email} />
+      <MetadataField label="Role" value={before.roleName} />
+    </div>
+  );
+}
+
+// Environment Created
+function EnvironmentCreatedMetadata({ metadata }: { metadata: { after?: { name?: string; description?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={after.name} />
+      <MetadataField label="Description" value={after.description} />
+    </div>
+  );
+}
+
+// Environment Updated
+function EnvironmentUpdatedMetadata({ metadata }: { metadata: { before?: { name?: string; description?: string }; after?: { name?: string; description?: string } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Name" before={metadata.before?.name} after={metadata.after?.name} />
+      <MetadataDiff label="Description" before={metadata.before?.description} after={metadata.after?.description} />
+    </div>
+  );
+}
+
+// Environment Deleted
+function EnvironmentDeletedMetadata({ metadata }: { metadata: { before?: { name?: string; description?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={before.name} />
+      <MetadataField label="Description" value={before.description} />
+    </div>
+  );
+}
+
+// Feature Flag Created
+function FeatureFlagCreatedMetadata({ metadata }: { metadata: { after?: { flagKey?: string; name?: string; valueType?: string; enabled?: boolean } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Flag Key" value={after.flagKey} />
+      <MetadataField label="Name" value={after.name} />
+      <MetadataField label="Value Type" value={after.valueType} />
+      <MetadataField label="Enabled" value={after.enabled} />
+    </div>
+  );
+}
+
+// Feature Flag Updated
+function FeatureFlagUpdatedMetadata({ metadata }: { metadata: { before?: { name?: string; enabled?: boolean }; after?: { name?: string; enabled?: boolean } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Name" before={metadata.before?.name} after={metadata.after?.name} />
+      <MetadataDiff label="Enabled" before={metadata.before?.enabled?.toString()} after={metadata.after?.enabled?.toString()} />
+    </div>
+  );
+}
+
+// Feature Flag Rules Updated
+function FeatureFlagRulesUpdatedMetadata({ metadata }: { metadata: { before?: { ruleCount?: number }; after?: { ruleCount?: number } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Rule Count" before={metadata.before?.ruleCount?.toString()} after={metadata.after?.ruleCount?.toString()} />
+    </div>
+  );
+}
+
+// Segment Created
+function SegmentCreatedMetadata({ metadata }: { metadata: { after?: { name?: string; key?: string; description?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={after.name} />
+      <MetadataField label="Key" value={after.key} />
+      <MetadataField label="Description" value={after.description} />
+    </div>
+  );
+}
+
+// Segment Updated
+function SegmentUpdatedMetadata({ metadata }: { metadata: { before?: { name?: string; matchType?: string }; after?: { name?: string; matchType?: string } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Name" before={metadata.before?.name} after={metadata.after?.name} />
+      <MetadataDiff label="Match Type" before={metadata.before?.matchType} after={metadata.after?.matchType} />
+    </div>
+  );
+}
+
+// Segment Deleted
+function SegmentDeletedMetadata({ metadata }: { metadata: { before?: { name?: string; key?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={before.name} />
+      <MetadataField label="Key" value={before.key} />
+    </div>
+  );
+}
+
+// Webhook Created
+function WebhookCreatedMetadata({ metadata }: { metadata: { after?: { name?: string; url?: string; enabled?: boolean; events?: string[] } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={after.name} />
+      <MetadataField label="URL" value={after.url} />
+      <MetadataField label="Enabled" value={after.enabled} />
+      <MetadataField label="Events" value={after.events?.join(', ')} />
+    </div>
+  );
+}
+
+// Webhook Updated
+function WebhookUpdatedMetadata({ metadata }: { metadata: { before?: { name?: string; url?: string; enabled?: boolean }; after?: { name?: string; url?: string; enabled?: boolean } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Name" before={metadata.before?.name} after={metadata.after?.name} />
+      <MetadataDiff label="URL" before={metadata.before?.url} after={metadata.after?.url} />
+      <MetadataDiff label="Enabled" before={metadata.before?.enabled?.toString()} after={metadata.after?.enabled?.toString()} />
+    </div>
+  );
+}
+
+// Webhook Deleted
+function WebhookDeletedMetadata({ metadata }: { metadata: { before?: { name?: string; url?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Name" value={before.name} />
+      <MetadataField label="URL" value={before.url} />
+    </div>
+  );
+}
+
+// Changelog Created
+function ChangelogCreatedMetadata({ metadata }: { metadata: { after?: { version?: string; title?: string; status?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Version" value={after.version} />
+      <MetadataField label="Title" value={after.title} />
+      <MetadataField label="Status" value={after.status} />
+    </div>
+  );
+}
+
+// Changelog Updated
+function ChangelogUpdatedMetadata({ metadata }: { metadata: { before?: { version?: string; status?: string }; after?: { version?: string; status?: string } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Version" before={metadata.before?.version} after={metadata.after?.version} />
+      <MetadataDiff label="Status" before={metadata.before?.status} after={metadata.after?.status} />
+    </div>
+  );
+}
+
+// Changelog Deleted
+function ChangelogDeletedMetadata({ metadata }: { metadata: { before?: { version?: string; title?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Version" value={before.version} />
+      <MetadataField label="Title" value={before.title} />
+    </div>
+  );
+}
+
+// Invitation Accepted
+function InvitationAcceptedMetadata({ metadata }: { metadata: { after?: { email?: string; roleName?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Email" value={after.email} />
+      <MetadataField label="Role" value={after.roleName} />
+    </div>
+  );
+}
+
+// Invitation Revoked/Canceled
+function InvitationRevokedMetadata({ metadata }: { metadata: { before?: { email?: string; roleName?: string } } }) {
+  const { before } = metadata;
+  if (!before) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Email" value={before.email} />
+      <MetadataField label="Role" value={before.roleName} />
+    </div>
+  );
+}
+
+// Organization Updated
+function OrganizationUpdatedMetadata({ metadata }: { metadata: { before?: { name?: string }; after?: { name?: string } } }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <MetadataDiff label="Name" before={metadata.before?.name} after={metadata.after?.name} />
+    </div>
+  );
+}
+
+// OTA Update Deployed
+function OtaUpdateDeployedMetadata({ metadata }: { metadata: { after?: { nativeVersion?: string; updateStrategy?: string; rolloutPercentage?: number } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Native Version" value={after.nativeVersion} />
+      <MetadataField label="Update Strategy" value={after.updateStrategy} />
+      <MetadataField label="Rollout %" value={after.rolloutPercentage} />
+    </div>
+  );
+}
+
+// User Login
+function UserLoginMetadata({ metadata }: { metadata: { after?: { email?: string; ipAddress?: string; success?: boolean; failureReason?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Email" value={after.email} />
+      <MetadataField label="IP Address" value={after.ipAddress} />
+      {after.failureReason && <MetadataField label="Failure Reason" value={after.failureReason} />}
+    </div>
+  );
+}
+
+// Password Changed
+function PasswordChangedMetadata({ metadata }: { metadata: { after?: { email?: string; changeType?: string } } }) {
+  const { after } = metadata;
+  if (!after) return null;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MetadataField label="Email" value={after.email} />
+      <MetadataField label="Change Type" value={after.changeType} />
+    </div>
+  );
+}
+
+// Main switch component
+function ActionMetadataDisplay({ log }: { log: AuditLogResponse }) {
+  if (!('metadata' in log) || !log.metadata) {
+    return null;
+  }
+
+  const metadata = log.metadata as Record<string, unknown>;
+
+  switch (log.action) {
+    case 'API_KEY_CREATED':
+      return <ApiKeyCreatedMetadata metadata={metadata} />;
+    case 'API_KEY_DELETED':
+      return <ApiKeyDeletedMetadata metadata={metadata} />;
+    case 'MEMBER_ROLE_UPDATED':
+      return <MemberRoleUpdatedMetadata metadata={metadata} />;
+    case 'MEMBER_REMOVED':
+      return <MemberRemovedMetadata metadata={metadata} />;
+    case 'ENVIRONMENT_CREATED':
+      return <EnvironmentCreatedMetadata metadata={metadata} />;
+    case 'ENVIRONMENT_UPDATED':
+      return <EnvironmentUpdatedMetadata metadata={metadata} />;
+    case 'ENVIRONMENT_DELETED':
+      return <EnvironmentDeletedMetadata metadata={metadata} />;
+    case 'FEATURE_FLAG_CREATED':
+      return <FeatureFlagCreatedMetadata metadata={metadata} />;
+    case 'FEATURE_FLAG_UPDATED':
+      return <FeatureFlagUpdatedMetadata metadata={metadata} />;
+    case 'FEATURE_FLAG_RULES_UPDATED':
+      return <FeatureFlagRulesUpdatedMetadata metadata={metadata} />;
+    case 'SEGMENT_CREATED':
+      return <SegmentCreatedMetadata metadata={metadata} />;
+    case 'SEGMENT_UPDATED':
+      return <SegmentUpdatedMetadata metadata={metadata} />;
+    case 'SEGMENT_DELETED':
+      return <SegmentDeletedMetadata metadata={metadata} />;
+    case 'WEBHOOK_CREATED':
+      return <WebhookCreatedMetadata metadata={metadata} />;
+    case 'WEBHOOK_UPDATED':
+      return <WebhookUpdatedMetadata metadata={metadata} />;
+    case 'WEBHOOK_DELETED':
+      return <WebhookDeletedMetadata metadata={metadata} />;
+    case 'CHANGELOG_CREATED':
+      return <ChangelogCreatedMetadata metadata={metadata} />;
+    case 'CHANGELOG_UPDATED':
+      return <ChangelogUpdatedMetadata metadata={metadata} />;
+    case 'CHANGELOG_DELETED':
+      return <ChangelogDeletedMetadata metadata={metadata} />;
+    case 'INVITATION_ACCEPTED':
+      return <InvitationAcceptedMetadata metadata={metadata} />;
+    case 'INVITATION_REVOKED':
+    case 'INVITATION_CANCELED':
+      return <InvitationRevokedMetadata metadata={metadata} />;
+    case 'ORGANIZATION_UPDATED':
+      return <OrganizationUpdatedMetadata metadata={metadata} />;
+    case 'OTA_UPDATE_DEPLOYED':
+      return <OtaUpdateDeployedMetadata metadata={metadata} />;
+    case 'USER_LOGIN_SUCCESS':
+    case 'USER_LOGIN_FAILED':
+      return <UserLoginMetadata metadata={metadata} />;
+    case 'PASSWORD_CHANGED':
+      return <PasswordChangedMetadata metadata={metadata} />;
+    default:
+      return null;
+  }
+}
 
 interface FiltersState {
   action?: string;
@@ -36,7 +417,6 @@ export function AuditTrailPage() {
     opened: boolean;
     log: AuditLogResponse | null;
   }>({ opened: false, log: null });
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const queryFilters = {
     action: filters.action || undefined,
@@ -57,30 +437,10 @@ export function AuditTrailPage() {
     isFetching,
   } = useAuditLogsQuery(queryFilters);
 
-  const toggleRowExpand = (id: string) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const getActionBadgeColor = (action: string) => {
     if (action.includes('CREATE') || action.includes('UPLOAD')) return 'green';
     if (action.includes('DELETE') || action.includes('REMOVE')) return 'red';
     if (action.includes('UPDATE') || action.includes('EDIT')) return 'blue';
-    return 'gray';
-  };
-
-  const getStatusBadgeColor = (status?: number) => {
-    if (!status) return 'gray';
-    if (status >= 200 && status < 300) return 'green';
-    if (status >= 400 && status < 500) return 'yellow';
-    if (status >= 500) return 'red';
     return 'gray';
   };
 
@@ -211,147 +571,63 @@ export function AuditTrailPage() {
         {/* Audit Logs Table */}
         <Card withBorder padding={0} radius="md">
           <ScrollArea>
-            <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+            <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="md">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th className="w-8"></Table.Th>
                   <Table.Th>{t('audit_trail.table.action')}</Table.Th>
                   <Table.Th>{t('audit_trail.table.resource')}</Table.Th>
-                  <Table.Th>{t('audit_trail.table.method')}</Table.Th>
-                  <Table.Th>{t('audit_trail.table.status')}</Table.Th>
                   <Table.Th>{t('audit_trail.table.timestamp')}</Table.Th>
-                  <Table.Th>{t('audit_trail.table.actions')}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {allLogs.length === 0 ? (
                   <Table.Tr>
-                    <Table.Td colSpan={7}>
+                    <Table.Td colSpan={3}>
                       <div className="text-center py-8 text-gray-500">
                         {t('audit_trail.no_logs')}
                       </div>
                     </Table.Td>
                   </Table.Tr>
                 ) : (
-                  allLogs.map((log) => {
-                    const isExpanded = expandedRows.has(log.id);
-                    return (
-                      <>
-                        <Table.Tr key={log.id}>
-                          <Table.Td>
-                            <ActionIcon
-                              variant="subtle"
-                              color="gray"
-                              size="sm"
-                              onClick={() => toggleRowExpand(log.id)}
-                            >
-                              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </ActionIcon>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge
-                              color={getActionBadgeColor(log.action)}
-                              variant="light"
-                            >
-                              {formatAction(log.action)}
+                  allLogs.map((log) => (
+                    <Table.Tr 
+                      key={log.id} 
+                      className="cursor-pointer"
+                      onClick={() => setDetailModal({ opened: true, log })}
+                    >
+                      <Table.Td>
+                        <Badge
+                          color={getActionBadgeColor(log.action)}
+                          variant="light"
+                          size="sm"
+                        >
+                          {formatAction(log.action)}
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td>
+                        <div className="flex items-center gap-2">
+                          {log.resourceType && (
+                            <Badge variant="outline" size="xs" color="gray">
+                              {log.resourceType}
                             </Badge>
-                          </Table.Td>
-                          <Table.Td>
-                            <div className="flex flex-col">
-                              {log.resourceType && (
-                                <span className="text-xs text-gray-500">
-                                  {log.resourceType}
-                                </span>
-                              )}
-                              <span className="text-sm font-medium">
-                                {log.resourceName || log.resourceId || '-'}
-                              </span>
-                            </div>
-                          </Table.Td>
-                          <Table.Td>
-                            {log.httpMethod && (
-                              <Badge
-                                color={
-                                  log.httpMethod === 'GET' ? 'blue' :
-                                  log.httpMethod === 'POST' ? 'green' :
-                                  log.httpMethod === 'PUT' || log.httpMethod === 'PATCH' ? 'yellow' :
-                                  log.httpMethod === 'DELETE' ? 'red' : 'gray'
-                                }
-                                variant="outline"
-                                size="sm"
-                              >
-                                {log.httpMethod}
-                              </Badge>
-                            )}
-                          </Table.Td>
-                          <Table.Td>
-                            {log.responseStatus && (
-                              <Badge
-                                color={getStatusBadgeColor(log.responseStatus)}
-                                variant="dot"
-                              >
-                                {log.responseStatus}
-                              </Badge>
-                            )}
-                          </Table.Td>
-                          <Table.Td>
-                            <span className="text-sm">
-                              {new Date(log.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
-                          </Table.Td>
-                          <Table.Td>
-                            <ActionIcon
-                              variant="subtle"
-                              color="gray"
-                              onClick={() => setDetailModal({ opened: true, log })}
-                            >
-                              <Eye size={18} />
-                            </ActionIcon>
-                          </Table.Td>
-                        </Table.Tr>
-                        {isExpanded && (
-                          <Table.Tr key={`${log.id}-details`}>
-                            <Table.Td colSpan={7}>
-                              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md">
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                                  {log.endpoint && (
-                                    <div>
-                                      <span className="text-gray-500 block">{t('audit_trail.detail.endpoint')}</span>
-                                      <code className="text-xs">{log.endpoint}</code>
-                                    </div>
-                                  )}
-                                  {log.ipAddress && (
-                                    <div>
-                                      <span className="text-gray-500 block">{t('audit_trail.detail.ip_address')}</span>
-                                      <span>{log.ipAddress}</span>
-                                    </div>
-                                  )}
-                                  {log.userId && (
-                                    <div>
-                                      <span className="text-gray-500 block">{t('audit_trail.detail.user_id')}</span>
-                                      <span className="font-mono text-xs">{log.userId}</span>
-                                    </div>
-                                  )}
-                                  {log.errorMessage && (
-                                    <div className="col-span-full">
-                                      <span className="text-gray-500 block">{t('audit_trail.detail.error_message')}</span>
-                                      <span className="text-red-500">{log.errorMessage}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </Table.Td>
-                          </Table.Tr>
-                        )}
-                      </>
-                    );
-                  })
+                          )}
+                          <span className="text-sm">
+                            {log.resourceName || log.resourceId || '-'}
+                          </span>
+                        </div>
+                      </Table.Td>
+                      <Table.Td>
+                        <span className="text-sm text-gray-500">
+                          {new Date(log.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))
                 )}
               </Table.Tbody>
             </Table>
@@ -423,84 +699,9 @@ export function AuditTrailPage() {
                   <code className="text-xs">{detailModal.log.userId}</code>
                 </div>
               )}
-              {detailModal.log.httpMethod && (
-                <div>
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.http_method')}</span>
-                  <Badge
-                    color={
-                      detailModal.log.httpMethod === 'GET' ? 'blue' :
-                      detailModal.log.httpMethod === 'POST' ? 'green' :
-                      detailModal.log.httpMethod === 'PUT' || detailModal.log.httpMethod === 'PATCH' ? 'yellow' :
-                      detailModal.log.httpMethod === 'DELETE' ? 'red' : 'gray'
-                    }
-                    variant="outline"
-                    size="sm"
-                  >
-                    {detailModal.log.httpMethod}
-                  </Badge>
-                </div>
-              )}
-              {detailModal.log.responseStatus && (
-                <div>
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.response_status')}</span>
-                  <Badge
-                    color={getStatusBadgeColor(detailModal.log.responseStatus)}
-                    variant="dot"
-                  >
-                    {detailModal.log.responseStatus}
-                  </Badge>
-                </div>
-              )}
-              {detailModal.log.endpoint && (
-                <div className="col-span-2">
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.endpoint')}</span>
-                  <code className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded block overflow-x-auto">
-                    {detailModal.log.endpoint}
-                  </code>
-                </div>
-              )}
-              {detailModal.log.ipAddress && (
-                <div>
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.ip_address')}</span>
-                  <span className="text-sm">{detailModal.log.ipAddress}</span>
-                </div>
-              )}
-              {detailModal.log.userAgent && (
-                <div className="col-span-2">
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.user_agent')}</span>
-                  <span className="text-xs text-gray-600">{detailModal.log.userAgent}</span>
-                </div>
-              )}
-              {detailModal.log.errorMessage && (
-                <div className="col-span-2">
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.error_message')}</span>
-                  <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded p-2">
-                    <span className="text-sm text-red-600 dark:text-red-400">{detailModal.log.errorMessage}</span>
-                  </div>
-                </div>
-              )}
-              {detailModal.log.metadata && (
-                <div className="col-span-2">
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.metadata')}</span>
-                  <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto">
-                    {JSON.stringify(JSON.parse(detailModal.log.metadata), null, 2)}
-                  </pre>
-                </div>
-              )}
-              {detailModal.log.requestBody && (
-                <div className="col-span-2">
-                  <span className="text-sm text-gray-500 block mb-1">{t('audit_trail.detail.request_body')}</span>
-                  <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto max-h-48">
-                    {(() => {
-                      try {
-                        return JSON.stringify(JSON.parse(detailModal.log.requestBody), null, 2);
-                      } catch {
-                        return detailModal.log.requestBody;
-                      }
-                    })()}
-                  </pre>
-                </div>
-              )}
+              <div className="col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                <ActionMetadataDisplay log={detailModal.log} />
+              </div>
             </div>
           </div>
         )}

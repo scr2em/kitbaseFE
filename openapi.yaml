@@ -898,6 +898,7 @@ components:
         - feature_flag.create
         - feature_flag.update
         - feature_flag.delete
+        - audit.read
 
     RoleWithPermissionsResponse:
       type: object
@@ -1863,8 +1864,48 @@ components:
           description: Total number of pages
 
     AuditLogResponse:
+      description: Audit log entry - type varies based on action
+      oneOf:
+        - $ref: '#/components/schemas/ApiKeyCreatedAuditLog'
+        - $ref: '#/components/schemas/ApiKeyDeletedAuditLog'
+        - $ref: '#/components/schemas/ProjectCreatedAuditLog'
+        - $ref: '#/components/schemas/ProjectUpdatedAuditLog'
+        - $ref: '#/components/schemas/ProjectDeletedAuditLog'
+        - $ref: '#/components/schemas/BuildUploadedAuditLog'
+        - $ref: '#/components/schemas/BuildDeletedAuditLog'
+        - $ref: '#/components/schemas/ChangelogCreatedAuditLog'
+        - $ref: '#/components/schemas/ChangelogUpdatedAuditLog'
+        - $ref: '#/components/schemas/ChangelogDeletedAuditLog'
+        - $ref: '#/components/schemas/EnvironmentCreatedAuditLog'
+        - $ref: '#/components/schemas/EnvironmentUpdatedAuditLog'
+        - $ref: '#/components/schemas/EnvironmentDeletedAuditLog'
+        - $ref: '#/components/schemas/FeatureFlagCreatedAuditLog'
+        - $ref: '#/components/schemas/FeatureFlagUpdatedAuditLog'
+        - $ref: '#/components/schemas/FeatureFlagDeletedAuditLog'
+        - $ref: '#/components/schemas/FeatureFlagRulesUpdatedAuditLog'
+        - $ref: '#/components/schemas/SegmentCreatedAuditLog'
+        - $ref: '#/components/schemas/SegmentUpdatedAuditLog'
+        - $ref: '#/components/schemas/SegmentDeletedAuditLog'
+        - $ref: '#/components/schemas/WebhookCreatedAuditLog'
+        - $ref: '#/components/schemas/WebhookUpdatedAuditLog'
+        - $ref: '#/components/schemas/WebhookDeletedAuditLog'
+        - $ref: '#/components/schemas/InvitationCreatedAuditLog'
+        - $ref: '#/components/schemas/InvitationAcceptedAuditLog'
+        - $ref: '#/components/schemas/InvitationCanceledAuditLog'
+        - $ref: '#/components/schemas/InvitationRevokedAuditLog'
+        - $ref: '#/components/schemas/MemberRemovedAuditLog'
+        - $ref: '#/components/schemas/MemberRoleUpdatedAuditLog'
+        - $ref: '#/components/schemas/OrganizationCreatedAuditLog'
+        - $ref: '#/components/schemas/OrganizationUpdatedAuditLog'
+        - $ref: '#/components/schemas/OtaUpdateDeployedAuditLog'
+        - $ref: '#/components/schemas/UserLoginSuccessAuditLog'
+        - $ref: '#/components/schemas/UserLoginFailedAuditLog'
+        - $ref: '#/components/schemas/PasswordChangedAuditLog'
+        - $ref: '#/components/schemas/LogRateExceededAuditLog'
+
+    # Base audit log fields shared by all event types
+    AuditLogBase:
       type: object
-      description: Audit log entry
       required:
         - id
         - action
@@ -1881,44 +1922,1007 @@ components:
           description: ID of the organization
         action:
           type: string
-          description: Action performed (e.g., PROJECT_CREATED, BUILD_UPLOADED)
+          description: Action performed
         resourceType:
           type: string
-          description: Type of resource affected (e.g., PROJECT, BUILD)
+          description: Type of resource affected
         resourceId:
           type: string
           description: ID of the affected resource
         resourceName:
           type: string
           description: Name of the affected resource
-        httpMethod:
-          type: string
-          description: HTTP method used (GET, POST, PUT, DELETE)
-        endpoint:
-          type: string
-          description: API endpoint called
-        ipAddress:
-          type: string
-          description: IP address of the user
-        userAgent:
-          type: string
-          description: User agent string
-        requestBody:
-          type: string
-          description: Request body (if applicable)
-        responseStatus:
-          type: integer
-          description: HTTP response status code
-        errorMessage:
-          type: string
-          description: Error message (if action failed)
-        metadata:
-          type: string
-          description: Additional metadata in JSON format
         createdAt:
           type: string
           format: date-time
           description: When the action occurred
+
+    # API Key Events
+    ApiKeyCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [API_KEY_CREATED]
+            resourceType:
+              type: string
+              enum: [API_KEY]
+            metadata:
+              $ref: '#/components/schemas/ApiKeyCreatedMetadata'
+
+    ApiKeyCreatedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            keyPrefix:
+              type: string
+            projectId:
+              type: string
+            environmentId:
+              type: string
+
+    ApiKeyDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [API_KEY_DELETED]
+            resourceType:
+              type: string
+              enum: [API_KEY]
+            metadata:
+              $ref: '#/components/schemas/ApiKeyDeletedMetadata'
+
+    ApiKeyDeletedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            keyPrefix:
+              type: string
+            projectId:
+              type: string
+            environmentId:
+              type: string
+
+    # Project Events
+    ProjectCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [PROJECT_CREATED]
+            resourceType:
+              type: string
+              enum: [PROJECT]
+
+    ProjectUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [PROJECT_UPDATED]
+            resourceType:
+              type: string
+              enum: [PROJECT]
+
+    ProjectDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [PROJECT_DELETED]
+            resourceType:
+              type: string
+              enum: [PROJECT]
+
+    # Build Events
+    BuildUploadedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [BUILD_UPLOADED]
+            resourceType:
+              type: string
+              enum: [BUILD]
+
+    BuildDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [BUILD_DELETED]
+            resourceType:
+              type: string
+              enum: [BUILD]
+
+    # Changelog Events
+    ChangelogCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [CHANGELOG_CREATED]
+            resourceType:
+              type: string
+              enum: [CHANGELOG]
+            metadata:
+              $ref: '#/components/schemas/ChangelogCreatedMetadata'
+
+    ChangelogCreatedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            version:
+              type: string
+            title:
+              type: string
+            content:
+              type: string
+            status:
+              type: string
+            projectId:
+              type: string
+            environmentId:
+              type: string
+
+    ChangelogUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [CHANGELOG_UPDATED]
+            resourceType:
+              type: string
+              enum: [CHANGELOG]
+            metadata:
+              $ref: '#/components/schemas/ChangelogUpdatedMetadata'
+
+    ChangelogUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            version:
+              type: string
+            title:
+              type: string
+            content:
+              type: string
+            status:
+              type: string
+        after:
+          type: object
+          properties:
+            version:
+              type: string
+            title:
+              type: string
+            content:
+              type: string
+            status:
+              type: string
+
+    ChangelogDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [CHANGELOG_DELETED]
+            resourceType:
+              type: string
+              enum: [CHANGELOG]
+            metadata:
+              $ref: '#/components/schemas/ChangelogDeletedMetadata'
+
+    ChangelogDeletedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            version:
+              type: string
+            title:
+              type: string
+            content:
+              type: string
+            status:
+              type: string
+            projectId:
+              type: string
+            environmentId:
+              type: string
+
+    # Environment Events
+    EnvironmentCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [ENVIRONMENT_CREATED]
+            resourceType:
+              type: string
+              enum: [ENVIRONMENT]
+            metadata:
+              $ref: '#/components/schemas/EnvironmentCreatedMetadata'
+
+    EnvironmentCreatedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            projectId:
+              type: string
+
+    EnvironmentUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [ENVIRONMENT_UPDATED]
+            resourceType:
+              type: string
+              enum: [ENVIRONMENT]
+            metadata:
+              $ref: '#/components/schemas/EnvironmentUpdatedMetadata'
+
+    EnvironmentUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+
+    EnvironmentDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [ENVIRONMENT_DELETED]
+            resourceType:
+              type: string
+              enum: [ENVIRONMENT]
+            metadata:
+              $ref: '#/components/schemas/EnvironmentDeletedMetadata'
+
+    EnvironmentDeletedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            projectId:
+              type: string
+
+    # Feature Flag Events
+    FeatureFlagCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [FEATURE_FLAG_CREATED]
+            resourceType:
+              type: string
+              enum: [FEATURE_FLAG]
+            metadata:
+              $ref: '#/components/schemas/FeatureFlagCreatedMetadata'
+
+    FeatureFlagCreatedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            flagKey:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            valueType:
+              type: string
+            enabled:
+              type: boolean
+            projectId:
+              type: string
+            environmentId:
+              type: string
+
+    FeatureFlagUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [FEATURE_FLAG_UPDATED]
+            resourceType:
+              type: string
+              enum: [FEATURE_FLAG]
+            metadata:
+              $ref: '#/components/schemas/FeatureFlagUpdatedMetadata'
+
+    FeatureFlagUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            enabled:
+              type: boolean
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            enabled:
+              type: boolean
+
+    FeatureFlagDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [FEATURE_FLAG_DELETED, FEATURE_FLAG_DELETED_ALL_ENVIRONMENTS]
+            resourceType:
+              type: string
+              enum: [FEATURE_FLAG]
+
+    FeatureFlagRulesUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [FEATURE_FLAG_RULES_UPDATED]
+            resourceType:
+              type: string
+              enum: [FEATURE_FLAG]
+            metadata:
+              $ref: '#/components/schemas/FeatureFlagRulesUpdatedMetadata'
+
+    FeatureFlagRulesUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            ruleCount:
+              type: integer
+            rules:
+              type: array
+              items:
+                type: object
+        after:
+          type: object
+          properties:
+            ruleCount:
+              type: integer
+            rules:
+              type: array
+              items:
+                type: object
+
+    # Segment Events
+    SegmentCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [SEGMENT_CREATED]
+            resourceType:
+              type: string
+              enum: [SEGMENT]
+            metadata:
+              $ref: '#/components/schemas/SegmentCreatedMetadata'
+
+    SegmentCreatedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            key:
+              type: string
+            description:
+              type: string
+            projectId:
+              type: string
+
+    SegmentUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [SEGMENT_UPDATED]
+            resourceType:
+              type: string
+              enum: [SEGMENT]
+            metadata:
+              $ref: '#/components/schemas/SegmentUpdatedMetadata'
+
+    SegmentUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            matchType:
+              type: string
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+            matchType:
+              type: string
+
+    SegmentDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [SEGMENT_DELETED]
+            resourceType:
+              type: string
+              enum: [SEGMENT]
+            metadata:
+              $ref: '#/components/schemas/SegmentDeletedMetadata'
+
+    SegmentDeletedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            key:
+              type: string
+            description:
+              type: string
+            projectId:
+              type: string
+
+    # Webhook Events
+    WebhookCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [WEBHOOK_CREATED]
+            resourceType:
+              type: string
+              enum: [WEBHOOK]
+            metadata:
+              $ref: '#/components/schemas/WebhookCreatedMetadata'
+
+    WebhookCreatedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            enabled:
+              type: boolean
+            events:
+              type: array
+              items:
+                type: string
+
+    WebhookUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [WEBHOOK_UPDATED]
+            resourceType:
+              type: string
+              enum: [WEBHOOK]
+            metadata:
+              $ref: '#/components/schemas/WebhookUpdatedMetadata'
+
+    WebhookUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            enabled:
+              type: boolean
+            events:
+              type: array
+              items:
+                type: string
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            enabled:
+              type: boolean
+            events:
+              type: array
+              items:
+                type: string
+
+    WebhookDeletedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [WEBHOOK_DELETED]
+            resourceType:
+              type: string
+              enum: [WEBHOOK]
+            metadata:
+              $ref: '#/components/schemas/WebhookDeletedMetadata'
+
+    WebhookDeletedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            enabled:
+              type: boolean
+            events:
+              type: array
+              items:
+                type: string
+
+    # Invitation Events
+    InvitationCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [INVITATION_CREATED]
+            resourceType:
+              type: string
+              enum: [INVITATION]
+
+    InvitationAcceptedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [INVITATION_ACCEPTED]
+            resourceType:
+              type: string
+              enum: [INVITATION]
+            metadata:
+              $ref: '#/components/schemas/InvitationAcceptedMetadata'
+
+    InvitationAcceptedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            email:
+              type: string
+            roleId:
+              type: string
+            roleName:
+              type: string
+            acceptedByUserId:
+              type: string
+            status:
+              type: string
+
+    InvitationCanceledAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [INVITATION_CANCELED]
+            resourceType:
+              type: string
+              enum: [INVITATION]
+            metadata:
+              $ref: '#/components/schemas/InvitationCanceledMetadata'
+
+    InvitationCanceledMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            email:
+              type: string
+            roleId:
+              type: string
+            roleName:
+              type: string
+            status:
+              type: string
+        after:
+          type: object
+          properties:
+            status:
+              type: string
+
+    InvitationRevokedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [INVITATION_REVOKED]
+            resourceType:
+              type: string
+              enum: [INVITATION]
+            metadata:
+              $ref: '#/components/schemas/InvitationRevokedMetadata'
+
+    InvitationRevokedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            email:
+              type: string
+            roleId:
+              type: string
+            roleName:
+              type: string
+            status:
+              type: string
+
+    # Member Events
+    MemberRemovedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [MEMBER_REMOVED]
+            resourceType:
+              type: string
+              enum: [MEMBER]
+            metadata:
+              $ref: '#/components/schemas/MemberRemovedMetadata'
+
+    MemberRemovedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            userId:
+              type: string
+            email:
+              type: string
+            roleId:
+              type: string
+            roleName:
+              type: string
+
+    MemberRoleUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [MEMBER_ROLE_UPDATED]
+            resourceType:
+              type: string
+              enum: [MEMBER]
+            metadata:
+              $ref: '#/components/schemas/MemberRoleUpdatedMetadata'
+
+    MemberRoleUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            roleId:
+              type: string
+            roleName:
+              type: string
+        after:
+          type: object
+          properties:
+            roleId:
+              type: string
+            roleName:
+              type: string
+
+    # Organization Events
+    OrganizationCreatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [ORGANIZATION_CREATED]
+            resourceType:
+              type: string
+              enum: [ORGANIZATION]
+
+    OrganizationUpdatedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [ORGANIZATION_UPDATED]
+            resourceType:
+              type: string
+              enum: [ORGANIZATION]
+            metadata:
+              $ref: '#/components/schemas/OrganizationUpdatedMetadata'
+
+    OrganizationUpdatedMetadata:
+      type: object
+      properties:
+        before:
+          type: object
+          properties:
+            name:
+              type: string
+            subdomain:
+              type: string
+        after:
+          type: object
+          properties:
+            name:
+              type: string
+            subdomain:
+              type: string
+
+    # OTA Update Events
+    OtaUpdateDeployedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [OTA_UPDATE_DEPLOYED]
+            resourceType:
+              type: string
+              enum: [OTA_UPDATE]
+            metadata:
+              $ref: '#/components/schemas/OtaUpdateDeployedMetadata'
+
+    OtaUpdateDeployedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            projectKey:
+              type: string
+            environmentId:
+              type: string
+            buildId:
+              type: string
+            nativeVersion:
+              type: string
+            updateStrategy:
+              type: string
+            rolloutPercentage:
+              type: integer
+
+    # User Events
+    UserLoginSuccessAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [USER_LOGIN_SUCCESS]
+            resourceType:
+              type: string
+              enum: [USER]
+            metadata:
+              $ref: '#/components/schemas/UserLoginMetadata'
+
+    UserLoginFailedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [USER_LOGIN_FAILED]
+            resourceType:
+              type: string
+              enum: [USER]
+            metadata:
+              $ref: '#/components/schemas/UserLoginFailedMetadata'
+
+    UserLoginMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            email:
+              type: string
+            ipAddress:
+              type: string
+            userAgent:
+              type: string
+            success:
+              type: boolean
+
+    UserLoginFailedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            email:
+              type: string
+            ipAddress:
+              type: string
+            userAgent:
+              type: string
+            success:
+              type: boolean
+            failureReason:
+              type: string
+
+    PasswordChangedAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [PASSWORD_CHANGED]
+            resourceType:
+              type: string
+              enum: [USER]
+            metadata:
+              $ref: '#/components/schemas/PasswordChangedMetadata'
+
+    PasswordChangedMetadata:
+      type: object
+      properties:
+        after:
+          type: object
+          properties:
+            email:
+              type: string
+            changeType:
+              type: string
+              description: Type of password change (self_change, reset, admin_reset)
+            ipAddress:
+              type: string
+
+    # System Events
+    LogRateExceededAuditLog:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogBase'
+        - type: object
+          properties:
+            action:
+              type: string
+              enum: [LOG_RATE_EXCEEDED]
+            resourceType:
+              type: string
+              enum: [PROJECT]
 
     PaginatedAuditLogResponse:
       type: object
