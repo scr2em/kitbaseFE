@@ -115,7 +115,9 @@ export function FlagRulesBuilder({
     const newRules = [...editableRules];
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= newRules.length) return;
-    [newRules[index], newRules[newIndex]] = [newRules[newIndex], newRules[index]];
+    const temp = newRules[index];
+    newRules[index] = newRules[newIndex]!;
+    newRules[newIndex] = temp!;
     setEditableRules(newRules);
     setHasChanges(true);
   };

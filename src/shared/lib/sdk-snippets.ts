@@ -85,14 +85,15 @@ export function getFeatureFlagSnippets(
 ): CodeSnippetTab[] {
   const token = apiKey || 'YOUR_API_KEY';
   
-  const methodMap: Record<string, { method: string; defaultValue: string }> = {
+  const methodMap = {
     boolean: { method: 'getBooleanValue', defaultValue: 'false' },
     string: { method: 'getStringValue', defaultValue: "'default'" },
     number: { method: 'getNumberValue', defaultValue: '0' },
     json: { method: 'getJsonValue', defaultValue: '{}' },
-  };
+  } as const;
   
-  const { method, defaultValue } = methodMap[valueType] || methodMap.boolean;
+  const config = methodMap[valueType as keyof typeof methodMap] ?? methodMap.boolean;
+  const { method, defaultValue } = config;
   
   return [
     {
