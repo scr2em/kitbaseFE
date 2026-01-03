@@ -1,7 +1,7 @@
 import { NavLink } from '@mantine/core';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Building, Users, Webhook } from 'lucide-react';
+import { Building, Users, Webhook, FileText } from 'lucide-react';
 import { usePermissions } from '../hooks';
 
 export function OrganizationLayout() {
@@ -28,6 +28,12 @@ export function OrganizationLayout() {
       label: t('navigation.organization_menu.webhooks'),
       path: '/organization/webhooks',
       permission: permissions.canViewWebhook,
+    },
+    {
+      icon: FileText,
+      label: t('navigation.organization_menu.audit_trail'),
+      path: '/organization/audit-trail',
+      permission: null,
     },
   ];
 
@@ -72,18 +78,3 @@ export function OrganizationLayout() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

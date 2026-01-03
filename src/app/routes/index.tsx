@@ -36,6 +36,7 @@ import {
   SegmentsPage,
 } from '../../features/feature-flags';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
+import { AuditTrailPage } from '../../features/audit-trail/ui';
 import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
 import { BillingPage } from '../../features/billing';
 import { LandingPage } from '../../features/landing';
@@ -157,6 +158,7 @@ const routes: RouteObject[] = [
               { path: 'webhooks', element: <WebhooksPage /> },
               { path: 'webhooks/create', element: <CreateWebhookPage /> },
               { path: 'webhooks/:webhookId', element: <WebhookDetailPage /> },
+              { path: 'audit-trail', element: <AuditTrailPage /> },
             ],
           },
           {

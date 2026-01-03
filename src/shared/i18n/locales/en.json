@@ -252,7 +252,8 @@
     "organization_menu": {
       "info": "Info",
       "team": "Team",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "audit_trail": "Audit Trail"
     }
   },
   "team": {
@@ -1490,6 +1491,54 @@
   },
   "breadcrumb": {
     "home": "Home"
+  },
+  "audit_trail": {
+    "page_title": "Audit Trail",
+    "title": "Audit Trail",
+    "subtitle": "Track organization activity ({{count}} logs)",
+    "refetch": "Refresh",
+    "no_logs": "No audit logs recorded yet",
+    "error_loading": "Failed to load audit logs. Please try again.",
+    "load_more": "Load More",
+    "loading_more": "Loading...",
+    "filters": {
+      "toggle": "Filters",
+      "action_label": "Action",
+      "action_placeholder": "e.g., PROJECT_CREATED",
+      "resource_type_label": "Resource Type",
+      "resource_type_placeholder": "e.g., PROJECT",
+      "user_id_label": "User ID",
+      "user_id_placeholder": "Filter by user ID...",
+      "start_date_label": "Start Date",
+      "end_date_label": "End Date",
+      "date_placeholder": "Select date",
+      "clear": "Clear"
+    },
+    "table": {
+      "action": "Action",
+      "resource": "Resource",
+      "method": "Method",
+      "status": "Status",
+      "timestamp": "Timestamp",
+      "actions": "Actions"
+    },
+    "detail": {
+      "modal_title": "Audit Log Details",
+      "action": "Action",
+      "timestamp": "Timestamp",
+      "resource_type": "Resource Type",
+      "resource_name": "Resource Name",
+      "resource_id": "Resource ID",
+      "user_id": "User ID",
+      "http_method": "HTTP Method",
+      "response_status": "Response Status",
+      "endpoint": "Endpoint",
+      "ip_address": "IP Address",
+      "user_agent": "User Agent",
+      "error_message": "Error",
+      "metadata": "Metadata",
+      "request_body": "Request Body"
+    }
   },
   "landing": {
     "page_title": "Home",
