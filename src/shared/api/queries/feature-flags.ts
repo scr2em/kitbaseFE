@@ -77,12 +77,14 @@ export function useDeleteFeatureFlagMutation(projectKey: string, environmentId: 
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (flagKey: string) => {
-      const response = await apiClient.projects.deleteFeatureFlag(projectKey, environmentId, flagKey);
+    mutationFn: async (input: { flagKey: string; deleteAllEnvironments?: boolean }) => {
+      const response = await apiClient.projects.deleteFeatureFlag(projectKey, environmentId, input.flagKey, {
+        deleteAllEnvironments: input.deleteAllEnvironments,
+      });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getFeatureFlagsQueryKey(projectKey, environmentId) });
+      queryClient.invalidateQueries({ queryKey: [FEATURE_FLAGS_QUERY_KEY, projectKey] });
     },
   });
 }

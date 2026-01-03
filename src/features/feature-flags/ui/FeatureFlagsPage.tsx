@@ -9,6 +9,7 @@ import {
   ScrollArea,
   Badge,
   Switch,
+  Checkbox,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Plus, MoreVertical, Trash2, Edit, Flag, Eye } from 'lucide-react';
@@ -50,18 +51,33 @@ export function FeatureFlagsPage() {
   const { showError } = useShowBackendError();
 
   const handleDeleteFlag = (flag: FeatureFlagResponse) => {
+    let deleteAllEnvironments = false;
     modals.openConfirmModal({
       title: t('feature_flags.delete.title'),
       children: (
-        <p className="text-sm">
-          {t('feature_flags.delete.confirmation', { name: flag.name })}
-        </p>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm">
+            {t('feature_flags.delete.confirmation', { name: flag.name })}
+          </p>
+
+          <Checkbox
+            defaultChecked={false}
+            label={t('feature_flags.delete.delete_all_environments_label')}
+            description={t('feature_flags.delete.delete_all_environments_description')}
+            onChange={(e) => {
+              deleteAllEnvironments = e.currentTarget.checked;
+            }}
+          />
+        </div>
       ),
       labels: { confirm: t('feature_flags.delete.confirm'), cancel: t('feature_flags.delete.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          await deleteFeatureFlagMutation.mutateAsync(flag.flagKey);
+          await deleteFeatureFlagMutation.mutateAsync({
+            flagKey: flag.flagKey,
+            deleteAllEnvironments,
+          });
           notifications.show({
             title: t('common.success'),
             message: t('feature_flags.delete.success_message'),

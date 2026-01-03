@@ -1100,7 +1100,9 @@
       "confirmation": "Are you sure you want to delete '{{name}}'? This action cannot be undone.",
       "confirm": "Delete",
       "cancel": "Cancel",
-      "success_message": "Feature flag deleted successfully"
+      "success_message": "Feature flag deleted successfully",
+      "delete_all_environments_label": "Delete this flag in all environments",
+      "delete_all_environments_description": "When enabled, the same flag key will be removed from every environment in this project."
     },
     "actions": {
       "view": "View Details",

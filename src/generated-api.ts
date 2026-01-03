@@ -108,7 +108,11 @@ export type PermissionCode =
   | "webhook.view"
   | "webhook.create"
   | "webhook.update"
-  | "webhook.delete";
+  | "webhook.delete"
+  | "feature_flag.view"
+  | "feature_flag.create"
+  | "feature_flag.update"
+  | "feature_flag.delete";
 
 /** Target platform for the OTA update */
 export type OtaTargetPlatformEnum = "ios" | "android" | "both";
@@ -1961,6 +1965,35 @@ export interface PaginatedFeatureFlagSegmentResponse {
   totalPages: number;
 }
 
+/** Feature flag usage statistics for billing and analytics */
+export interface FeatureFlagUsageResponse {
+  /**
+   * Total number of single flag evaluations in the period
+   * @format int64
+   */
+  evaluationCount: number;
+  /**
+   * Total number of snapshot (bulk) evaluations in the period
+   * @format int64
+   */
+  snapshotCount: number;
+  /**
+   * Number of unique identities (MAU) that evaluated flags in the period
+   * @format int64
+   */
+  mauCount: number;
+  /**
+   * Start date of the usage period (inclusive)
+   * @format date
+   */
+  fromDate: string;
+  /**
+   * End date of the usage period (inclusive)
+   * @format date
+   */
+  toDate: string;
+}
+
 import type {
   AxiosInstance,
   AxiosRequestConfig,
@@ -3302,11 +3335,19 @@ export class Api<
       projectKey: string,
       environmentId: string,
       flagKey: string,
+      query?: {
+        /**
+         * When true, delete the feature flag with the same key across all environments in the project.
+         * @default false
+         */
+        deleteAllEnvironments?: boolean;
+      },
       params: RequestParams = {},
     ) =>
       this.request<void, ErrorResponse>({
         path: `/projects/${projectKey}/environments/${environmentId}/feature-flags/${flagKey}`,
         method: "DELETE",
+        query: query,
         secure: true,
         ...params,
       }),
@@ -4385,6 +4426,40 @@ export class Api<
       this.request<WebhookDeliveryResponse, ErrorResponse>({
         path: `/webhooks/${webhookId}/test`,
         method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  featureFlags = {
+    /**
+     * @description Get usage statistics for feature flags in the current organization. Returns evaluation counts, snapshot counts, and MAU (monthly active users) for the specified date range. Useful for billing and analytics dashboards.
+     *
+     * @tags Feature Flags
+     * @name GetFeatureFlagUsage
+     * @summary Get feature flag usage statistics
+     * @request GET:/feature-flags/usage
+     * @secure
+     */
+    getFeatureFlagUsage: (
+      query: {
+        /**
+         * Start date for the usage period (inclusive, YYYY-MM-DD)
+         * @format date
+         */
+        fromDate: string;
+        /**
+         * End date for the usage period (inclusive, YYYY-MM-DD)
+         * @format date
+         */
+        toDate: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagUsageResponse, ErrorResponse>({
+        path: `/feature-flags/usage`,
+        method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,

@@ -894,6 +894,10 @@ components:
         - webhook.create
         - webhook.update
         - webhook.delete
+        - feature_flag.view
+        - feature_flag.create
+        - feature_flag.update
+        - feature_flag.delete
 
     RoleWithPermissionsResponse:
       type: object
@@ -2797,6 +2801,37 @@ components:
         totalPages:
           type: integer
           description: Total number of pages
+
+    FeatureFlagUsageResponse:
+      type: object
+      description: Feature flag usage statistics for billing and analytics
+      required:
+        - evaluationCount
+        - snapshotCount
+        - mauCount
+        - fromDate
+        - toDate
+      properties:
+        evaluationCount:
+          type: integer
+          format: int64
+          description: Total number of single flag evaluations in the period
+        snapshotCount:
+          type: integer
+          format: int64
+          description: Total number of snapshot (bulk) evaluations in the period
+        mauCount:
+          type: integer
+          format: int64
+          description: Number of unique identities (MAU) that evaluated flags in the period
+        fromDate:
+          type: string
+          format: date
+          description: Start date of the usage period (inclusive)
+        toDate:
+          type: string
+          format: date
+          description: End date of the usage period (inclusive)
 
   responses:
     NotFoundError:
@@ -4953,6 +4988,13 @@ paths:
           schema:
             type: string
           description: Feature flag key
+        - name: deleteAllEnvironments
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: When true, delete the feature flag with the same key across all environments in the project.
       responses:
         '204':
           description: Feature flag deleted successfully
@@ -6582,3 +6624,44 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+
+  # ==================== Feature Flag Usage ====================
+  /feature-flags/usage:
+    get:
+      operationId: getFeatureFlagUsage
+      summary: Get feature flag usage statistics
+      description: |
+        Get usage statistics for feature flags in the current organization.
+        Returns evaluation counts, snapshot counts, and MAU (monthly active users) for the specified date range.
+        Useful for billing and analytics dashboards.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: fromDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date for the usage period (inclusive, YYYY-MM-DD)
+        - name: toDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date for the usage period (inclusive, YYYY-MM-DD)
+      responses:
+        '200':
+          description: Usage statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagUsageResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
