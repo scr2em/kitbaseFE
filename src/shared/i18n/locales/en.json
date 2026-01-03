@@ -585,6 +585,15 @@
       "success_message": "Project deleted successfully",
       "menu_item": "Delete project"
     },
+    "project_types": {
+      "react": "React",
+      "angular": "Angular",
+      "vue": "Vue",
+      "nextjs": "Next.js",
+      "ionic": "Ionic",
+      "flutter": "Flutter",
+      "others": "Other"
+    },
     "environment_redirect": {
       "no_environments_title": "No Environments Yet",
       "no_environments_description": "Create your first environment to start managing OTA updates, builds, and more."

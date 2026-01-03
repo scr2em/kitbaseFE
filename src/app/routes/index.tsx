@@ -19,6 +19,7 @@ import {
   EditChangelogPage,
   ProjectSettingsPage,
   ProjectEnvironmentRedirect,
+  EnvironmentDefaultRedirect,
   ProjectAnalyticsPage,
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
@@ -112,7 +113,7 @@ const routes: RouteObject[] = [
                 path: ':environmentId',
                 element: <ProjectDetailPage />,
                 children: [
-                  { index: true, element: <Navigate to="ota-updates" replace /> },
+                  { index: true, element: <EnvironmentDefaultRedirect /> },
                   { path: 'ota-updates', element: <OtaUpdatesPage /> },
                   { path: 'ota-updates/create', element: <OtaUpdateFormPage /> },
                   { path: 'ota-updates/:otaUpdateId/edit', element: <OtaUpdateFormPage /> },

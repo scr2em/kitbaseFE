@@ -14,4 +14,5 @@ export { CreateApiKeyModal } from './ui/CreateApiKeyModal';
 export { ApiKeyCreatedModal } from './ui/ApiKeyCreatedModal';
 export { ProjectSettingsPage } from './ui/ProjectSettingsPage';
 export { ProjectEnvironmentRedirect } from './ui/ProjectEnvironmentRedirect';
+export { EnvironmentDefaultRedirect } from './ui/EnvironmentDefaultRedirect';
 export { ProjectAnalyticsPage } from './ui/ProjectAnalyticsPage';

@@ -64,36 +64,40 @@ export function ProjectDetailPage() {
   // For navigation, use the first environment if we don't have one selected
   const navEnvironmentId = environmentId || environments[0]?.id;
 
+  const isIonicProject = project?.projectType === 'ionic';
+
   const navigationItems = [
-    {
-      label: t('projects.detail.nav.ota_updates'),
-      path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/ota-updates` : '#',
-      icon: <Smartphone size={18} />,
-      requiresEnvironment: true,
-    },
-    {
-      label: t('projects.detail.nav.builds'),
-      path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/builds` : '#',
-      icon: <Hammer size={18} />,
-      requiresEnvironment: true,
-    },
-    {
-      label: t('projects.detail.nav.changelog'),
-      path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/changelog` : '#',
-      icon: <FileText size={18} />,
-      requiresEnvironment: true,
-    },
+    // OTA updates and builds are only shown for Ionic projects
+    ...(isIonicProject ? [
+      {
+        label: t('projects.detail.nav.ota_updates'),
+        path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/ota-updates` : '#',
+        icon: <Smartphone size={18} />,
+        requiresEnvironment: true,
+      },
+      {
+        label: t('projects.detail.nav.builds'),
+        path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/builds` : '#',
+        icon: <Hammer size={18} />,
+        requiresEnvironment: true,
+      },
+    ] : []),
     {
       label: t('projects.detail.nav.events'),
       path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/events` : '#',
       icon: <Activity size={18} />,
       requiresEnvironment: true,
     },
-
     {
       label: t('projects.detail.nav.feature_flags'),
       path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/feature-flags` : '#',
       icon: <Flag size={18} />,
+      requiresEnvironment: true,
+    },
+    {
+      label: t('projects.detail.nav.changelog'),
+      path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/changelog` : '#',
+      icon: <FileText size={18} />,
       requiresEnvironment: true,
     },
     {
@@ -120,9 +124,10 @@ export function ProjectDetailPage() {
     // Get current path segment after environmentId
     const pathParts = location.pathname.split('/');
     const envIndex = pathParts.findIndex((part) => part === environmentId);
-    const pathAfterEnv = envIndex !== -1 ? pathParts.slice(envIndex + 1).join('/') : 'ota-updates';
+    const defaultPath = isIonicProject ? 'ota-updates' : 'events';
+    const pathAfterEnv = envIndex !== -1 ? pathParts.slice(envIndex + 1).join('/') : defaultPath;
     
-    navigate(`/projects/${projectKey}/${envId}/${pathAfterEnv || 'ota-updates'}`);
+    navigate(`/projects/${projectKey}/${envId}/${pathAfterEnv || defaultPath}`);
   };
 
   const handleEditEnvironment = () => {
@@ -154,8 +159,9 @@ export function ProjectDetailPage() {
           
           // Navigate to another environment or redirect to project root
           const remainingEnvironments = environments.filter((env) => env.id !== currentEnvironment.id);
+          const defaultPath = isIonicProject ? 'ota-updates' : 'events';
           if (remainingEnvironments.length > 0) {
-            navigate(`/projects/${projectKey}/${remainingEnvironments[0]?.id}/ota-updates`);
+            navigate(`/projects/${projectKey}/${remainingEnvironments[0]?.id}/${defaultPath}`);
           } else {
             navigate(`/projects/${projectKey}`);
           }

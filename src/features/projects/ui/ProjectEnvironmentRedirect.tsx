@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, Navigate } from 'react-router';
 import { AlertCircle, Plus } from 'lucide-react';
 import { useEnvironmentsInfiniteQuery } from '../../../shared/api/queries/environments';
+import { useProjectQuery } from '../../../shared/api/queries';
 import { CreateEnvironmentModal } from '../../environments/ui/CreateEnvironmentModal';
 import { useState } from 'react';
 
@@ -11,7 +12,10 @@ export function ProjectEnvironmentRedirect() {
   const { projectKey } = useParams<{ projectKey: string }>();
   const [createModalOpened, setCreateModalOpened] = useState(false);
 
-  const { data, isLoading, isError } = useEnvironmentsInfiniteQuery(projectKey || '');
+  const { data: project, isLoading: isLoadingProject } = useProjectQuery(projectKey || '');
+  const { data, isLoading: isLoadingEnvironments, isError } = useEnvironmentsInfiniteQuery(projectKey || '');
+  
+  const isLoading = isLoadingProject || isLoadingEnvironments;
 
   if (isLoading) {
     return (
@@ -36,11 +40,13 @@ export function ProjectEnvironmentRedirect() {
   }
 
   const environments = data?.pages.flatMap((page) => page.data) || [];
+  const isIonicProject = project?.projectType === 'ionic';
+  const defaultPath = isIonicProject ? 'ota-updates' : 'events';
 
   // If there are environments, redirect to the first one
   const firstEnvironment = environments[0];
   if (firstEnvironment) {
-    return <Navigate to={`/projects/${projectKey}/${firstEnvironment.id}/ota-updates`} replace />;
+    return <Navigate to={`/projects/${projectKey}/${firstEnvironment.id}/${defaultPath}`} replace />;
   }
 
   // No environments - show prompt to create one
@@ -74,4 +80,3 @@ export function ProjectEnvironmentRedirect() {
     </div>
   );
 }
-
