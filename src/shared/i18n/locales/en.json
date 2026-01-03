@@ -226,6 +226,7 @@
     "false": "False"
   },
   "navigation": {
+    "docs": "Documentation",
     "dashboard": "Dashboard",
     "projects": "Projects",
     "live_updates": "Live Updates",

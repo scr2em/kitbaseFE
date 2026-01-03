@@ -13,6 +13,7 @@ import {
   Plus,
   Check,
   Search,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useCurrentUserQuery } from '../api/queries/user';
@@ -166,6 +167,20 @@ export function AppLayout() {
                 <Kbd size="xs">K</Kbd>
               </div>
             </button>
+
+            <Tooltip label={t('navigation.docs')} withArrow>
+              <ActionIcon
+                component="a"
+                href="https://docs.kitbase.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="lg"
+                variant="subtle"
+                color="gray"
+              >
+                <BookOpen size={20} />
+              </ActionIcon>
+            </Tooltip>
 
             <NotificationDropdown />
 
