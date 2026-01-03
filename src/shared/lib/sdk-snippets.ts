@@ -162,6 +162,22 @@ if ($value) {
     // Feature is enabled for this user
 }`,
     },
+    {
+      language: 'bash',
+      label: 'cURL',
+      code: `curl -X POST 'https://api.kitbase.dev/v1/feature-flags/evaluate' \\
+  -H 'Content-Type: application/json' \\
+  -H 'X-API-Key: ${token}' \\
+  -d '{
+    "flagKey": "${flagKey}",
+    "identityId": "user-123",
+    "context": {
+      "plan": "premium",
+      "country": "US"
+    },
+    "defaultValue": ${valueType === 'json' ? '{}' : defaultValue}
+  }'`,
+    },
   ];
 }
 

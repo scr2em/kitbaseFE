@@ -57,6 +57,21 @@ interface CodeSnippetProps {
   title?: string;
 }
 
+// Bash/Shell language definition for cURL
+(Prism.languages as Record<string, unknown>).bash = {
+  comment: { pattern: /#.*/, greedy: true },
+  string: [
+    { pattern: /\$'(?:[^'\\]|\\[\s\S])*'/, greedy: true },
+    { pattern: /"(?:[^"\\$]|\\[\s\S]|\$(?:[^"({]|(?=")))*"/, greedy: true },
+    { pattern: /'[^']*'/, greedy: true }
+  ],
+  variable: /\$(?:\w+|[!#?*@$]|\{[^}]+\})/,
+  function: /\b(?:curl|wget|cat|echo|grep|sed|awk|find|ls|cd|mkdir|rm|cp|mv|chmod|chown|export|source|alias)\b/,
+  keyword: /\b(?:if|then|else|elif|fi|for|while|do|done|case|esac|in|function|return|exit)\b/,
+  operator: /&&|\|\||[<>]=?|[!=]=?|[-+*/%]=?|[|&^~]/,
+  punctuation: /[{}[\];(),.:]/
+};
+
 // Map our language names to Prism language identifiers
 const languageMap: Record<string, string> = {
   typescript: 'typescript',
@@ -65,6 +80,7 @@ const languageMap: Record<string, string> = {
   php: 'php',
   bash: 'bash',
   shell: 'bash',
+  curl: 'bash',
   json: 'json',
 };
 
@@ -128,10 +144,11 @@ export function CodeSnippet({ tabs, defaultLanguage, title }: CodeSnippetProps) 
         {tabs.map((tab) => (
           <Tabs.Panel key={tab.language} value={tab.language}>
             <div className="relative">
-              <div className="absolute top-2 right-2 z-10">
+              <div className="absolute top-2 right-2 z-20 pointer-events-auto">
                 <CopyButton value={tab.code}>
                   {({ copied, copy }) => (
                     <Button
+                      type="button"
                       variant="subtle"
                       size="xs"
                       color={copied ? 'green' : 'gray'}
