@@ -1,5 +1,7 @@
-export { FeatureFlagsPage } from './ui/FeatureFlagsPage';
+export { FeatureFlagsLayout } from './ui/FeatureFlagsLayout';
+export { FlagListPage } from './ui/FlagListPage';
 export { FeatureFlagDetailPage } from './ui/FeatureFlagDetailPage';
+export { FeatureFlagsAnalyticsPage } from './ui/FeatureFlagsAnalyticsPage';
 export { CreateFeatureFlagModal } from './ui/CreateFeatureFlagModal';
 export { UpdateFeatureFlagModal } from './ui/UpdateFeatureFlagModal';
 export { FlagValueInput } from './ui/FlagValueInput';

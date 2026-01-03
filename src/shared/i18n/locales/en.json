@@ -763,6 +763,11 @@
   "events": {
     "page_title": "Events",
     "title": "Events",
+    "tabs": {
+      "events": "Events",
+      "aggregated": "Aggregated",
+      "analytics": "Analytics"
+    },
     "settings_button": "Settings",
     "subtitle": "View custom events ({{count}} events)",
     "subtitle_simple": "Track and analyze custom events from your app",
@@ -1037,6 +1042,11 @@
   "feature_flags": {
     "page_title": "Feature Flags",
     "title": "Feature Flags",
+    "tabs": {
+      "flags": "Flags",
+      "segments": "Segments",
+      "analytics": "Analytics"
+    },
     "subtitle": "Manage feature flags ({{count}} flags)",
     "create_button": "Create Flag",
     "create_first": "Create Your First Feature Flag",

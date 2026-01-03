@@ -27,7 +27,7 @@ import type { FeatureFlagResponse } from '../../../generated-api';
 import { CreateFeatureFlagModal } from './CreateFeatureFlagModal';
 import { UpdateFeatureFlagModal } from './UpdateFeatureFlagModal';
 
-export function FeatureFlagsPage() {
+export function FlagListPage() {
   const { t } = useTranslation();
   const { projectKey, environmentId } = useParams<{ projectKey: string; environmentId: string }>();
   const navigate = useNavigate();
@@ -91,7 +91,7 @@ export function FeatureFlagsPage() {
   };
 
   const handleViewFlag = (flag: FeatureFlagResponse) => {
-    navigate(`/projects/${projectKey}/${environmentId}/feature-flags/${flag.flagKey}`);
+    navigate(`/projects/${projectKey}/${environmentId}/feature-flags/flags/${flag.flagKey}`);
   };
 
   const getValueTypeBadge = (valueType: string) => {

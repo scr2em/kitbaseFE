@@ -22,8 +22,19 @@ import {
   ProjectAnalyticsPage,
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
-import { EventsPage, EventDetailPage } from '../../features/events';
-import { FeatureFlagsPage, FeatureFlagDetailPage, SegmentsPage } from '../../features/feature-flags';
+import { 
+  EventsLayout,
+  EventListPage,
+  EventsAnalyticsPage,
+  EventDetailPage,
+} from '../../features/events';
+import { 
+  FeatureFlagsLayout, 
+  FlagListPage, 
+  FeatureFlagDetailPage, 
+  FeatureFlagsAnalyticsPage,
+  SegmentsPage,
+} from '../../features/feature-flags';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
 import { BillingPage } from '../../features/billing';
@@ -110,11 +121,27 @@ const routes: RouteObject[] = [
                   { path: 'changelog/create', element: <CreateChangelogPage /> },
                   { path: 'changelog/:changelogId/edit', element: <EditChangelogPage /> },
                   { path: 'api-keys', element: <ApiKeysPage /> },
-                  { path: 'events', element: <EventsPage /> },
-                  { path: 'events/:eventId', element: <EventDetailPage /> },
-                  { path: 'feature-flags', element: <FeatureFlagsPage /> },
-                  { path: 'feature-flags/:flagKey', element: <FeatureFlagDetailPage /> },
-                  { path: 'segments', element: <SegmentsPage /> },
+                  { 
+                    path: 'events',
+                    element: <EventsLayout />,
+                    children: [
+                      { index: true, element: <Navigate to="list" replace /> },
+                      { path: 'list', element: <EventListPage /> },
+                      { path: 'list/:eventId', element: <EventDetailPage /> },
+                      { path: 'analytics', element: <EventsAnalyticsPage /> },
+                    ],
+                  },
+                  { 
+                    path: 'feature-flags',
+                    element: <FeatureFlagsLayout />,
+                    children: [
+                      { index: true, element: <Navigate to="flags" replace /> },
+                      { path: 'flags', element: <FlagListPage /> },
+                      { path: 'flags/:flagKey', element: <FeatureFlagDetailPage /> },
+                      { path: 'segments', element: <SegmentsPage /> },
+                      { path: 'analytics', element: <FeatureFlagsAnalyticsPage /> },
+                    ],
+                  },
                 ],
               },
             ],

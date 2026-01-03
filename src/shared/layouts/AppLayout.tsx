@@ -1,4 +1,4 @@
-import { AppShell, Avatar, Menu, ActionIcon, rem, NavLink, ScrollArea, ThemeIcon, Divider, Kbd } from '@mantine/core';
+import { AppShell, Avatar, Menu, ActionIcon, rem, ScrollArea, ThemeIcon, Divider, Kbd, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,6 @@ import {
   Menu as MenuIcon,
   Folder,
   Plus,
-  ChevronDown,
   Check,
   Search,
 } from 'lucide-react';
@@ -20,7 +19,6 @@ import { useCurrentUserQuery } from '../api/queries/user';
 import { usePermissions, useCurrentOrganization } from '../hooks';
 import { CreateOrganizationModal } from '../../features/organization/create-organization';
 import { NotificationDropdown } from '../components/NotificationDropdown';
-import { Breadcrumb } from '../components/Breadcrumb';
 import { spotlight } from '@mantine/spotlight';
 
 export function AppLayout() {
@@ -114,7 +112,7 @@ export function AppLayout() {
     <AppShell
       header={{ height: 60 }}
       navbar={{
-        width: 280,
+        width: 72,
         breakpoint: 'sm',
         collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
       }}
@@ -215,94 +213,72 @@ export function AppLayout() {
         </div>
       </AppShell.Header>
 
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar p="xs">
         <AppShell.Section grow component={ScrollArea}>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center gap-2">
             {visibleNavigationCategories.map((category) => (
-              <div key={category.id}>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 px-3 mb-2">
-                  {category.label}
-                </p>
-                <div>
-                  {category.items.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-                    
-                    return (
-                      <NavLink
-                        key={item.path}
-                        label={item.label}
-                        leftSection={<Icon size={20} />}
-                        active={isActive}
+              <div key={category.id} className="flex flex-col items-center gap-1 w-full">
+                {category.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                  
+                  return (
+                    <Tooltip key={item.path} label={item.label} position="right" withArrow>
+                      <ActionIcon
+                        size="xl"
+                        variant={isActive ? 'light' : 'subtle'}
+                        color={isActive ? 'blue' : 'gray'}
                         onClick={() => navigate(item.path)}
-                        mb="xs"
-                        style={{ borderRadius: 'var(--mantine-radius-md)' }}
-                      />
-                    );
-                  })}
-                </div>
+                        radius="md"
+                      >
+                        <Icon size={22} />
+                      </ActionIcon>
+                    </Tooltip>
+                  );
+                })}
               </div>
             ))}
             
             {/* Create Organization Button */}
             {createOrgItem && (
-              <NavLink
-                key={createOrgItem.path}
-                label={createOrgItem.label}
-                leftSection={<Plus size={20} />}
-                active={location.pathname === createOrgItem.path}
-                onClick={() => navigate(createOrgItem.path)}
-                mb="xs"
-                style={{ 
-                  borderRadius: 'var(--mantine-radius-md)',
-                  backgroundColor: 'var(--mantine-color-blue-0)',
-                  border: '1px dashed var(--mantine-color-blue-3)',
-                }}
-                styles={{
-                  label: {
-                    color: 'var(--mantine-color-blue-6)',
-                    fontWeight: 500,
-                  }
-                }}
-              />
+              <Tooltip label={createOrgItem.label} position="right" withArrow>
+                <ActionIcon
+                  size="xl"
+                  variant="light"
+                  color="blue"
+                  onClick={() => navigate(createOrgItem.path)}
+                  radius="md"
+                  style={{ 
+                    border: '1px dashed var(--mantine-color-blue-3)',
+                  }}
+                >
+                  <Plus size={22} />
+                </ActionIcon>
+              </Tooltip>
             )}
           </div>
         </AppShell.Section>
 
         <AppShell.Section>
           <div
-            className="p-4"
+            className="flex justify-center py-3"
             style={{
               borderTop: '1px solid var(--mantine-color-gray-3)',
             }}
           >
             {hasOrganizations ? (
-              <Menu shadow="md" width={260} position="top">
+              <Menu shadow="md" width={260} position="right-end">
                 <Menu.Target>
-                  <div
-                    className="cursor-pointer p-3 rounded-md"
-                    style={{
-                      backgroundColor: 'var(--mantine-color-gray-0)',
-                      border: '1px solid var(--mantine-color-gray-3)',
-                    }}
-                  >
-                    <div className="flex gap-3 justify-between items-center">
-                      <div className="flex gap-3 items-center flex-1 min-w-0">
-                        <ThemeIcon color="violet" variant="light" size="lg" radius="md">
-                          <Building size={18} />
-                        </ThemeIcon>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">
-                            {currentOrganization?.organization.name || t('navigation.no_organizations')}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {t('navigation.organization_info')}
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown size={16} />
-                    </div>
-                  </div>
+                  <Tooltip label={currentOrganization?.organization.name || t('navigation.no_organizations')} position="right" withArrow>
+                    <ActionIcon
+                      size="xl"
+                      variant="light"
+                      color="violet"
+                      radius="md"
+                    >
+                      <Building size={22} />
+                    </ActionIcon>
+                  </Tooltip>
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Label>{t('navigation.switch_organization')}</Menu.Label>
@@ -338,32 +314,27 @@ export function AppLayout() {
                 </Menu.Dropdown>
               </Menu>
             ) : (
-              <div
-                className="cursor-pointer p-3 rounded-md"
-                style={{
-                  backgroundColor: 'var(--mantine-color-blue-0)',
-                  border: '1px dashed var(--mantine-color-blue-3)',
-                }}
-                onClick={openCreateOrgModal}
-              >
-                <div className="flex gap-3 items-center">
-                  <ThemeIcon color="blue" variant="light" size="lg" radius="md">
-                    <Plus size={18} />
-                  </ThemeIcon>
-                  <span className="text-sm font-medium text-blue-600">
-                    {t('navigation.create_new_organization')}
-                  </span>
-                </div>
-              </div>
+              <Tooltip label={t('navigation.create_new_organization')} position="right" withArrow>
+                <ActionIcon
+                  size="xl"
+                  variant="light"
+                  color="blue"
+                  radius="md"
+                  onClick={openCreateOrgModal}
+                  style={{
+                    border: '1px dashed var(--mantine-color-blue-3)',
+                  }}
+                >
+                  <Plus size={22} />
+                </ActionIcon>
+              </Tooltip>
             )}
           </div>
         </AppShell.Section>
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <div className="mb-4">
-          <Breadcrumb />
-        </div>
+      
         <Outlet />
       </AppShell.Main>
 
