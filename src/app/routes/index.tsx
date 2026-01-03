@@ -23,6 +23,7 @@ import {
 } from '../../features/projects';
 import { AcceptInvitationPage } from '../../features/invitation';
 import { EventsPage, EventDetailPage } from '../../features/events';
+import { FeatureFlagsPage, FeatureFlagDetailPage, SegmentsPage } from '../../features/feature-flags';
 import { WebhooksPage, CreateWebhookPage, WebhookDetailPage } from '../../features/webhooks';
 import { ProfileSettingsPage, SettingsLayout } from '../../features/settings/profile';
 import { BillingPage } from '../../features/billing';
@@ -111,6 +112,9 @@ const routes: RouteObject[] = [
                   { path: 'api-keys', element: <ApiKeysPage /> },
                   { path: 'events', element: <EventsPage /> },
                   { path: 'events/:eventId', element: <EventDetailPage /> },
+                  { path: 'feature-flags', element: <FeatureFlagsPage /> },
+                  { path: 'feature-flags/:flagKey', element: <FeatureFlagDetailPage /> },
+                  { path: 'segments', element: <SegmentsPage /> },
                 ],
               },
             ],

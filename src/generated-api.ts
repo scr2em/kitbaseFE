@@ -10,6 +10,68 @@
  * ---------------------------------------------------------------
  */
 
+/**
+ * OpenFeature-compatible error codes:
+ * - PROVIDER_NOT_READY: Provider is not ready
+ * - FLAG_NOT_FOUND: Flag does not exist
+ * - PARSE_ERROR: Error parsing flag configuration
+ * - TYPE_MISMATCH: Requested type doesn't match flag type
+ * - TARGETING_KEY_MISSING: Required targeting key is missing
+ * - INVALID_CONTEXT: Evaluation context is invalid
+ * - GENERAL: General error
+ */
+export type OpenFeatureErrorCodeEnum =
+  | "PROVIDER_NOT_READY"
+  | "FLAG_NOT_FOUND"
+  | "PARSE_ERROR"
+  | "TYPE_MISMATCH"
+  | "TARGETING_KEY_MISSING"
+  | "INVALID_CONTEXT"
+  | "GENERAL";
+
+/**
+ * OpenFeature-compatible reason for the resolved value:
+ * - STATIC: Flag resolved to its default value (no targeting rules matched)
+ * - DEFAULT: Client-provided default was returned (flag not found or error)
+ * - TARGETING_MATCH: Flag resolved based on targeting rules
+ * - SPLIT: Flag resolved based on percentage rollout
+ * - CACHED: Value was from cache
+ * - DISABLED: Flag is disabled
+ * - UNKNOWN: Reason is unknown
+ * - STALE: Cached value that may be outdated
+ * - ERROR: An error occurred during evaluation
+ */
+export type OpenFeatureReasonEnum =
+  | "STATIC"
+  | "DEFAULT"
+  | "TARGETING_MATCH"
+  | "SPLIT"
+  | "CACHED"
+  | "DISABLED"
+  | "UNKNOWN"
+  | "STALE"
+  | "ERROR";
+
+/** Operator for segment rule conditions */
+export type FeatureFlagOperatorEnum =
+  | "eq"
+  | "neq"
+  | "contains"
+  | "not_contains"
+  | "starts_with"
+  | "ends_with"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "exists"
+  | "not_exists"
+  | "in"
+  | "not_in";
+
+/** The data type of the feature flag value */
+export type FeatureFlagValueTypeEnum = "boolean" | "string" | "number" | "json";
+
 /** Type discriminator for merged member/invitation list */
 export type MemberOrInvitationType = "MEMBER" | "INVITATION";
 
@@ -1540,6 +1602,365 @@ export interface EventTimelineResponse {
   data: EventTimelinePoint[];
 }
 
+/** Request to create a new feature flag */
+export interface CreateFeatureFlagRequest {
+  /**
+   * Unique key for the flag within the project (alphanumeric, underscores, hyphens)
+   * @minLength 1
+   * @maxLength 100
+   * @pattern ^[a-zA-Z][a-zA-Z0-9_-]*$
+   */
+  flagKey: string;
+  /**
+   * Human-readable name for the flag
+   * @minLength 1
+   * @maxLength 255
+   */
+  name: string;
+  /**
+   * Description of what this flag controls
+   * @maxLength 1000
+   */
+  description?: string;
+  /** The data type of the feature flag value */
+  valueType: FeatureFlagValueTypeEnum;
+  /**
+   * Default enabled state for this environment
+   * @default false
+   */
+  defaultEnabled?: boolean;
+  /** Default value when flag is enabled (type depends on valueType) */
+  defaultValue?: any;
+}
+
+/** Request to update a feature flag */
+export interface UpdateFeatureFlagRequest {
+  /**
+   * Human-readable name for the flag
+   * @minLength 1
+   * @maxLength 255
+   */
+  name?: string;
+  /**
+   * Description of what this flag controls
+   * @maxLength 1000
+   */
+  description?: string;
+  /** Whether the flag is enabled in this environment */
+  enabled?: boolean;
+  /** Value when flag is enabled (type depends on valueType) */
+  value?: any;
+}
+
+/** Request to create a new targeting segment */
+export interface CreateFeatureFlagSegmentRequest {
+  /**
+   * Name of the segment
+   * @minLength 1
+   * @maxLength 255
+   */
+  name: string;
+  /**
+   * Description of this segment
+   * @maxLength 1000
+   */
+  description?: string;
+  /**
+   * List of rules that define this segment
+   * @minItems 1
+   */
+  rules: FeatureFlagSegmentRuleRequest[];
+}
+
+/** Request to update a targeting segment */
+export interface UpdateFeatureFlagSegmentRequest {
+  /**
+   * Name of the segment
+   * @minLength 1
+   * @maxLength 255
+   */
+  name?: string;
+  /**
+   * Description of this segment
+   * @maxLength 1000
+   */
+  description?: string;
+  /**
+   * List of rules that define this segment
+   * @minItems 1
+   */
+  rules?: FeatureFlagSegmentRuleRequest[];
+}
+
+/** A single rule condition for a segment */
+export interface FeatureFlagSegmentRuleRequest {
+  /**
+   * The trait/attribute field to match against
+   * @minLength 1
+   * @maxLength 255
+   */
+  field: string;
+  /** Operator for segment rule conditions */
+  operator: FeatureFlagOperatorEnum;
+  /** The value to compare against (not required for exists/not_exists operators) */
+  value?: string;
+}
+
+/** A targeting rule for a feature flag */
+export interface FeatureFlagRuleRequest {
+  /** ID of the segment to match (optional - if not provided, rule applies to all) */
+  segmentId?: string;
+  /**
+   * Percentage of matching identities to enable for (0-100)
+   * @min 0
+   * @max 100
+   */
+  rolloutPercentage?: number;
+  /** Whether to enable the flag when this rule matches */
+  enabled: boolean;
+  /** Value to return when this rule matches (type depends on flag valueType) */
+  value?: any;
+}
+
+/** Request to replace all targeting rules for a feature flag */
+export interface UpdateFeatureFlagRulesRequest {
+  /** Ordered list of targeting rules (first match wins) */
+  rules: FeatureFlagRuleRequest[];
+}
+
+/** Request to evaluate feature flags for a specific identity (OpenFeature compatible) */
+export interface FeatureFlagSnapshotRequest {
+  /**
+   * Unique identifier for the user/device (used for percentage rollouts). Maps to OpenFeature targetingKey.
+   * @maxLength 255
+   */
+  identityId?: string;
+  /** Evaluation context with typed values (OpenFeature compatible). Supports string, number, boolean, and nested objects. */
+  context?: Record<string, any>;
+}
+
+/** Request to evaluate a single feature flag (OpenFeature compatible) */
+export interface EvaluateFlagRequest {
+  /** The key of the flag to evaluate */
+  flagKey: string;
+  /**
+   * Unique identifier for the user/device (used for percentage rollouts). Maps to OpenFeature targetingKey.
+   * @maxLength 255
+   */
+  identityId?: string;
+  /** Evaluation context with typed values (OpenFeature compatible) */
+  context?: Record<string, any>;
+  /** Default value to return if flag cannot be evaluated (type should match flag type) */
+  defaultValue?: any;
+}
+
+/** Feature flag information */
+export interface FeatureFlagResponse {
+  /** Unique identifier for the feature flag */
+  id: string;
+  /** Unique key for the flag within the project */
+  flagKey: string;
+  /** Human-readable name for the flag */
+  name: string;
+  /** Description of what this flag controls */
+  description?: string;
+  /** The data type of the feature flag value */
+  valueType: FeatureFlagValueTypeEnum;
+  /** Whether the flag is enabled in this environment */
+  enabled: boolean;
+  /** Current value in this environment (type depends on valueType) */
+  value?: any;
+  /** User ID who created the flag */
+  createdBy?: string;
+  /**
+   * When the flag was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the flag was last updated
+   * @format date-time
+   */
+  updatedAt?: string;
+}
+
+/** Detailed feature flag information including rules */
+export interface FeatureFlagDetailResponse {
+  /** Unique identifier for the feature flag */
+  id: string;
+  /** Unique key for the flag within the project */
+  flagKey: string;
+  /** Human-readable name for the flag */
+  name: string;
+  /** Description of what this flag controls */
+  description?: string;
+  /** The data type of the feature flag value */
+  valueType: FeatureFlagValueTypeEnum;
+  /** Whether the flag is enabled in this environment */
+  enabled: boolean;
+  /** Default value in this environment (type depends on valueType) */
+  value?: any;
+  /** Ordered list of targeting rules */
+  rules: FeatureFlagRuleResponse[];
+  /** User ID who created the flag */
+  createdBy?: string;
+  /**
+   * When the flag was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the flag was last updated
+   * @format date-time
+   */
+  updatedAt?: string;
+}
+
+/** A targeting rule for a feature flag */
+export interface FeatureFlagRuleResponse {
+  /** Unique identifier for the rule */
+  id: string;
+  /** Order of evaluation (lower = higher priority) */
+  priority: number;
+  /** Summary of a feature flag segment (for embedding in rules) */
+  segment?: FeatureFlagSegmentSummaryResponse;
+  /** Percentage of matching identities to enable for */
+  rolloutPercentage?: number;
+  /** Whether to enable the flag when this rule matches */
+  enabled: boolean;
+  /** Value to return when this rule matches */
+  value?: any;
+}
+
+/** Feature flag targeting segment */
+export interface FeatureFlagSegmentResponse {
+  /** Unique identifier for the segment */
+  id: string;
+  /** Name of the segment */
+  name: string;
+  /** Description of this segment */
+  description?: string;
+  /** List of rules that define this segment */
+  rules: FeatureFlagSegmentRuleResponse[];
+  /** User ID who created the segment */
+  createdBy?: string;
+  /**
+   * When the segment was created
+   * @format date-time
+   */
+  createdAt: string;
+  /**
+   * When the segment was last updated
+   * @format date-time
+   */
+  updatedAt?: string;
+}
+
+/** Summary of a feature flag segment (for embedding in rules) */
+export interface FeatureFlagSegmentSummaryResponse {
+  /** Unique identifier for the segment */
+  id: string;
+  /** Name of the segment */
+  name: string;
+}
+
+/** A rule condition within a segment */
+export interface FeatureFlagSegmentRuleResponse {
+  /** Unique identifier for the rule */
+  id: string;
+  /** The trait/attribute field to match against */
+  field: string;
+  /** Operator for segment rule conditions */
+  operator: FeatureFlagOperatorEnum;
+  /** The value to compare against */
+  value?: string;
+}
+
+/** Evaluated feature flags for a specific identity */
+export interface FeatureFlagSnapshotResponse {
+  /** Project ID the flags belong to */
+  projectId: string;
+  /** Environment ID the flags were evaluated for */
+  environmentId: string;
+  /**
+   * Timestamp when the evaluation was performed
+   * @format date-time
+   */
+  evaluatedAt: string;
+  /** List of evaluated feature flags */
+  flags: EvaluatedFeatureFlagResponse[];
+}
+
+/** An evaluated feature flag value (OpenFeature compatible resolution details) */
+export interface EvaluatedFeatureFlagResponse {
+  /** Unique key for the flag */
+  flagKey: string;
+  /** Whether the flag is enabled for this identity */
+  enabled: boolean;
+  /** The data type of the feature flag value */
+  valueType: FeatureFlagValueTypeEnum;
+  /** The evaluated value (type depends on valueType, null if disabled) */
+  value?: any;
+  /** OpenFeature variant identifier (e.g., "control", "treatment-a") */
+  variant?: string;
+  /**
+   * OpenFeature-compatible reason for the resolved value:
+   * - STATIC: Flag resolved to its default value (no targeting rules matched)
+   * - DEFAULT: Client-provided default was returned (flag not found or error)
+   * - TARGETING_MATCH: Flag resolved based on targeting rules
+   * - SPLIT: Flag resolved based on percentage rollout
+   * - CACHED: Value was from cache
+   * - DISABLED: Flag is disabled
+   * - UNKNOWN: Reason is unknown
+   * - STALE: Cached value that may be outdated
+   * - ERROR: An error occurred during evaluation
+   */
+  reason: OpenFeatureReasonEnum;
+  /**
+   * OpenFeature-compatible error codes:
+   * - PROVIDER_NOT_READY: Provider is not ready
+   * - FLAG_NOT_FOUND: Flag does not exist
+   * - PARSE_ERROR: Error parsing flag configuration
+   * - TYPE_MISMATCH: Requested type doesn't match flag type
+   * - TARGETING_KEY_MISSING: Required targeting key is missing
+   * - INVALID_CONTEXT: Evaluation context is invalid
+   * - GENERAL: General error
+   */
+  errorCode?: OpenFeatureErrorCodeEnum;
+  /** Human-readable error message if errorCode is present */
+  errorMessage?: string;
+  /** Optional metadata about the flag (OpenFeature compatible) */
+  flagMetadata?: Record<string, any>;
+}
+
+/** Paginated list of feature flags */
+export interface PaginatedFeatureFlagResponse {
+  /** List of feature flags for this page */
+  data: FeatureFlagResponse[];
+  /** Current page number */
+  page: number;
+  /** Number of items per page */
+  size: number;
+  /** Total number of feature flags */
+  totalElements: number;
+  /** Total number of pages */
+  totalPages: number;
+}
+
+/** Paginated list of feature flag segments */
+export interface PaginatedFeatureFlagSegmentResponse {
+  /** List of segments for this page */
+  data: FeatureFlagSegmentResponse[];
+  /** Current page number */
+  page: number;
+  /** Number of items per page */
+  size: number;
+  /** Total number of segments */
+  totalElements: number;
+  /** Total number of pages */
+  totalPages: number;
+}
+
 import type {
   AxiosInstance,
   AxiosRequestConfig,
@@ -2755,6 +3176,299 @@ export class Api<
       }),
 
     /**
+     * @description List all feature flags for a project environment. Organization context determined by subdomain.
+     *
+     * @tags Feature Flags
+     * @name ListFeatureFlags
+     * @summary List feature flags
+     * @request GET:/projects/{projectKey}/environments/{environmentId}/feature-flags
+     * @secure
+     */
+    listFeatureFlags: (
+      projectKey: string,
+      environmentId: string,
+      query?: {
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 20
+         */
+        size?: number;
+        /**
+         * Sort direction by creation date
+         * @default "desc"
+         */
+        sort?: "asc" | "desc";
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedFeatureFlagResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flags`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new feature flag in a project environment. Organization context determined by subdomain.
+     *
+     * @tags Feature Flags
+     * @name CreateFeatureFlag
+     * @summary Create feature flag
+     * @request POST:/projects/{projectKey}/environments/{environmentId}/feature-flags
+     * @secure
+     */
+    createFeatureFlag: (
+      projectKey: string,
+      environmentId: string,
+      data: CreateFeatureFlagRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flags`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get detailed information about a feature flag including targeting rules. Organization context determined by subdomain.
+     *
+     * @tags Feature Flags
+     * @name GetFeatureFlag
+     * @summary Get feature flag details
+     * @request GET:/projects/{projectKey}/environments/{environmentId}/feature-flags/{flagKey}
+     * @secure
+     */
+    getFeatureFlag: (
+      projectKey: string,
+      environmentId: string,
+      flagKey: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagDetailResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flags/${flagKey}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a feature flag's metadata and default value. Organization context determined by subdomain.
+     *
+     * @tags Feature Flags
+     * @name UpdateFeatureFlag
+     * @summary Update feature flag
+     * @request PATCH:/projects/{projectKey}/environments/{environmentId}/feature-flags/{flagKey}
+     * @secure
+     */
+    updateFeatureFlag: (
+      projectKey: string,
+      environmentId: string,
+      flagKey: string,
+      data: UpdateFeatureFlagRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagDetailResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flags/${flagKey}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete a feature flag. Organization context determined by subdomain.
+     *
+     * @tags Feature Flags
+     * @name DeleteFeatureFlag
+     * @summary Delete feature flag
+     * @request DELETE:/projects/{projectKey}/environments/{environmentId}/feature-flags/{flagKey}
+     * @secure
+     */
+    deleteFeatureFlag: (
+      projectKey: string,
+      environmentId: string,
+      flagKey: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flags/${flagKey}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description Replace all targeting rules for a feature flag. Rules are evaluated in order (first match wins). Organization context determined by subdomain.
+     *
+     * @tags Feature Flags
+     * @name UpdateFeatureFlagRules
+     * @summary Update feature flag targeting rules
+     * @request PUT:/projects/{projectKey}/environments/{environmentId}/feature-flags/{flagKey}/rules
+     * @secure
+     */
+    updateFeatureFlagRules: (
+      projectKey: string,
+      environmentId: string,
+      flagKey: string,
+      data: UpdateFeatureFlagRulesRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagDetailResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flags/${flagKey}/rules`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description List all targeting segments for a project environment. Organization context determined by subdomain.
+     *
+     * @tags Feature Flag Segments
+     * @name ListFeatureFlagSegments
+     * @summary List feature flag segments
+     * @request GET:/projects/{projectKey}/environments/{environmentId}/feature-flag-segments
+     * @secure
+     */
+    listFeatureFlagSegments: (
+      projectKey: string,
+      environmentId: string,
+      query?: {
+        /**
+         * Page number (0-based)
+         * @default 0
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         * @default 20
+         */
+        size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedFeatureFlagSegmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flag-segments`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new targeting segment. Organization context determined by subdomain.
+     *
+     * @tags Feature Flag Segments
+     * @name CreateFeatureFlagSegment
+     * @summary Create feature flag segment
+     * @request POST:/projects/{projectKey}/environments/{environmentId}/feature-flag-segments
+     * @secure
+     */
+    createFeatureFlagSegment: (
+      projectKey: string,
+      environmentId: string,
+      data: CreateFeatureFlagSegmentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagSegmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flag-segments`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get a targeting segment by ID. Organization context determined by subdomain.
+     *
+     * @tags Feature Flag Segments
+     * @name GetFeatureFlagSegment
+     * @summary Get feature flag segment
+     * @request GET:/projects/{projectKey}/environments/{environmentId}/feature-flag-segments/{segmentId}
+     * @secure
+     */
+    getFeatureFlagSegment: (
+      projectKey: string,
+      environmentId: string,
+      segmentId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagSegmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flag-segments/${segmentId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a targeting segment. Organization context determined by subdomain.
+     *
+     * @tags Feature Flag Segments
+     * @name UpdateFeatureFlagSegment
+     * @summary Update feature flag segment
+     * @request PATCH:/projects/{projectKey}/environments/{environmentId}/feature-flag-segments/{segmentId}
+     * @secure
+     */
+    updateFeatureFlagSegment: (
+      projectKey: string,
+      environmentId: string,
+      segmentId: string,
+      data: UpdateFeatureFlagSegmentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagSegmentResponse, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flag-segments/${segmentId}`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete a targeting segment. Organization context determined by subdomain.
+     *
+     * @tags Feature Flag Segments
+     * @name DeleteFeatureFlagSegment
+     * @summary Delete feature flag segment
+     * @request DELETE:/projects/{projectKey}/environments/{environmentId}/feature-flag-segments/{segmentId}
+     * @secure
+     */
+    deleteFeatureFlagSegment: (
+      projectKey: string,
+      environmentId: string,
+      segmentId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ErrorResponse>({
+        path: `/projects/${projectKey}/environments/${environmentId}/feature-flag-segments/${segmentId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
      * @description List all OTA updates for a project with optional environment filter. Organization context determined by subdomain.
      *
      * @tags OTA Updates
@@ -3302,6 +4016,48 @@ export class Api<
     checkOtaUpdate: (data: CheckOtaUpdateRequest, params: RequestParams = {}) =>
       this.request<OtaUpdateResponse, ErrorResponse>({
         path: `/v1/ota/check`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Evaluate all feature flags for the project and environment associated with the API key. Returns evaluated flag values based on the provided identity and traits. This endpoint uses API key authentication (X-API-Key header).
+     *
+     * @tags Feature Flags
+     * @name GetFeatureFlagSnapshot
+     * @summary Get evaluated feature flags snapshot
+     * @request POST:/v1/feature-flags/snapshot
+     */
+    getFeatureFlagSnapshot: (
+      data?: FeatureFlagSnapshotRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FeatureFlagSnapshotResponse, ErrorResponse>({
+        path: `/v1/feature-flags/snapshot`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Evaluate a single feature flag for the project and environment associated with the API key. Returns the evaluated value with OpenFeature-compatible resolution details. This endpoint uses API key authentication (X-API-Key header).
+     *
+     * @tags Feature Flags
+     * @name EvaluateFeatureFlag
+     * @summary Evaluate a single feature flag (OpenFeature compatible)
+     * @request POST:/v1/feature-flags/evaluate
+     */
+    evaluateFeatureFlag: (
+      data: EvaluateFlagRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<EvaluatedFeatureFlagResponse, ErrorResponse>({
+        path: `/v1/feature-flags/evaluate`,
         method: "POST",
         body: data,
         type: ContentType.Json,

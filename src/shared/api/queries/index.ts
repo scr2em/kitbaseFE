@@ -91,3 +91,22 @@ export {
   getOtaUpdatesQueryKey,
   OTA_UPDATES_QUERY_KEY,
 } from './ota-updates';
+export {
+  useFeatureFlagsInfiniteQuery,
+  useFeatureFlagQuery,
+  useCreateFeatureFlagMutation,
+  useUpdateFeatureFlagMutation,
+  useDeleteFeatureFlagMutation,
+  useUpdateFeatureFlagRulesMutation,
+  getFeatureFlagsQueryKey,
+  FEATURE_FLAGS_QUERY_KEY,
+} from './feature-flags';
+export {
+  useFeatureFlagSegmentsInfiniteQuery,
+  useFeatureFlagSegmentQuery,
+  useCreateFeatureFlagSegmentMutation,
+  useUpdateFeatureFlagSegmentMutation,
+  useDeleteFeatureFlagSegmentMutation,
+  getFeatureFlagSegmentsQueryKey,
+  FEATURE_FLAG_SEGMENTS_QUERY_KEY,
+} from './feature-flag-segments';

@@ -56,6 +56,10 @@ tags:
     description: Custom event logging and tracking (SDK)
   - name: Event Analytics
     description: Event viewing and analytics (Dashboard)
+  - name: Feature Flags
+    description: Feature flag management and evaluation
+  - name: Feature Flag Segments
+    description: Feature flag targeting segment management
 
 components:
   schemas:
@@ -2266,6 +2270,534 @@ components:
             $ref: '#/components/schemas/EventTimelinePoint'
           description: Timeline data points
 
+    # ==================== Feature Flags Schemas ====================
+    
+    # Feature Flag Value Type Enum
+    FeatureFlagValueTypeEnum:
+      type: string
+      enum: [boolean, string, number, json]
+      description: The data type of the feature flag value
+
+    # Feature Flag Segment Rule Operator Enum
+    FeatureFlagOperatorEnum:
+      type: string
+      enum: [eq, neq, contains, not_contains, starts_with, ends_with, gt, gte, lt, lte, exists, not_exists, in, not_in]
+      description: Operator for segment rule conditions
+
+    # Feature Flag Request DTOs
+    CreateFeatureFlagRequest:
+      type: object
+      description: Request to create a new feature flag
+      required:
+        - flagKey
+        - name
+        - valueType
+      properties:
+        flagKey:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '^[a-zA-Z][a-zA-Z0-9_-]*$'
+          description: Unique key for the flag within the project (alphanumeric, underscores, hyphens)
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Human-readable name for the flag
+        description:
+          type: string
+          maxLength: 1000
+          description: Description of what this flag controls
+        valueType:
+          $ref: '#/components/schemas/FeatureFlagValueTypeEnum'
+        defaultEnabled:
+          type: boolean
+          default: false
+          description: Default enabled state for this environment
+        defaultValue:
+          description: Default value when flag is enabled (type depends on valueType)
+
+    UpdateFeatureFlagRequest:
+      type: object
+      description: Request to update a feature flag
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Human-readable name for the flag
+        description:
+          type: string
+          maxLength: 1000
+          description: Description of what this flag controls
+        enabled:
+          type: boolean
+          description: Whether the flag is enabled in this environment
+        value:
+          description: Value when flag is enabled (type depends on valueType)
+
+    # Feature Flag Segment Request DTOs
+    CreateFeatureFlagSegmentRequest:
+      type: object
+      description: Request to create a new targeting segment
+      required:
+        - name
+        - rules
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Name of the segment
+        description:
+          type: string
+          maxLength: 1000
+          description: Description of this segment
+        rules:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/FeatureFlagSegmentRuleRequest'
+          description: List of rules that define this segment
+
+    UpdateFeatureFlagSegmentRequest:
+      type: object
+      description: Request to update a targeting segment
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Name of the segment
+        description:
+          type: string
+          maxLength: 1000
+          description: Description of this segment
+        rules:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/FeatureFlagSegmentRuleRequest'
+          description: List of rules that define this segment
+
+    FeatureFlagSegmentRuleRequest:
+      type: object
+      description: A single rule condition for a segment
+      required:
+        - field
+        - operator
+      properties:
+        field:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: The trait/attribute field to match against
+        operator:
+          $ref: '#/components/schemas/FeatureFlagOperatorEnum'
+        value:
+          type: string
+          description: The value to compare against (not required for exists/not_exists operators)
+
+    # Feature Flag Rule Request DTOs
+    FeatureFlagRuleRequest:
+      type: object
+      description: A targeting rule for a feature flag
+      required:
+        - enabled
+      properties:
+        segmentId:
+          type: string
+          description: ID of the segment to match (optional - if not provided, rule applies to all)
+        rolloutPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage of matching identities to enable for (0-100)
+        enabled:
+          type: boolean
+          description: Whether to enable the flag when this rule matches
+        value:
+          description: Value to return when this rule matches (type depends on flag valueType)
+
+    UpdateFeatureFlagRulesRequest:
+      type: object
+      description: Request to replace all targeting rules for a feature flag
+      required:
+        - rules
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlagRuleRequest'
+          description: Ordered list of targeting rules (first match wins)
+
+    # OpenFeature Resolution Reason - why a value was returned
+    OpenFeatureReasonEnum:
+      type: string
+      enum: [STATIC, DEFAULT, TARGETING_MATCH, SPLIT, CACHED, DISABLED, UNKNOWN, STALE, ERROR]
+      description: |
+        OpenFeature-compatible reason for the resolved value:
+        - STATIC: Flag resolved to its default value (no targeting rules matched)
+        - DEFAULT: Client-provided default was returned (flag not found or error)
+        - TARGETING_MATCH: Flag resolved based on targeting rules
+        - SPLIT: Flag resolved based on percentage rollout
+        - CACHED: Value was from cache
+        - DISABLED: Flag is disabled
+        - UNKNOWN: Reason is unknown
+        - STALE: Cached value that may be outdated
+        - ERROR: An error occurred during evaluation
+
+    # OpenFeature Error Code - if evaluation failed
+    OpenFeatureErrorCodeEnum:
+      type: string
+      enum: [PROVIDER_NOT_READY, FLAG_NOT_FOUND, PARSE_ERROR, TYPE_MISMATCH, TARGETING_KEY_MISSING, INVALID_CONTEXT, GENERAL]
+      description: |
+        OpenFeature-compatible error codes:
+        - PROVIDER_NOT_READY: Provider is not ready
+        - FLAG_NOT_FOUND: Flag does not exist
+        - PARSE_ERROR: Error parsing flag configuration
+        - TYPE_MISMATCH: Requested type doesn't match flag type
+        - TARGETING_KEY_MISSING: Required targeting key is missing
+        - INVALID_CONTEXT: Evaluation context is invalid
+        - GENERAL: General error
+
+    # Feature Flag Snapshot Request (Client SDK) - OpenFeature compatible
+    FeatureFlagSnapshotRequest:
+      type: object
+      description: Request to evaluate feature flags for a specific identity (OpenFeature compatible)
+      properties:
+        identityId:
+          type: string
+          maxLength: 255
+          description: Unique identifier for the user/device (used for percentage rollouts). Maps to OpenFeature targetingKey.
+        context:
+          type: object
+          additionalProperties: true
+          description: Evaluation context with typed values (OpenFeature compatible). Supports string, number, boolean, and nested objects.
+
+    # Single Flag Evaluation Request (Client SDK) - OpenFeature compatible
+    EvaluateFlagRequest:
+      type: object
+      description: Request to evaluate a single feature flag (OpenFeature compatible)
+      required:
+        - flagKey
+      properties:
+        flagKey:
+          type: string
+          description: The key of the flag to evaluate
+        identityId:
+          type: string
+          maxLength: 255
+          description: Unique identifier for the user/device (used for percentage rollouts). Maps to OpenFeature targetingKey.
+        context:
+          type: object
+          additionalProperties: true
+          description: Evaluation context with typed values (OpenFeature compatible)
+        defaultValue:
+          description: Default value to return if flag cannot be evaluated (type should match flag type)
+
+    # Feature Flag Response DTOs
+    FeatureFlagResponse:
+      type: object
+      description: Feature flag information
+      required:
+        - id
+        - flagKey
+        - name
+        - valueType
+        - enabled
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the feature flag
+        flagKey:
+          type: string
+          description: Unique key for the flag within the project
+        name:
+          type: string
+          description: Human-readable name for the flag
+        description:
+          type: string
+          description: Description of what this flag controls
+        valueType:
+          $ref: '#/components/schemas/FeatureFlagValueTypeEnum'
+        enabled:
+          type: boolean
+          description: Whether the flag is enabled in this environment
+        value:
+          description: Current value in this environment (type depends on valueType)
+        createdBy:
+          type: string
+          description: User ID who created the flag
+        createdAt:
+          type: string
+          format: date-time
+          description: When the flag was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the flag was last updated
+
+    FeatureFlagDetailResponse:
+      type: object
+      description: Detailed feature flag information including rules
+      required:
+        - id
+        - flagKey
+        - name
+        - valueType
+        - enabled
+        - rules
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the feature flag
+        flagKey:
+          type: string
+          description: Unique key for the flag within the project
+        name:
+          type: string
+          description: Human-readable name for the flag
+        description:
+          type: string
+          description: Description of what this flag controls
+        valueType:
+          $ref: '#/components/schemas/FeatureFlagValueTypeEnum'
+        enabled:
+          type: boolean
+          description: Whether the flag is enabled in this environment
+        value:
+          description: Default value in this environment (type depends on valueType)
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlagRuleResponse'
+          description: Ordered list of targeting rules
+        createdBy:
+          type: string
+          description: User ID who created the flag
+        createdAt:
+          type: string
+          format: date-time
+          description: When the flag was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the flag was last updated
+
+    FeatureFlagRuleResponse:
+      type: object
+      description: A targeting rule for a feature flag
+      required:
+        - id
+        - priority
+        - enabled
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the rule
+        priority:
+          type: integer
+          description: Order of evaluation (lower = higher priority)
+        segment:
+          $ref: '#/components/schemas/FeatureFlagSegmentSummaryResponse'
+        rolloutPercentage:
+          type: number
+          description: Percentage of matching identities to enable for
+        enabled:
+          type: boolean
+          description: Whether to enable the flag when this rule matches
+        value:
+          description: Value to return when this rule matches
+
+    FeatureFlagSegmentResponse:
+      type: object
+      description: Feature flag targeting segment
+      required:
+        - id
+        - name
+        - rules
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the segment
+        name:
+          type: string
+          description: Name of the segment
+        description:
+          type: string
+          description: Description of this segment
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlagSegmentRuleResponse'
+          description: List of rules that define this segment
+        createdBy:
+          type: string
+          description: User ID who created the segment
+        createdAt:
+          type: string
+          format: date-time
+          description: When the segment was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the segment was last updated
+
+    FeatureFlagSegmentSummaryResponse:
+      type: object
+      description: Summary of a feature flag segment (for embedding in rules)
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the segment
+        name:
+          type: string
+          description: Name of the segment
+
+    FeatureFlagSegmentRuleResponse:
+      type: object
+      description: A rule condition within a segment
+      required:
+        - id
+        - field
+        - operator
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the rule
+        field:
+          type: string
+          description: The trait/attribute field to match against
+        operator:
+          $ref: '#/components/schemas/FeatureFlagOperatorEnum'
+        value:
+          type: string
+          description: The value to compare against
+
+    # Feature Flag Snapshot Response (Client SDK)
+    FeatureFlagSnapshotResponse:
+      type: object
+      description: Evaluated feature flags for a specific identity
+      required:
+        - projectId
+        - environmentId
+        - evaluatedAt
+        - flags
+      properties:
+        projectId:
+          type: string
+          description: Project ID the flags belong to
+        environmentId:
+          type: string
+          description: Environment ID the flags were evaluated for
+        evaluatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the evaluation was performed
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvaluatedFeatureFlagResponse'
+          description: List of evaluated feature flags
+
+    EvaluatedFeatureFlagResponse:
+      type: object
+      description: An evaluated feature flag value (OpenFeature compatible resolution details)
+      required:
+        - flagKey
+        - enabled
+        - valueType
+        - reason
+      properties:
+        flagKey:
+          type: string
+          description: Unique key for the flag
+        enabled:
+          type: boolean
+          description: Whether the flag is enabled for this identity
+        valueType:
+          $ref: '#/components/schemas/FeatureFlagValueTypeEnum'
+        value:
+          description: The evaluated value (type depends on valueType, null if disabled)
+        variant:
+          type: string
+          description: OpenFeature variant identifier (e.g., "control", "treatment-a")
+        reason:
+          $ref: '#/components/schemas/OpenFeatureReasonEnum'
+        errorCode:
+          $ref: '#/components/schemas/OpenFeatureErrorCodeEnum'
+        errorMessage:
+          type: string
+          description: Human-readable error message if errorCode is present
+        flagMetadata:
+          type: object
+          additionalProperties: true
+          description: Optional metadata about the flag (OpenFeature compatible)
+
+    # Paginated Response DTOs
+    PaginatedFeatureFlagResponse:
+      type: object
+      description: Paginated list of feature flags
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlagResponse'
+          description: List of feature flags for this page
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of feature flags
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    PaginatedFeatureFlagSegmentResponse:
+      type: object
+      description: Paginated list of feature flag segments
+      required:
+        - data
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureFlagSegmentResponse'
+          description: List of segments for this page
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Number of items per page
+        totalElements:
+          type: integer
+          description: Total number of segments
+        totalPages:
+          type: integer
+          description: Total number of pages
+
   responses:
     NotFoundError:
       description: Resource not found
@@ -2304,6 +2836,13 @@ components:
     
     ConflictError:
       description: Conflict - resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ServiceUnavailableError:
+      description: Service unavailable (temporary overload or maintenance)
       content:
         application/json:
           schema:
@@ -4168,6 +4707,652 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  # ==================== Feature Flags ====================
+  /projects/{projectKey}/environments/{environmentId}/feature-flags:
+    get:
+      operationId: listFeatureFlags
+      summary: List feature flags
+      description: List all feature flags for a project environment. Organization context determined by subdomain.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-based)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction by creation date
+      responses:
+        '200':
+          description: Feature flags retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeatureFlagResponse'
+        '400':
+          description: Bad request (e.g., invalid sort parameter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    post:
+      operationId: createFeatureFlag
+      summary: Create feature flag
+      description: Create a new feature flag in a project environment. Organization context determined by subdomain.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeatureFlagRequest'
+      responses:
+        '201':
+          description: Feature flag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /projects/{projectKey}/environments/{environmentId}/feature-flags/{flagKey}:
+    get:
+      operationId: getFeatureFlag
+      summary: Get feature flag details
+      description: Get detailed information about a feature flag including targeting rules. Organization context determined by subdomain.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: flagKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Feature flag key
+      responses:
+        '200':
+          description: Feature flag retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagDetailResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateFeatureFlag
+      summary: Update feature flag
+      description: Update a feature flag's metadata and default value. Organization context determined by subdomain.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: flagKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Feature flag key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureFlagRequest'
+      responses:
+        '200':
+          description: Feature flag updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagDetailResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    delete:
+      operationId: deleteFeatureFlag
+      summary: Delete feature flag
+      description: Delete a feature flag. Organization context determined by subdomain.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: flagKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Feature flag key
+      responses:
+        '204':
+          description: Feature flag deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /projects/{projectKey}/environments/{environmentId}/feature-flags/{flagKey}/rules:
+    put:
+      operationId: updateFeatureFlagRules
+      summary: Update feature flag targeting rules
+      description: Replace all targeting rules for a feature flag. Rules are evaluated in order (first match wins). Organization context determined by subdomain.
+      tags:
+        - Feature Flags
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: flagKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Feature flag key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureFlagRulesRequest'
+      responses:
+        '200':
+          description: Feature flag rules updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagDetailResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ==================== Feature Flag Segments ====================
+  /projects/{projectKey}/environments/{environmentId}/feature-flag-segments:
+    get:
+      operationId: listFeatureFlagSegments
+      summary: List feature flag segments
+      description: List all targeting segments for a project environment. Organization context determined by subdomain.
+      tags:
+        - Feature Flag Segments
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-based)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+      responses:
+        '200':
+          description: Segments retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeatureFlagSegmentResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    post:
+      operationId: createFeatureFlagSegment
+      summary: Create feature flag segment
+      description: Create a new targeting segment. Organization context determined by subdomain.
+      tags:
+        - Feature Flag Segments
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeatureFlagSegmentRequest'
+      responses:
+        '201':
+          description: Segment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagSegmentResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+  /projects/{projectKey}/environments/{environmentId}/feature-flag-segments/{segmentId}:
+    get:
+      operationId: getFeatureFlagSegment
+      summary: Get feature flag segment
+      description: Get a targeting segment by ID. Organization context determined by subdomain.
+      tags:
+        - Feature Flag Segments
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: segmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Segment ID (UUID)
+      responses:
+        '200':
+          description: Segment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagSegmentResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    patch:
+      operationId: updateFeatureFlagSegment
+      summary: Update feature flag segment
+      description: Update a targeting segment. Organization context determined by subdomain.
+      tags:
+        - Feature Flag Segments
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: segmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Segment ID (UUID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureFlagSegmentRequest'
+      responses:
+        '200':
+          description: Segment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagSegmentResponse'
+        '400':
+          description: Bad request (e.g., validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    
+    delete:
+      operationId: deleteFeatureFlagSegment
+      summary: Delete feature flag segment
+      description: Delete a targeting segment. Organization context determined by subdomain.
+      tags:
+        - Feature Flag Segments
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubdomainHeader'
+        - name: projectKey
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project key
+        - name: environmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Environment ID (UUID)
+        - name: segmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Segment ID (UUID)
+      responses:
+        '204':
+          description: Segment deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ==================== Feature Flag Client Snapshot (API Key Auth) ====================
+  /v1/feature-flags/snapshot:
+    post:
+      operationId: getFeatureFlagSnapshot
+      summary: Get evaluated feature flags snapshot
+      description: |
+        Evaluate all feature flags for the project and environment associated with the API key.
+        Returns evaluated flag values based on the provided identity and traits.
+        This endpoint uses API key authentication (X-API-Key header).
+      tags:
+        - Feature Flags
+      security: []
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: API key for authentication
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureFlagSnapshotRequest'
+      responses:
+        '200':
+          description: Feature flags evaluated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlagSnapshotResponse'
+        '400':
+          description: Bad request (e.g., invalid request body)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/feature-flags/evaluate:
+    post:
+      operationId: evaluateFeatureFlag
+      summary: Evaluate a single feature flag (OpenFeature compatible)
+      description: |
+        Evaluate a single feature flag for the project and environment associated with the API key.
+        Returns the evaluated value with OpenFeature-compatible resolution details.
+        This endpoint uses API key authentication (X-API-Key header).
+      tags:
+        - Feature Flags
+      security: []
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: API key for authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateFlagRequest'
+      responses:
+        '200':
+          description: Feature flag evaluated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluatedFeatureFlagResponse'
+        '400':
+          description: Bad request (e.g., invalid request body)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # ==================== OTA Updates ====================
   /projects/{projectKey}/ota-updates:
     get:
@@ -5039,12 +6224,14 @@ paths:
             schema:
               $ref: '#/components/schemas/LogEventRequest'
       responses:
-        '201':
-          description: Event logged successfully
+        '202':
+          description: Event accepted for async processing
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LogEventResponse'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailableError'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':

@@ -220,7 +220,10 @@
     "success": "Success",
     "warning": "Warning",
     "error_generic": "An error occurred. Please try again.",
-    "coming_soon": "Coming Soon"
+    "coming_soon": "Coming Soon",
+    "cancel": "Cancel",
+    "true": "True",
+    "false": "False"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -607,6 +610,8 @@
         "api_keys": "API Keys",
         "environments": "Environments",
         "events": "Events",
+        "feature_flags": "Feature Flags",
+        "segments": "Segments",
         "analytics": "Analytics",
         "settings": "Settings"
       },
@@ -1027,6 +1032,184 @@
       "value_placeholder": "Value",
       "operator_eq": "equals",
       "operator_neq": "not equals"
+    }
+  },
+  "feature_flags": {
+    "page_title": "Feature Flags",
+    "title": "Feature Flags",
+    "subtitle": "Manage feature flags ({{count}} flags)",
+    "create_button": "Create Flag",
+    "create_first": "Create Your First Feature Flag",
+    "no_flags": "No feature flags yet",
+    "no_value": "No value set",
+    "error_loading": "Failed to load feature flags. Please try again.",
+    "error_loading_detail": "Failed to load feature flag details. Please try again.",
+    "load_more": "Load More",
+    "loading_more": "Loading...",
+    "enabled_success": "Feature flag enabled successfully",
+    "disabled_success": "Feature flag disabled successfully",
+    "value_types": {
+      "boolean": "Boolean",
+      "string": "String",
+      "number": "Number",
+      "json": "JSON"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "table": {
+      "key": "Key",
+      "name": "Name",
+      "type": "Type",
+      "enabled": "Enabled",
+      "value": "Value",
+      "created_at": "Created",
+      "actions": "Actions"
+    },
+    "form": {
+      "flag_key_label": "Flag Key",
+      "flag_key_placeholder": "my_feature_flag",
+      "flag_key_description": "Unique identifier (letters, numbers, hyphens, underscores)",
+      "name_label": "Name",
+      "name_placeholder": "My Feature Flag",
+      "description_label": "Description",
+      "description_placeholder": "Describe what this flag controls",
+      "value_type_label": "Value Type",
+      "value_type_placeholder": "Select value type",
+      "default_value_label": "Default Value",
+      "value_label": "Value",
+      "number_value_placeholder": "Enter a number",
+      "string_value_placeholder": "Enter a string value",
+      "json_value_placeholder": "{ \"key\": \"value\" }",
+      "invalid_json": "Invalid JSON format"
+    },
+    "create": {
+      "title": "Create Feature Flag",
+      "submit_button": "Create Flag",
+      "success_message": "Feature flag created successfully"
+    },
+    "update": {
+      "title": "Update Feature Flag",
+      "submit_button": "Save Changes",
+      "success_message": "Feature flag updated successfully"
+    },
+    "delete": {
+      "title": "Delete Feature Flag",
+      "confirmation": "Are you sure you want to delete '{{name}}'? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success_message": "Feature flag deleted successfully"
+    },
+    "actions": {
+      "view": "View Details",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "detail": {
+      "info": "Flag Information",
+      "status": "Status",
+      "default_value": "Default Value",
+      "created_at": "Created: {{date}}",
+      "updated_at": "Updated: {{date}}"
+    },
+    "rules": {
+      "title": "Targeting Rules",
+      "description": "Configure rules to serve different values to specific user segments",
+      "add_rule": "Add Rule",
+      "add_first_rule": "Add First Rule",
+      "no_rules": "No targeting rules configured. All users will receive the default value.",
+      "save_changes": "Save Rules",
+      "save_success": "Targeting rules saved successfully",
+      "segment_label": "Segment",
+      "segment_placeholder": "Select segment",
+      "all_users": "All Users",
+      "rollout_label": "Rollout %",
+      "value_label": "Value",
+      "fallback_note_title": "Fallback:",
+      "fallback_note_description": "If no rules match, the default value from the flag settings will be used."
+    },
+    "operators": {
+      "eq": "equals",
+      "neq": "not equals",
+      "contains": "contains",
+      "not_contains": "not contains",
+      "starts_with": "starts with",
+      "ends_with": "ends with",
+      "gt": "greater than",
+      "gte": "greater or equal",
+      "lt": "less than",
+      "lte": "less or equal",
+      "exists": "exists",
+      "not_exists": "not exists",
+      "in": "in list",
+      "not_in": "not in list"
+    },
+    "segments": {
+      "title": "Segments",
+      "subtitle": "Manage targeting segments ({{count}} segments)",
+      "create_button": "Create Segment",
+      "create_first": "Create Your First Segment",
+      "no_segments": "No segments yet",
+      "more_rules": "more",
+      "error_loading": "Failed to load segments. Please try again.",
+      "load_more": "Load More",
+      "loading_more": "Loading...",
+      "table": {
+        "name": "Name",
+        "description": "Description",
+        "rules": "Rules",
+        "created_at": "Created",
+        "actions": "Actions"
+      },
+      "form": {
+        "name_label": "Segment Name",
+        "name_placeholder": "Beta Users",
+        "description_label": "Description",
+        "description_placeholder": "Describe this segment",
+        "rules_label": "Rules",
+        "add_rule": "Add Rule",
+        "field_placeholder": "user.plan",
+        "value_placeholder": "pro",
+        "rules_hint": "All rules must match for a user to be in this segment (AND logic)"
+      },
+      "create": {
+        "title": "Create Segment",
+        "submit_button": "Create Segment",
+        "success_message": "Segment created successfully"
+      },
+      "update": {
+        "title": "Update Segment",
+        "submit_button": "Save Changes",
+        "success_message": "Segment updated successfully"
+      },
+      "delete": {
+        "title": "Delete Segment",
+        "confirmation": "Are you sure you want to delete '{{name}}'? This will also remove it from any feature flag rules.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "success_message": "Segment deleted successfully"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    },
+    "validation": {
+      "flag_key_required": "Flag key is required",
+      "flag_key_max_length": "Flag key must be 100 characters or less",
+      "flag_key_pattern": "Flag key must start with a letter and contain only letters, numbers, hyphens, and underscores",
+      "name_required": "Name is required",
+      "name_max_length": "Name must be 255 characters or less",
+      "description_max_length": "Description must be 1000 characters or less",
+      "value_type_required": "Value type is required",
+      "segment_name_required": "Segment name is required",
+      "segment_name_max_length": "Segment name must be 255 characters or less",
+      "segment_description_max_length": "Description must be 1000 characters or less",
+      "segment_rules_required": "At least one rule is required",
+      "segment_rule_field_required": "Field is required",
+      "segment_rule_field_max_length": "Field must be 255 characters or less",
+      "segment_rule_operator_required": "Operator is required"
     }
   },
   "webhooks": {

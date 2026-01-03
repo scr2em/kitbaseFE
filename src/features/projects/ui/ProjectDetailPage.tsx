@@ -27,6 +27,8 @@ import {
   Plus,
   Layers,
   BarChart3,
+  Flag,
+  Users,
 } from 'lucide-react';
 import { useProjectQuery } from '../../../shared/api/queries';
 import { 
@@ -92,6 +94,18 @@ export function ProjectDetailPage() {
       label: t('projects.detail.nav.api_keys'),
       path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/api-keys` : '#',
       icon: <Key size={18} />,
+      requiresEnvironment: true,
+    },
+    {
+      label: t('projects.detail.nav.feature_flags'),
+      path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/feature-flags` : '#',
+      icon: <Flag size={18} />,
+      requiresEnvironment: true,
+    },
+    {
+      label: t('projects.detail.nav.segments'),
+      path: navEnvironmentId ? `/projects/${projectKey}/${navEnvironmentId}/segments` : '#',
+      icon: <Users size={18} />,
       requiresEnvironment: true,
     },
     {
