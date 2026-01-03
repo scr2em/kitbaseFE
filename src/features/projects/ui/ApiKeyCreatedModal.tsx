@@ -1,6 +1,8 @@
-import { Modal, Button, Alert, Code, CopyButton } from '@mantine/core';
+import { Modal, Button, Alert, Code, CopyButton, Accordion } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Code2 } from 'lucide-react';
+import { CodeSnippet } from '../../../shared/components/CodeSnippet';
+import { getQuickStartSnippets } from '../../../shared/lib/sdk-snippets';
 
 interface ApiKeyCreatedModalProps {
   opened: boolean;
@@ -11,13 +13,14 @@ interface ApiKeyCreatedModalProps {
 
 export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyCreatedModalProps) {
   const { t } = useTranslation();
+  const codeSnippets = getQuickStartSnippets(apiKey);
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
       title={t('projects.detail.api_keys.created.modal_title')}
-      size="md"
+      size="lg"
       closeOnClickOutside={false}
       closeOnEscape={false}
     >
@@ -62,6 +65,23 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
           </Code>
         </div>
 
+        {/* SDK Quick Start Snippets */}
+        <Accordion variant="separated" radius="md">
+          <Accordion.Item value="quickstart">
+            <Accordion.Control icon={<Code2 size={18} />}>
+              <span className="font-medium">{t('code_snippet.quick_start_title')}</span>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-slate-600">
+                  {t('code_snippet.quick_start_description')}
+                </p>
+                <CodeSnippet tabs={codeSnippets} />
+              </div>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+
         <div className="flex justify-end">
           <Button onClick={onClose}>
             {t('projects.detail.api_keys.created.confirm_button')}
@@ -71,16 +91,3 @@ export function ApiKeyCreatedModal({ opened, onClose, apiKey, keyName }: ApiKeyC
     </Modal>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

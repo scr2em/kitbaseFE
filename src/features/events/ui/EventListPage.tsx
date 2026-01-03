@@ -25,6 +25,8 @@ import {
   getEventsQueryKey,
   type EventsFilters,
 } from '../../../shared/api/queries/events';
+import { CodeSnippet } from '../../../shared/components/CodeSnippet';
+import { getEventTrackingSnippets } from '../../../shared/lib/sdk-snippets';
 
 const PAGE_SIZE = 20;
 
@@ -73,7 +75,7 @@ function EventsTable({ projectKey, environmentId, filters, currentPage, onPageCh
   if (events.length === 0) {
     return (
       <Card withBorder p="xl" radius="md">
-        <div className="flex justify-center">
+        <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-4">
             <Activity size={48} strokeWidth={1.5} className="text-slate-400" />
             <div className="text-center">
@@ -83,6 +85,21 @@ function EventsTable({ projectKey, environmentId, filters, currentPage, onPageCh
               <p className="text-sm text-slate-400 mt-1">
                 {t('events.no_events_description')}
               </p>
+            </div>
+          </div>
+          
+          {/* SDK Quick Start */}
+          <div className="border-t border-slate-200 pt-6">
+            <div className="flex flex-col gap-3">
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-700">
+                  {t('code_snippet.track_events_title')}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {t('code_snippet.track_events_description')}
+                </p>
+              </div>
+              <CodeSnippet tabs={getEventTrackingSnippets()} />
             </div>
           </div>
         </div>

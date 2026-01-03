@@ -1492,6 +1492,16 @@
   "breadcrumb": {
     "home": "Home"
   },
+  "code_snippet": {
+    "copy": "Copy",
+    "copied": "Copied!",
+    "quick_start_title": "Quick Start with SDK",
+    "quick_start_description": "Copy the code below to start using this API key in your application.",
+    "usage_title": "Usage Example",
+    "usage_description": "Here's how to use this feature flag in your code:",
+    "track_events_title": "Start Tracking Events",
+    "track_events_description": "Use the SDK to track your first event:"
+  },
   "audit_trail": {
     "page_title": "Audit Trail",
     "title": "Audit Trail",

@@ -6,6 +6,7 @@ import {
   Badge,
   Switch,
   Checkbox,
+  Accordion,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router';
@@ -19,6 +20,7 @@ import {
   Edit,
   Trash2,
   Clock,
+  Code2,
 } from 'lucide-react';
 import {
   useFeatureFlagQuery,
@@ -28,6 +30,8 @@ import {
 import { useShowBackendError } from '../../../shared/hooks';
 import { UpdateFeatureFlagModal } from './UpdateFeatureFlagModal';
 import { FlagRulesBuilder } from './FlagRulesBuilder';
+import { CodeSnippet } from '../../../shared/components/CodeSnippet';
+import { getFeatureFlagSnippets } from '../../../shared/lib/sdk-snippets';
 import type { FeatureFlagResponse } from '../../../generated-api';
 
 export function FeatureFlagDetailPage() {
@@ -280,6 +284,25 @@ export function FeatureFlagDetailPage() {
           />
         </Card>
       </div>
+
+      {/* SDK Usage Code Snippet */}
+      <Accordion variant="separated" radius="md" defaultValue="usage">
+        <Accordion.Item value="usage">
+          <Accordion.Control icon={<Code2 size={18} />}>
+            <span className="font-medium">{t('code_snippet.usage_title')}</span>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-slate-600">
+                {t('code_snippet.usage_description')}
+              </p>
+              <CodeSnippet 
+                tabs={getFeatureFlagSnippets(undefined, flag.flagKey, flag.valueType)} 
+              />
+            </div>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
 
       {/* Update Modal */}
       <UpdateFeatureFlagModal
