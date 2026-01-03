@@ -7644,12 +7644,12 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SubdomainHeader'
-        - name: projectId
+        - name: projectKey
           in: query
           required: false
           schema:
             type: string
-          description: Optional project ID to filter usage by a specific project. If not provided, returns organization-wide usage.
+          description: Optional project key to filter usage by a specific project. If not provided, returns organization-wide usage.
         - name: fromDate
           in: query
           required: true

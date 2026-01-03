@@ -4956,8 +4956,8 @@ export class Api<
      */
     getFeatureFlagUsage: (
       query: {
-        /** Optional project ID to filter usage by a specific project. If not provided, returns organization-wide usage. */
-        projectId?: string;
+        /** Optional project key to filter usage by a specific project. If not provided, returns organization-wide usage. */
+        projectKey?: string;
         /**
          * Start date for the usage period (inclusive, YYYY-MM-DD)
          * @format date

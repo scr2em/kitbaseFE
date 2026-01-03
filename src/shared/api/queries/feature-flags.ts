@@ -110,7 +110,7 @@ export function useFeatureFlagUsageQuery({projectKey, fromDate, toDate}: {projec
     queryKey: [FEATURE_FLAG_USAGE_QUERY_KEY, projectKey, fromDate, toDate],
     queryFn: async () => {
       const response = await apiClient.featureFlags.getFeatureFlagUsage({
-        projectId: projectKey,
+        projectKey,
         fromDate,
         toDate,
       });
