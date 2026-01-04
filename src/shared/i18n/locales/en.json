@@ -1637,6 +1637,17 @@
       "benefit_3": "Comprehensive REST API",
       "benefit_4": "Webhook integrations"
     },
+    "self_hosting": {
+      "label": "Enterprise Ready",
+      "title": "Deploy on your own infrastructure",
+      "description": "Keep complete control over your data with self-hosted or on-premises deployment. Perfect for enterprises with strict compliance requirements.",
+      "benefit_1": "Full data sovereignty — your data never leaves your servers",
+      "benefit_2": "Air-gapped deployments for maximum security",
+      "benefit_3": "Custom SLAs and dedicated support",
+      "benefit_4": "Seamless integration with your existing infrastructure",
+      "cta_primary": "Contact Sales",
+      "cta_secondary": "View Documentation"
+    },
     "cta": {
       "title": "Ready to ship with confidence?",
       "subtitle": "Join developers using Kitbase to control feature rollouts, track events, and ship OTA updates.",

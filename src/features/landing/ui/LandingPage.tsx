@@ -26,6 +26,10 @@ import {
   Check,
   ToggleRight,
   Activity,
+  Server,
+  Shield,
+  Lock,
+  Database,
 } from 'lucide-react';
 import { usePageTitle, useDarkMode } from '../../../shared/hooks';
 
@@ -609,6 +613,129 @@ export function LandingPage() {
                     </span>
                   </a>
                 ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Self-Hosting Section */}
+        <section className="py-16 sm:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Visual */}
+              <div className="relative order-2 lg:order-1">
+                <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 border border-slate-700/50">
+                  {/* Background Pattern */}
+                  <div 
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                      backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+                      backgroundSize: '24px 24px',
+                    }}
+                  />
+                  
+                  {/* Server Rack Illustration */}
+                  <div className="relative z-10 flex flex-col items-center gap-6">
+                    {/* Top Icons */}
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+                        <Shield className="w-7 h-7 text-emerald-400" />
+                      </div>
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 flex items-center justify-center">
+                        <Lock className="w-7 h-7 text-amber-400" />
+                      </div>
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+                        <Database className="w-7 h-7 text-blue-400" />
+                      </div>
+                    </div>
+
+                    {/* Central Server Icon */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-cyan-500 rounded-3xl blur-2xl opacity-30" />
+                      <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-violet-500/30">
+                        <Server className="w-12 h-12 text-white" />
+                      </div>
+                    </div>
+
+                    {/* Server Racks */}
+                    <div className="flex gap-3 w-full justify-center">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex flex-col gap-1.5">
+                          {[1, 2, 3, 4].map((j) => (
+                            <div 
+                              key={j} 
+                              className="w-16 h-3 rounded bg-slate-700/80 border border-slate-600/50 flex items-center px-1.5 gap-1"
+                            >
+                              <div className={`w-1.5 h-1.5 rounded-full ${j === 1 ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+                              <div className="flex-1 h-1 bg-slate-600/50 rounded" />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Status Text */}
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-sm font-medium text-emerald-400">Your Infrastructure</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="order-1 lg:order-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-6 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                  <Server className="w-4 h-4" />
+                  <span>{t('landing.self_hosting.label')}</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-[#e6edf3]">
+                  {t('landing.self_hosting.title')}
+                </h2>
+                <p className="text-lg mb-8 text-zinc-600 dark:text-[#8b949e] leading-relaxed">
+                  {t('landing.self_hosting.description')}
+                </p>
+                <ul className="space-y-4 mb-8">
+                  {[
+                    t('landing.self_hosting.benefit_1'),
+                    t('landing.self_hosting.benefit_2'),
+                    t('landing.self_hosting.benefit_3'),
+                    t('landing.self_hosting.benefit_4'),
+                  ].map((benefit, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-zinc-700 dark:text-[#e6edf3]">
+                        {benefit}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    size="md"
+                    component="a"
+                    href="mailto:sales@kitbase.dev"
+                    radius="xl"
+                    rightSection={<ArrowRight size={16} />}
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border-0"
+                  >
+                    {t('landing.self_hosting.cta_primary')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    component="a"
+                    href="https://docs.kitbase.dev/self-hosting"
+                    target="_blank"
+                    radius="xl"
+                    leftSection={<ExternalLink size={16} />}
+                    className="border-zinc-300 dark:border-[#30363d] text-zinc-700 dark:text-[#e6edf3] hover:bg-zinc-100 dark:hover:bg-[#21262d]"
+                  >
+                    {t('landing.self_hosting.cta_secondary')}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
