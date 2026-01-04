@@ -35,6 +35,10 @@ axiosInstance.interceptors.response.use(
           const api = new Api();
           const response = await api.auth.refreshToken({ refreshToken });
           
+          if(!response.data.accessToken || !response.data.refreshToken) {
+            throw new Error('No access token or refresh token in response');
+          }
+          
           tokenStorage.setAccessToken(response.data.accessToken);
           tokenStorage.setRefreshToken(response.data.refreshToken);
 
@@ -59,4 +63,3 @@ export const apiClient = new Api({
 
 // Override the axios instance
 apiClient.instance = axiosInstance;
-

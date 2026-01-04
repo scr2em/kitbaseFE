@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { LoginPage } from '../../features/auth/login';
 import { SignupPage } from '../../features/auth/signup';
 import { ForgotPasswordPage, ResetPasswordPage } from '../../features/auth/reset-password';
+import { TwoFactorVerifyPage } from '../../features/auth/two-factor/ui/TwoFactorVerifyPage';
 import { DashboardPage } from '../../features/dashboard';
 import { CreateOrganizationPage } from '../../features/organization/create-organization';
 import { OrganizationPage } from '../../features/organization/view-organization';
@@ -72,6 +73,7 @@ const routes: RouteObject[] = [
           { path: '/signup', element: <SignupPage /> },
           { path: '/forgot-password', element: <ForgotPasswordPage /> },
           { path: '/reset-password', element: <ResetPasswordPage /> },
+          { path: '/2fa', element: <TwoFactorVerifyPage /> },
         ],
       },
       {

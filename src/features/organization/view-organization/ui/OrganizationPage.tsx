@@ -4,9 +4,11 @@ import {
   Alert,
   Button,
   Paper,
+  Switch,
+  Badge,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Building, Calendar, Edit } from 'lucide-react';
+import { AlertCircle, Building, Calendar, Edit, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
@@ -36,6 +38,7 @@ export function OrganizationPage() {
     values: {
       name: organization?.name || '',
       description: organization?.description || '',
+      require2fa: organization?.require2fa || false,
     },
   });
 
@@ -151,6 +154,41 @@ export function OrganizationPage() {
                   autosize
                 />
 
+                {/* Security Settings */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-[#e6edf3]">
+                    {t('organization.security.title')}
+                  </h3>
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-[#30363d]">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        form.watch('require2fa') 
+                          ? 'bg-green-100 dark:bg-green-900/30' 
+                          : 'bg-gray-100 dark:bg-gray-800'
+                      }`}>
+                        {form.watch('require2fa') ? (
+                          <ShieldCheck size={20} className="text-green-600 dark:text-green-400" />
+                        ) : (
+                          <ShieldOff size={20} className="text-gray-500" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900 dark:text-[#e6edf3]">
+                          {t('organization.security.require_2fa_label')}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-[#8b949e]">
+                          {t('organization.security.require_2fa_description')}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={form.watch('require2fa') || false}
+                      onChange={(event) => form.setValue('require2fa', event.currentTarget.checked)}
+                      size="md"
+                    />
+                  </div>
+                </div>
+
                 <div className="flex justify-end gap-4">
                   <Button
                     variant="subtle"
@@ -233,6 +271,46 @@ export function OrganizationPage() {
                       </p>
                     </div>
                   )}
+                </div>
+              </Paper>
+
+              {/* Security Settings (View Mode) */}
+              <Paper withBorder p="lg" radius="md" className="bg-slate-50 dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
+                <p className="text-sm text-gray-500 dark:text-[#8b949e] mb-3">
+                  {t('organization.security.title')}
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      organization?.require2fa 
+                        ? 'bg-green-100 dark:bg-green-900/30' 
+                        : 'bg-gray-100 dark:bg-gray-800'
+                    }`}>
+                      {organization?.require2fa ? (
+                        <ShieldCheck size={20} className="text-green-600 dark:text-green-400" />
+                      ) : (
+                        <ShieldOff size={20} className="text-gray-500" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-[#e6edf3]">
+                        {t('organization.security.require_2fa_label')}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-[#8b949e]">
+                        {t('organization.security.require_2fa_description')}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge
+                    color={organization?.require2fa ? 'green' : 'gray'}
+                    variant="light"
+                    size="lg"
+                  >
+                    {organization?.require2fa 
+                      ? t('organization.security.required')
+                      : t('organization.security.optional')
+                    }
+                  </Badge>
                 </div>
               </Paper>
             </div>

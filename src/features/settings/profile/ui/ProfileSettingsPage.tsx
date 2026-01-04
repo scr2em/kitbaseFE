@@ -8,6 +8,7 @@ import { useCurrentUserQuery, useUpdateUserMutation } from '../../../../shared/a
 import { useShowBackendError, usePageTitle } from '../../../../shared/hooks';
 import { updateProfileSchema, type UpdateProfileFormData } from '../model/schema';
 import { ControlledTextInput } from '../../../../shared/controlled-form-fields';
+import { TwoFactorSection } from './TwoFactorSection';
 
 export function ProfileSettingsPage() {
   const { t } = useTranslation();
@@ -130,25 +131,10 @@ export function ProfileSettingsPage() {
             </div>
           </form>
         </Card>
+
+        {/* Two-Factor Authentication */}
+        <TwoFactorSection />
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

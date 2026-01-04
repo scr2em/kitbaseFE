@@ -6,7 +6,8 @@ import type {
   SignupInitiateRequest,
   SignupCompleteRequest,
   ForgotPasswordRequest,
-  ResetPasswordRequest
+  ResetPasswordRequest,
+  TwoFactorVerifyRequest
 } from '../../../generated-api';
 import { USER_QUERY_KEY } from './user';
 import { tokenStorage } from '../../lib/cookies';
@@ -20,10 +21,33 @@ export function useLoginMutation() {
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {
-      tokenStorage.setAccessToken(data.accessToken);
-      tokenStorage.setRefreshToken(data.refreshToken);
-      // Invalidate user query to fetch fresh data
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      // Only store tokens if 2FA is not required (tokens will be present)
+      if (data.accessToken && data.refreshToken) {
+        tokenStorage.setAccessToken(data.accessToken);
+        tokenStorage.setRefreshToken(data.refreshToken);
+        // Invalidate user query to fetch fresh data
+        queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      }
+      // If twoFactorRequired is true, tokens will be null and tempToken will be present
+      // The caller should handle navigation to 2FA verification
+    },
+  });
+}
+
+export function useVerifyTwoFactorMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: TwoFactorVerifyRequest) => {
+      const response = await apiClient.auth.verifyTwoFactor(data);
+      return response.data;
+    },
+    onSuccess: (data: AuthResponse) => {
+      if (data.accessToken && data.refreshToken) {
+        tokenStorage.setAccessToken(data.accessToken);
+        tokenStorage.setRefreshToken(data.refreshToken);
+        queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      }
     },
   });
 }
@@ -49,10 +73,13 @@ export function useCompleteSignupMutation(isInvitation: boolean = false) {
       return response.data;
     },
     onSuccess: (data: AuthResponse) => {
-      tokenStorage.setAccessToken(data.accessToken);
-      tokenStorage.setRefreshToken(data.refreshToken);
-      // Invalidate user query to fetch fresh data
-      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      // Only store tokens if they are present
+      if (data.accessToken && data.refreshToken) {
+        tokenStorage.setAccessToken(data.accessToken);
+        tokenStorage.setRefreshToken(data.refreshToken);
+        // Invalidate user query to fetch fresh data
+        queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      }
     },
   });
 }
@@ -74,4 +101,3 @@ export function useResetPasswordMutation() {
     },
   });
 }
-

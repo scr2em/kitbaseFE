@@ -94,7 +94,48 @@
         "weak_password": "Password must be at least 8 characters"
       }
     },
-    "logout": "Logout"
+    "logout": "Logout",
+    "two_factor": {
+      "page_title": "Two-Factor Authentication",
+      "title": "Two-Factor Authentication",
+      "subtitle_totp": "Enter the 6-digit code from your authenticator app",
+      "subtitle_backup": "Enter one of your backup codes",
+      "method_label": "Verification Method",
+      "method_totp": "Authenticator App",
+      "method_backup": "Backup Code",
+      "code_label_totp": "Authentication Code",
+      "code_label_backup": "Backup Code",
+      "code_placeholder_totp": "000000",
+      "code_placeholder_backup": "XXXXXXXXXX",
+      "totp_hint": "Open your authenticator app and enter the current code shown for your account.",
+      "submit_button": "Verify",
+      "back_to_login": "Back to Login",
+      "session_expired_title": "Session Expired",
+      "session_expired_message": "Your verification session has expired. Please log in again.",
+      "error_invalid_code": "Invalid verification code. Please try again."
+    },
+    "two_factor_setup": {
+      "page_title": "Set Up Two-Factor Authentication",
+      "title": "Set Up Two-Factor Authentication",
+      "subtitle": "Your organization requires two-factor authentication",
+      "required_notice": "Your organization requires all members to have two-factor authentication enabled. Please set it up to continue.",
+      "loading_title": "Setting Up 2FA",
+      "loading_message": "Please wait while we prepare your authenticator setup...",
+      "qr_instructions": "Scan the QR code below with your authenticator app (Google Authenticator, Authy, 1Password, etc.)",
+      "manual_entry_label": "Can't scan? Enter this code manually:",
+      "continue_button": "Continue",
+      "verify_instructions": "Enter the 6-digit code from your authenticator app to verify setup.",
+      "verification_code_label": "Verification Code",
+      "verification_code_placeholder": "000000",
+      "verify_button": "Verify & Enable",
+      "backup_codes_warning": "Save these backup codes in a secure location. Each code can only be used once. You won't be able to see these again!",
+      "copy_all_codes": "Copy All Codes",
+      "complete_button": "Complete Setup",
+      "success_message": "Two-factor authentication has been enabled successfully. Please log in again.",
+      "back_to_login": "Back to Login",
+      "session_expired_title": "Session Expired",
+      "session_expired_message": "Your setup session has expired. Please log in again."
+    }
   },
   "dashboard": {
     "page_title": "Dashboard",
@@ -189,7 +230,14 @@
     },
     "no_organization_title": "No Organization",
     "no_organization_message": "You need to be part of an organization to view this page.",
-    "error_loading": "Failed to load organization details. Please try again."
+    "error_loading": "Failed to load organization details. Please try again.",
+    "security": {
+      "title": "Security",
+      "require_2fa_label": "Require Two-Factor Authentication",
+      "require_2fa_description": "All organization members must have 2FA enabled",
+      "required": "Required",
+      "optional": "Optional"
+    }
   },
   "validation": {
     "email_required": "Email is required",
@@ -211,7 +259,11 @@
     "role_required": "Role is required",
     "version_required": "Version is required",
     "version_format": "Version must be in format: X.Y.Z (e.g., 1.0.0)",
-    "markdown_required": "Content is required"
+    "markdown_required": "Content is required",
+    "two_factor": {
+      "code_min": "Code must be at least 6 characters",
+      "code_max": "Code must be at most 10 characters"
+    }
   },
   "common": {
     "loading": "Loading...",
@@ -224,7 +276,10 @@
     "cancel": "Cancel",
     "true": "True",
     "false": "False",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "back": "Back",
+    "copy": "Copy",
+    "copied": "Copied!"
   },
   "navigation": {
     "docs": "Documentation",
@@ -1454,6 +1509,38 @@
       "submit_button": "Save Changes",
       "success_message": "Profile updated successfully",
       "error_loading": "Failed to load profile. Please try again."
+    },
+    "two_factor": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra layer of security to your account",
+      "status_enabled": "Enabled",
+      "status_disabled": "Disabled",
+      "enable_button": "Enable 2FA",
+      "disable_button": "Disable 2FA",
+      "regenerate_backup_codes": "Regenerate Backup Codes",
+      "backup_codes_remaining": "{{count}} backup codes remaining",
+      "enabled_success": "Two-factor authentication has been enabled",
+      "disabled_success": "Two-factor authentication has been disabled",
+      "setup_modal_title": "Set Up Two-Factor Authentication",
+      "setup_instructions": "Scan the QR code below with your authenticator app (Google Authenticator, Authy, 1Password, etc.)",
+      "manual_entry_label": "Can't scan? Enter this code manually:",
+      "continue_button": "Continue",
+      "verify_instructions": "Enter the 6-digit code from your authenticator app to verify setup.",
+      "verification_code_label": "Verification Code",
+      "verification_code_placeholder": "000000",
+      "verify_button": "Verify & Enable",
+      "backup_codes_warning": "Save these backup codes in a secure location. Each code can only be used once. You won't be able to see these again!",
+      "copy_all_codes": "Copy All Codes",
+      "done_button": "Done",
+      "disable_modal_title": "Disable Two-Factor Authentication",
+      "disable_warning": "Disabling 2FA will make your account less secure. You'll need to enter your password and a verification code to confirm.",
+      "password_label": "Current Password",
+      "password_placeholder": "Enter your password",
+      "code_label": "Verification Code",
+      "code_placeholder": "Enter code from app or backup code",
+      "confirm_disable": "Disable 2FA",
+      "new_backup_codes_title": "New Backup Codes",
+      "new_backup_codes_warning": "Your previous backup codes have been invalidated. Save these new codes in a secure location. Each code can only be used once."
     }
   },
   "onboarding": {

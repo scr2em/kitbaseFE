@@ -96,7 +96,7 @@ export function AcceptInvitationPage() {
     });
     setIsProcessed(true);
     
-    const firstOrg = authResponse.user.organizations[0];
+    const firstOrg = authResponse.user?.organizations?.[0];
     if (firstOrg) {
       const url = `http://${firstOrg.organization.subdomain}.${import.meta.env.VITE_APP_DOMAIN}/dashboard`;
       window.open(url, '_self');

@@ -474,6 +474,8 @@ export interface UpdateOrganizationRequest {
    * @format uri
    */
   logoUrl?: string;
+  /** Whether this organization requires members to have 2FA enabled */
+  require2fa?: boolean;
 }
 
 /** Request to create an invitation */
@@ -576,6 +578,11 @@ export interface CurrentUserResponse {
   /** The user's role with permissions in the current organization (determined by subdomain). Null if not accessing via organization subdomain. */
   currentOrganizationRole?: RoleWithPermissionsResponse | null;
   /**
+   * Whether two-factor authentication is enabled for this user
+   * @default false
+   */
+  twoFactorEnabled?: boolean;
+  /**
    * When the user was created
    * @format date-time
    */
@@ -631,14 +638,92 @@ export interface UserStatusResponse {
   status: UserStatusEnum;
 }
 
-/** Authentication response */
+/** Authentication response. If twoFactorRequired is true, accessToken and refreshToken will be null and tempToken will be provided for 2FA verification. If twoFactorSetupRequired is true, the user must set up 2FA before accessing organizations that require it. */
 export interface AuthResponse {
-  /** JWT access token */
-  accessToken: string;
-  /** Refresh token */
-  refreshToken: string;
+  /** JWT access token (null if 2FA required or setup required) */
+  accessToken?: string | null;
+  /** Refresh token (null if 2FA required or setup required) */
+  refreshToken?: string | null;
   /** User information */
-  user: UserResponse;
+  user?: UserResponse;
+  /**
+   * Whether two-factor authentication verification is required to complete login (user has 2FA enabled)
+   * @default false
+   */
+  twoFactorRequired?: boolean;
+  /**
+   * Whether two-factor authentication setup is required (user belongs to an org that requires 2FA but hasn't set it up)
+   * @default false
+   */
+  twoFactorSetupRequired?: boolean;
+  /** Temporary token for 2FA verification or setup (only present if twoFactorRequired or twoFactorSetupRequired is true) */
+  tempToken?: string | null;
+  /** Available 2FA methods for this user (only present if twoFactorRequired is true) */
+  twoFactorMethods?: ("totp" | "backup")[] | null;
+}
+
+/** Response when initiating 2FA setup */
+export interface TwoFactorSetupResponse {
+  /** The TOTP secret key (base32 encoded) */
+  secret: string;
+  /** The otpauth:// URI for QR code generation */
+  qrCodeUri: string;
+  /** One-time use backup codes for account recovery */
+  backupCodes: string[];
+}
+
+/** Request to enable 2FA after setup */
+export interface TwoFactorEnableRequest {
+  /**
+   * The 6-digit TOTP code from authenticator app
+   * @minLength 6
+   * @maxLength 6
+   * @pattern ^\d{6}$
+   */
+  code: string;
+}
+
+/** Request to disable 2FA */
+export interface TwoFactorDisableRequest {
+  /** Current account password for verification */
+  password: string;
+  /**
+   * Current TOTP code or backup code
+   * @minLength 6
+   * @maxLength 10
+   */
+  code: string;
+}
+
+/** Request to verify 2FA during login */
+export interface TwoFactorVerifyRequest {
+  /** Temporary token received from login response */
+  tempToken: string;
+  /**
+   * TOTP code or backup code
+   * @minLength 6
+   * @maxLength 10
+   */
+  code: string;
+  /**
+   * Type of code being provided
+   * @default "totp"
+   */
+  type?: "totp" | "backup";
+}
+
+/** Response indicating 2FA status */
+export interface TwoFactorStatusResponse {
+  /** Whether 2FA is currently enabled */
+  enabled: boolean;
+  /** Number of unused backup codes remaining */
+  backupCodesRemaining?: number | null;
+}
+
+/** Response containing newly generated backup codes */
+export interface BackupCodesResponse {
+  /** New one-time use backup codes (previous codes are invalidated) */
+  backupCodes: string[];
 }
 
 /** Organization information */
@@ -653,6 +738,11 @@ export interface OrganizationResponse {
   description?: string;
   /** URL to the organization logo image */
   logoUrl?: string;
+  /**
+   * Whether this organization requires members to have 2FA enabled
+   * @default false
+   */
+  require2fa?: boolean;
   /**
    * When the organization was created
    * @format date-time
@@ -2507,6 +2597,83 @@ export interface FeatureFlagUsageResponse {
   toDate: string;
 }
 
+/**
+ * Complete feature flag configuration for client-side local evaluation.
+ * Contains all flags, rules, and segments needed to evaluate flags without server calls.
+ */
+export interface FlagConfigurationResponse {
+  /** Environment ID this configuration belongs to */
+  environmentId: string;
+  /**
+   * Schema version for SDK compatibility (e.g., "1.0")
+   * @example "1.0"
+   */
+  schemaVersion: string;
+  /**
+   * Timestamp when this configuration was generated
+   * @format date-time
+   */
+  generatedAt: string;
+  /** ETag for cache validation (use with If-None-Match header) */
+  etag?: string;
+  /** List of flag definitions with embedded rules */
+  flags: FlagDefinition[];
+  /** List of segment definitions with embedded rules */
+  segments: SegmentDefinition[];
+}
+
+/** A feature flag definition for client-side evaluation */
+export interface FlagDefinition {
+  /** Unique flag key for evaluation */
+  key: string;
+  /** The data type of the feature flag value */
+  valueType: FeatureFlagValueTypeEnum;
+  /** Default enabled state when no rules match */
+  defaultEnabled: boolean;
+  /** Default value when flag is enabled (type depends on valueType) */
+  defaultValue?: any;
+  /** Ordered list of targeting rules (evaluated in priority order) */
+  rules?: FlagRuleDefinition[];
+}
+
+/** A targeting rule for client-side evaluation */
+export interface FlagRuleDefinition {
+  /** Rule priority (lower = higher priority, 0 is first) */
+  priority: number;
+  /** Segment key to match (null for rules without segment targeting) */
+  segmentKey?: string | null;
+  /**
+   * Percentage rollout (0-100). Requires identityId for evaluation.
+   * @min 0
+   * @max 100
+   */
+  rolloutPercentage?: number | null;
+  /** Whether to enable the flag when this rule matches */
+  enabled: boolean;
+  /** Value to return when this rule matches (type depends on flag valueType) */
+  value?: any;
+}
+
+/** A targeting segment definition for client-side evaluation */
+export interface SegmentDefinition {
+  /** Unique segment key for rule matching */
+  key: string;
+  /** Human-readable segment name */
+  name?: string;
+  /** List of rules that define this segment (AND logic) */
+  rules: SegmentRuleDefinition[];
+}
+
+/** A single rule condition within a segment */
+export interface SegmentRuleDefinition {
+  /** The context attribute field to match against */
+  field: string;
+  /** Operator for segment rule conditions */
+  operator: FeatureFlagOperatorEnum;
+  /** The value to compare against (interpretation depends on operator) */
+  value?: string | null;
+}
+
 import type {
   AxiosInstance,
   AxiosRequestConfig,
@@ -2758,6 +2925,106 @@ export class Api<
         format: "json",
         ...params,
       }),
+
+    /**
+     * @description Generates a new TOTP secret and backup codes for 2FA setup. The user must verify a TOTP code using the enable endpoint to activate 2FA. Calling this endpoint again will generate new secret and codes (previous setup is discarded). Can be authenticated with either a Bearer token or a 2FA setup token (received when login returns twoFactorSetupRequired: true because the user belongs to an org that requires 2FA).
+     *
+     * @tags Users
+     * @name SetupTwoFactor
+     * @summary Initialize 2FA setup
+     * @request POST:/users/me/2fa/setup
+     * @secure
+     */
+    setupTwoFactor: (params: RequestParams = {}) =>
+      this.request<TwoFactorSetupResponse, ErrorResponse>({
+        path: `/users/me/2fa/setup`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Verifies the TOTP code and enables 2FA for the user's account. Must be called after /users/me/2fa/setup. Can be authenticated with either a Bearer token or a 2FA setup token (received when login returns twoFactorSetupRequired: true because the user belongs to an org that requires 2FA).
+     *
+     * @tags Users
+     * @name EnableTwoFactor
+     * @summary Enable 2FA after setup
+     * @request POST:/users/me/2fa/enable
+     * @secure
+     */
+    enableTwoFactor: (
+      data: TwoFactorEnableRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<TwoFactorStatusResponse, ErrorResponse>({
+        path: `/users/me/2fa/enable`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Disables 2FA for the user's account. Requires password and current TOTP/backup code.
+     *
+     * @tags Users
+     * @name DisableTwoFactor
+     * @summary Disable 2FA
+     * @request POST:/users/me/2fa/disable
+     * @secure
+     */
+    disableTwoFactor: (
+      data: TwoFactorDisableRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<TwoFactorStatusResponse, ErrorResponse>({
+        path: `/users/me/2fa/disable`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Generates new backup codes and invalidates all previous codes. Requires 2FA to be enabled.
+     *
+     * @tags Users
+     * @name RegenerateBackupCodes
+     * @summary Regenerate backup codes
+     * @request POST:/users/me/2fa/backup-codes
+     * @secure
+     */
+    regenerateBackupCodes: (params: RequestParams = {}) =>
+      this.request<BackupCodesResponse, ErrorResponse>({
+        path: `/users/me/2fa/backup-codes`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns the current 2FA status for the authenticated user.
+     *
+     * @tags Users
+     * @name GetTwoFactorStatus
+     * @summary Get 2FA status
+     * @request GET:/users/me/2fa/status
+     * @secure
+     */
+    getTwoFactorStatus: (params: RequestParams = {}) =>
+      this.request<TwoFactorStatusResponse, ErrorResponse>({
+        path: `/users/me/2fa/status`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
   };
   auth = {
     /**
@@ -2876,6 +3143,27 @@ export class Api<
         path: `/auth/signup/complete`,
         method: "POST",
         query: query,
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Verifies the 2FA code (TOTP or backup code) and completes the login process. Called after receiving twoFactorRequired: true from the login endpoint.
+     *
+     * @tags Authentication
+     * @name VerifyTwoFactor
+     * @summary Verify 2FA code during login
+     * @request POST:/auth/2fa/verify
+     */
+    verifyTwoFactor: (
+      data: TwoFactorVerifyRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AuthResponse, ErrorResponse>({
+        path: `/auth/2fa/verify`,
+        method: "POST",
         body: data,
         type: ContentType.Json,
         format: "json",
@@ -4616,6 +4904,37 @@ export class Api<
         body: data,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns the complete feature flag configuration for client-side local evaluation. This endpoint is optimized for SDK bootstrap and supports ETag-based caching. Use the `If-None-Match` header with the ETag from a previous response to check if the configuration has changed. Returns 304 Not Modified if unchanged. This endpoint uses API key authentication (X-API-Key header).
+     *
+     * @tags Feature Flags
+     * @name GetFeatureFlagConfiguration
+     * @summary Get feature flag configuration for client-side evaluation
+     * @request GET:/v1/feature-flags/config
+     */
+    getFeatureFlagConfiguration: (params: RequestParams = {}) =>
+      this.request<FlagConfigurationResponse, void | ErrorResponse>({
+        path: `/v1/feature-flags/config`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Opens a Server-Sent Events (SSE) stream for real-time configuration updates. The stream sends events when flags, rules, or segments change. Event types: - `config`: Full configuration payload (sent on connection and major changes) - `heartbeat`: Keep-alive ping (sent every 30 seconds) This endpoint uses API key authentication (X-API-Key header).
+     *
+     * @tags Feature Flags
+     * @name StreamFeatureFlagConfiguration
+     * @summary Stream feature flag configuration updates (SSE)
+     * @request GET:/v1/feature-flags/config/stream
+     */
+    streamFeatureFlagConfiguration: (params: RequestParams = {}) =>
+      this.request<string, ErrorResponse>({
+        path: `/v1/feature-flags/config/stream`,
+        method: "GET",
         ...params,
       }),
 

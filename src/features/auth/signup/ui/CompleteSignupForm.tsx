@@ -52,7 +52,7 @@ export function CompleteSignupForm({ token }: CompleteSignupFormProps) {
       });
 
       // Redirect to organization creation if user doesn't have one
-      if (!response.user.organizations || response.user.organizations.length === 0) {
+      if (!response.user?.organizations || response.user?.organizations.length === 0) {
         navigate('/create-organization');
       } else {
         // Redirect to the first organization

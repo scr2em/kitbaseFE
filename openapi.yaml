@@ -548,8 +548,9 @@ components:
           type: string
           format: uri
           description: URL to the organization logo image
-
-
+        require2fa:
+          type: boolean
+          description: Whether this organization requires members to have 2FA enabled
 
     CreateInvitationRequest:
       type: object
@@ -711,6 +712,10 @@ components:
           $ref: '#/components/schemas/RoleWithPermissionsResponse'
           description: The user's role with permissions in the current organization (determined by subdomain). Null if not accessing via organization subdomain.
           nullable: true
+        twoFactorEnabled:
+          type: boolean
+          description: Whether two-factor authentication is enabled for this user
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -784,20 +789,134 @@ components:
 
     AuthResponse:
       type: object
-      description: Authentication response
-      required:
-        - accessToken
-        - refreshToken
-        - user
+      description: Authentication response. If twoFactorRequired is true, accessToken and refreshToken will be null and tempToken will be provided for 2FA verification. If twoFactorSetupRequired is true, the user must set up 2FA before accessing organizations that require it.
       properties:
         accessToken:
           type: string
-          description: JWT access token
+          description: JWT access token (null if 2FA required or setup required)
+          nullable: true
         refreshToken:
           type: string
-          description: Refresh token
+          description: Refresh token (null if 2FA required or setup required)
+          nullable: true
         user:
           $ref: '#/components/schemas/UserResponse'
+        twoFactorRequired:
+          type: boolean
+          description: Whether two-factor authentication verification is required to complete login (user has 2FA enabled)
+          default: false
+        twoFactorSetupRequired:
+          type: boolean
+          description: Whether two-factor authentication setup is required (user belongs to an org that requires 2FA but hasn't set it up)
+          default: false
+        tempToken:
+          type: string
+          description: Temporary token for 2FA verification or setup (only present if twoFactorRequired or twoFactorSetupRequired is true)
+          nullable: true
+        twoFactorMethods:
+          type: array
+          items:
+            type: string
+            enum: [totp, backup]
+          description: Available 2FA methods for this user (only present if twoFactorRequired is true)
+          nullable: true
+
+    # Two-Factor Authentication Schemas
+    TwoFactorSetupResponse:
+      type: object
+      description: Response when initiating 2FA setup
+      required:
+        - secret
+        - qrCodeUri
+        - backupCodes
+      properties:
+        secret:
+          type: string
+          description: The TOTP secret key (base32 encoded)
+        qrCodeUri:
+          type: string
+          description: The otpauth:// URI for QR code generation
+        backupCodes:
+          type: array
+          items:
+            type: string
+          description: One-time use backup codes for account recovery
+
+    TwoFactorEnableRequest:
+      type: object
+      description: Request to enable 2FA after setup
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          pattern: '^\d{6}$'
+          description: The 6-digit TOTP code from authenticator app
+
+    TwoFactorDisableRequest:
+      type: object
+      description: Request to disable 2FA
+      required:
+        - password
+        - code
+      properties:
+        password:
+          type: string
+          description: Current account password for verification
+        code:
+          type: string
+          minLength: 6
+          maxLength: 10
+          description: Current TOTP code or backup code
+
+    TwoFactorVerifyRequest:
+      type: object
+      description: Request to verify 2FA during login
+      required:
+        - tempToken
+        - code
+      properties:
+        tempToken:
+          type: string
+          description: Temporary token received from login response
+        code:
+          type: string
+          minLength: 6
+          maxLength: 10
+          description: TOTP code or backup code
+        type:
+          type: string
+          enum: [totp, backup]
+          default: totp
+          description: Type of code being provided
+
+    TwoFactorStatusResponse:
+      type: object
+      description: Response indicating 2FA status
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+          description: Whether 2FA is currently enabled
+        backupCodesRemaining:
+          type: integer
+          description: Number of unused backup codes remaining
+          nullable: true
+
+    BackupCodesResponse:
+      type: object
+      description: Response containing newly generated backup codes
+      required:
+        - backupCodes
+      properties:
+        backupCodes:
+          type: array
+          items:
+            type: string
+          description: New one-time use backup codes (previous codes are invalidated)
 
     OrganizationResponse:
       type: object
@@ -823,6 +942,10 @@ components:
         logoUrl:
           type: string
           description: URL to the organization logo image
+        require2fa:
+          type: boolean
+          description: Whether this organization requires members to have 2FA enabled
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -3837,6 +3960,131 @@ components:
           format: date
           description: End date of the usage period (inclusive)
 
+    # ==================== Feature Flag Configuration (Client SDK Local Evaluation) ====================
+
+    FlagConfigurationResponse:
+      type: object
+      description: |
+        Complete feature flag configuration for client-side local evaluation.
+        Contains all flags, rules, and segments needed to evaluate flags without server calls.
+      required:
+        - environmentId
+        - schemaVersion
+        - generatedAt
+        - flags
+        - segments
+      properties:
+        environmentId:
+          type: string
+          description: Environment ID this configuration belongs to
+        schemaVersion:
+          type: string
+          description: Schema version for SDK compatibility (e.g., "1.0")
+          example: "1.0"
+        generatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when this configuration was generated
+        etag:
+          type: string
+          description: ETag for cache validation (use with If-None-Match header)
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlagDefinition'
+          description: List of flag definitions with embedded rules
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/SegmentDefinition'
+          description: List of segment definitions with embedded rules
+
+    FlagDefinition:
+      type: object
+      description: A feature flag definition for client-side evaluation
+      required:
+        - key
+        - valueType
+        - defaultEnabled
+      properties:
+        key:
+          type: string
+          description: Unique flag key for evaluation
+        valueType:
+          $ref: '#/components/schemas/FeatureFlagValueTypeEnum'
+        defaultEnabled:
+          type: boolean
+          description: Default enabled state when no rules match
+        defaultValue:
+          description: Default value when flag is enabled (type depends on valueType)
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlagRuleDefinition'
+          description: Ordered list of targeting rules (evaluated in priority order)
+
+    FlagRuleDefinition:
+      type: object
+      description: A targeting rule for client-side evaluation
+      required:
+        - priority
+        - enabled
+      properties:
+        priority:
+          type: integer
+          description: Rule priority (lower = higher priority, 0 is first)
+        segmentKey:
+          type: string
+          description: Segment key to match (null for rules without segment targeting)
+          nullable: true
+        rolloutPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Percentage rollout (0-100). Requires identityId for evaluation.
+          nullable: true
+        enabled:
+          type: boolean
+          description: Whether to enable the flag when this rule matches
+        value:
+          description: Value to return when this rule matches (type depends on flag valueType)
+
+    SegmentDefinition:
+      type: object
+      description: A targeting segment definition for client-side evaluation
+      required:
+        - key
+        - rules
+      properties:
+        key:
+          type: string
+          description: Unique segment key for rule matching
+        name:
+          type: string
+          description: Human-readable segment name
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SegmentRuleDefinition'
+          description: List of rules that define this segment (AND logic)
+
+    SegmentRuleDefinition:
+      type: object
+      description: A single rule condition within a segment
+      required:
+        - field
+        - operator
+      properties:
+        field:
+          type: string
+          description: The context attribute field to match against
+        operator:
+          $ref: '#/components/schemas/FeatureFlagOperatorEnum'
+        value:
+          type: string
+          description: The value to compare against (interpretation depends on operator)
+          nullable: true
+
   responses:
     NotFoundError:
       description: Resource not found
@@ -4275,6 +4523,203 @@ paths:
                       details:
                         email: "user@example.com"
                     timestamp: "2025-01-15T10:30:00.123Z"
+
+  # Two-Factor Authentication Endpoints
+  /auth/2fa/verify:
+    post:
+      operationId: verifyTwoFactor
+      summary: Verify 2FA code during login
+      description: |
+        Verifies the 2FA code (TOTP or backup code) and completes the login process.
+        Called after receiving twoFactorRequired: true from the login endpoint.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorVerifyRequest'
+      responses:
+        '200':
+          description: 2FA verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid or expired code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or expired temp token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me/2fa/setup:
+    post:
+      operationId: setupTwoFactor
+      summary: Initialize 2FA setup
+      description: |
+        Generates a new TOTP secret and backup codes for 2FA setup.
+        The user must verify a TOTP code using the enable endpoint to activate 2FA.
+        Calling this endpoint again will generate new secret and codes (previous setup is discarded).
+        
+        Can be authenticated with either a Bearer token or a 2FA setup token (received when login
+        returns twoFactorSetupRequired: true because the user belongs to an org that requires 2FA).
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+        - {}  # Allow unauthenticated access with X-2FA-Setup-Token header
+      parameters:
+        - name: X-2FA-Setup-Token
+          in: header
+          required: false
+          description: Temporary token for 2FA setup (received from login when twoFactorSetupRequired is true)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 2FA setup initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorSetupResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: 2FA is already enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me/2fa/enable:
+    post:
+      operationId: enableTwoFactor
+      summary: Enable 2FA after setup
+      description: |
+        Verifies the TOTP code and enables 2FA for the user's account.
+        Must be called after /users/me/2fa/setup.
+        
+        Can be authenticated with either a Bearer token or a 2FA setup token (received when login
+        returns twoFactorSetupRequired: true because the user belongs to an org that requires 2FA).
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+        - {}  # Allow unauthenticated access with X-2FA-Setup-Token header
+      parameters:
+        - name: X-2FA-Setup-Token
+          in: header
+          required: false
+          description: Temporary token for 2FA setup (received from login when twoFactorSetupRequired is true)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorEnableRequest'
+      responses:
+        '200':
+          description: 2FA enabled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorStatusResponse'
+        '400':
+          description: Invalid TOTP code or no pending setup
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/me/2fa/disable:
+    post:
+      operationId: disableTwoFactor
+      summary: Disable 2FA
+      description: |
+        Disables 2FA for the user's account. Requires password and current TOTP/backup code.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorDisableRequest'
+      responses:
+        '200':
+          description: 2FA disabled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorStatusResponse'
+        '400':
+          description: Invalid password or code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/me/2fa/backup-codes:
+    post:
+      operationId: regenerateBackupCodes
+      summary: Regenerate backup codes
+      description: |
+        Generates new backup codes and invalidates all previous codes.
+        Requires 2FA to be enabled.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: New backup codes generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupCodesResponse'
+        '400':
+          description: 2FA is not enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/me/2fa/status:
+    get:
+      operationId: getTwoFactorStatus
+      summary: Get 2FA status
+      description: Returns the current 2FA status for the authenticated user.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 2FA status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorStatusResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
   /organizations:
     get:
@@ -6392,6 +6837,98 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== Feature Flag Configuration (Client SDK) ====================
+  /v1/feature-flags/config:
+    get:
+      operationId: getFeatureFlagConfiguration
+      summary: Get feature flag configuration for client-side evaluation
+      description: |
+        Returns the complete feature flag configuration for client-side local evaluation.
+        This endpoint is optimized for SDK bootstrap and supports ETag-based caching.
+        
+        Use the `If-None-Match` header with the ETag from a previous response to check
+        if the configuration has changed. Returns 304 Not Modified if unchanged.
+        
+        This endpoint uses API key authentication (X-API-Key header).
+      tags:
+        - Feature Flags
+      security: []
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: API key for authentication
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+          description: ETag from previous response for cache validation
+      responses:
+        '200':
+          description: Feature flag configuration retrieved successfully
+          headers:
+            ETag:
+              description: ETag for cache validation
+              schema:
+                type: string
+            Cache-Control:
+              description: Cache control directives
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlagConfigurationResponse'
+        '304':
+          description: Configuration not modified (ETag matched)
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/feature-flags/config/stream:
+    get:
+      operationId: streamFeatureFlagConfiguration
+      summary: Stream feature flag configuration updates (SSE)
+      description: |
+        Opens a Server-Sent Events (SSE) stream for real-time configuration updates.
+        The stream sends events when flags, rules, or segments change.
+        
+        Event types:
+        - `config`: Full configuration payload (sent on connection and major changes)
+        - `heartbeat`: Keep-alive ping (sent every 30 seconds)
+        
+        This endpoint uses API key authentication (X-API-Key header).
+      tags:
+        - Feature Flags
+      security: []
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: API key for authentication
+      responses:
+        '200':
+          description: SSE stream established
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream
         '401':
           description: Invalid or missing API key
           content:
