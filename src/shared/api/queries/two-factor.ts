@@ -5,6 +5,7 @@ import type {
   TwoFactorDisableRequest,
 } from '../../../generated-api';
 import axios from 'axios';
+import { USER_QUERY_KEY } from './user';
 
 export const TWO_FACTOR_STATUS_KEY = ['twoFactorStatus'];
 
@@ -62,6 +63,7 @@ export function useTwoFactorEnableMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TWO_FACTOR_STATUS_KEY });
+      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
     },
   });
 }
@@ -105,6 +107,7 @@ export function useTwoFactorDisableMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TWO_FACTOR_STATUS_KEY });
+      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
     },
   });
 }
