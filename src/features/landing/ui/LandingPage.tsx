@@ -560,63 +560,6 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Integration Section */}
-        <section className="py-16 sm:py-24 bg-white dark:bg-[#161b22]/50 border-y border-zinc-200 dark:border-[#30363d]">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-zinc-900 dark:text-[#e6edf3]">
-                  {t('landing.integration.title')}
-                </h2>
-                <p className="text-lg mb-8 text-zinc-600 dark:text-[#8b949e]">
-                  {t('landing.integration.description')}
-                </p>
-                <ul className="space-y-4">
-                  {[
-                    t('landing.integration.benefit_1'),
-                    t('landing.integration.benefit_2'),
-                    t('landing.integration.benefit_3'),
-                    t('landing.integration.benefit_4'),
-                  ].map((benefit, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-zinc-700 dark:text-[#e6edf3]">
-                        {benefit}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {[
-                  { name: 'React', icon: Code, gradient: 'from-sky-400 to-cyan-500', href: 'https://docs.kitbase.dev/sdks/react.html' },
-                  { name: 'React Native', icon: Smartphone, gradient: 'from-cyan-500 to-blue-500', href: 'https://docs.kitbase.dev/sdks/react.html' },
-                  { name: 'Flutter', icon: Smartphone, gradient: 'from-blue-500 to-indigo-500', href: 'https://docs.kitbase.dev/sdks/dart.html' },
-                  { name: 'TypeScript', icon: Code, gradient: 'from-violet-500 to-purple-500', href: 'https://docs.kitbase.dev/sdks/typescript.html' },
-                  { name: 'REST API', icon: Zap, gradient: 'from-amber-500 to-orange-500', href: 'https://docs.kitbase.dev/reference/api.html' },
-                  { name: 'PHP', icon: Code, gradient: 'from-emerald-500 to-green-600', href: 'https://docs.kitbase.dev/sdks/php.html' },
-                ].map((tech, index) => (
-                  <a 
-                    key={index}
-                    href={tech.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-zinc-50 dark:bg-[#161b22] border border-zinc-200 dark:border-[#30363d] hover:border-zinc-300 dark:hover:border-[#8b949e] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer"
-                  >
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${tech.gradient} flex items-center justify-center`}>
-                      <tech.icon className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="text-sm font-medium text-zinc-700 dark:text-[#e6edf3]">
-                      {tech.name}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Self-Hosting Section */}
         <section className="py-16 sm:py-24">
@@ -740,6 +683,65 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+        
+        {/* Integration Section */}
+        <section className="py-16 sm:py-24 bg-white dark:bg-[#161b22]/50 border-y border-zinc-200 dark:border-[#30363d]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-zinc-900 dark:text-[#e6edf3]">
+                  {t('landing.integration.title')}
+                </h2>
+                <p className="text-lg mb-8 text-zinc-600 dark:text-[#8b949e]">
+                  {t('landing.integration.description')}
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    t('landing.integration.benefit_1'),
+                    t('landing.integration.benefit_2'),
+                    t('landing.integration.benefit_3'),
+                    t('landing.integration.benefit_4'),
+                  ].map((benefit, index) => (
+                    <li key={index} className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-zinc-700 dark:text-[#e6edf3]">
+                        {benefit}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { name: 'React', icon: Code, gradient: 'from-sky-400 to-cyan-500', href: 'https://docs.kitbase.dev/sdks/react.html' },
+                  { name: 'React Native', icon: Smartphone, gradient: 'from-cyan-500 to-blue-500', href: 'https://docs.kitbase.dev/sdks/react.html' },
+                  { name: 'Flutter', icon: Smartphone, gradient: 'from-blue-500 to-indigo-500', href: 'https://docs.kitbase.dev/sdks/dart.html' },
+                  { name: 'TypeScript', icon: Code, gradient: 'from-violet-500 to-purple-500', href: 'https://docs.kitbase.dev/sdks/typescript.html' },
+                  { name: 'REST API', icon: Zap, gradient: 'from-amber-500 to-orange-500', href: 'https://docs.kitbase.dev/reference/api.html' },
+                  { name: 'PHP', icon: Code, gradient: 'from-emerald-500 to-green-600', href: 'https://docs.kitbase.dev/sdks/php.html' },
+                ].map((tech, index) => (
+                  <a 
+                    key={index}
+                    href={tech.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-zinc-50 dark:bg-[#161b22] border border-zinc-200 dark:border-[#30363d] hover:border-zinc-300 dark:hover:border-[#8b949e] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                  >
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${tech.gradient} flex items-center justify-center`}>
+                      <tech.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-zinc-700 dark:text-[#e6edf3]">
+                      {tech.name}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
 
         {/* CTA Section */}
         <section className="py-16 sm:py-24">
