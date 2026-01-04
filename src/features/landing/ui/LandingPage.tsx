@@ -84,12 +84,6 @@ export function LandingPage() {
     },
   ];
 
-  const stats = [
-    { value: '50K+', label: t('landing.stats.flags') },
-    { value: '1M+', label: t('landing.stats.events') },
-    { value: '99.9%', label: t('landing.stats.uptime') },
-    { value: '<50ms', label: t('landing.stats.latency') },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#0d1117]">
@@ -502,6 +496,25 @@ export function LandingPage() {
                     </li>
                   ))}
                 </ul>
+
+                {/* OpenFeature Compatibility */}
+                <a 
+                  href="https://openfeature.dev" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-500/5 to-purple-500/5 border border-violet-200 dark:border-violet-500/20 hover:border-violet-300 dark:hover:border-violet-500/40 transition-colors group"
+                >
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm font-medium text-zinc-700 dark:text-[#e6edf3]">
+                      100% compatible with
+                    </span>
+                    <span className="text-sm font-bold text-violet-600 dark:text-violet-400">
+                      OpenFeature
+                    </span>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-zinc-400 group-hover:text-violet-500 transition-colors" />
+                </a>
               </div>
             </div>
           </div>
@@ -509,23 +522,6 @@ export function LandingPage() {
 
      
 
-        {/* Stats Section */}
-        <section className="py-12 sm:py-16 bg-zinc-50 dark:bg-[#161b22]/50 border-y border-zinc-200 dark:border-[#30363d]">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center p-4 rounded-2xl bg-white dark:bg-[#161b22] border border-zinc-200 dark:border-[#30363d]">
-                  <div className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-zinc-500 dark:text-[#8b949e]">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Features Section */}
         <section id="features" className="py-16 sm:py-24">
