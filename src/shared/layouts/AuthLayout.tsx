@@ -15,7 +15,7 @@ export function AuthLayout() {
   const isLoginPage = location.pathname === '/login';
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0a0a0f]">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0d1117]">
       {/* Animated Background Pattern */}
       <div 
         className="fixed inset-0 pointer-events-none opacity-40"
@@ -42,14 +42,14 @@ export function AuthLayout() {
       </div>
 
       {/* Header */}
-      <header className="h-16 border-b sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-[#0a0a0f]/80 border-gray-100 dark:border-white/5">
+      <header className="h-16 border-b sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-[#161b22]/90 border-gray-100 dark:border-[#30363d]">
         <div className="max-w-6xl mx-auto h-full px-4 sm:px-6">
           <div className="flex justify-between items-center h-full">
             <Link to="/" className="flex items-center gap-2 no-underline">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
                 <Rocket className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-[#e6edf3]">
                 Kitbase
               </span>
             </Link>

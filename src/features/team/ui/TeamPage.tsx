@@ -250,10 +250,10 @@ export function TeamPage() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-[#e6edf3]">
               {t('team.title')}
             </h1>
-            <p className="text-lg text-gray-500">
+            <p className="text-lg text-gray-500 dark:text-[#8b949e]">
               {t('team.subtitle', { count: totalMembers })}
             </p>
           </div>
@@ -281,7 +281,7 @@ export function TeamPage() {
         </div>
 
         {/* Members Table */}
-        <Card withBorder padding={0} radius="md">
+        <Card withBorder padding={0} radius="md" className="bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
           <ScrollArea>
             <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
               <Table.Thead>
@@ -458,7 +458,7 @@ export function TeamPage() {
 
           {/* Load More Button */}
           {hasNextPage && (
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-200 dark:border-[#30363d]">
               <div className="flex justify-center">
                 <Button
                   onClick={() => fetchNextPage()}
@@ -490,7 +490,7 @@ export function TeamPage() {
         centered
       >
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-[#8b949e]">
             {changeRoleModal.type === 'member'
               ? t('team.change_role.description', { name: changeRoleModal.name })
               : t('team.change_invitation_role.description', { email: changeRoleModal.name })}

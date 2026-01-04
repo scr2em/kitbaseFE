@@ -111,10 +111,10 @@ export function DashboardPage() {
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#e6edf3]">
             {t('dashboard.welcome', { name: user.firstName })}
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 dark:text-[#8b949e] mt-1">
             {t('dashboard.welcome_subtitle')}
           </p>
         </div>
@@ -131,13 +131,13 @@ export function DashboardPage() {
       {/* Stats Cards */}
       {hasOrganizations && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow">
+          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wide">
+                <p className="text-xs text-slate-500 dark:text-[#8b949e] uppercase font-semibold tracking-wide">
                   {t('dashboard.stats.active_projects')}
                 </p>
-                <p className="text-2xl font-bold mt-1 text-slate-900">
+                <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-[#e6edf3]">
                   {projectsList.length}
                 </p>
               </div>
@@ -153,20 +153,20 @@ export function DashboardPage() {
             </div>
             <button
               onClick={() => navigate('/projects')}
-              className="mt-3 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="mt-3 text-xs text-blue-600 dark:text-[#58a6ff] hover:text-blue-700 dark:hover:underline font-medium flex items-center gap-1"
             >
               {t('dashboard.stats.view_all')}
               <ArrowRight size={12} />
             </button>
           </Card>
 
-          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow">
+          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wide">
+                <p className="text-xs text-slate-500 dark:text-[#8b949e] uppercase font-semibold tracking-wide">
                   {t('dashboard.stats.team_members')}
                 </p>
-                <p className="text-2xl font-bold mt-1 text-slate-900">
+                <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-[#e6edf3]">
                   {totalMembers}
                 </p>
               </div>
@@ -182,20 +182,20 @@ export function DashboardPage() {
             </div>
             <button
               onClick={() => navigate('/organization/team')}
-              className="mt-3 text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
+              className="mt-3 text-xs text-teal-600 dark:text-[#3fb950] hover:text-teal-700 dark:hover:underline font-medium flex items-center gap-1"
             >
               {t('dashboard.stats.manage_team')}
               <ArrowRight size={12} />
             </button>
           </Card>
 
-          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow">
+          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wide">
+                <p className="text-xs text-slate-500 dark:text-[#8b949e] uppercase font-semibold tracking-wide">
                   {t('dashboard.stats.organization')}
                 </p>
-                <p className="text-lg font-bold mt-1 text-slate-900 truncate max-w-[140px]">
+                <p className="text-lg font-bold mt-1 text-slate-900 dark:text-[#e6edf3] truncate max-w-[140px]">
                   {currentOrganization?.organization.name}
                 </p>
               </div>
@@ -211,20 +211,20 @@ export function DashboardPage() {
             </div>
             <button
               onClick={() => navigate('/organization')}
-              className="mt-3 text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1"
+              className="mt-3 text-xs text-violet-600 dark:text-[#a371f7] hover:text-violet-700 dark:hover:underline font-medium flex items-center gap-1"
             >
               {t('dashboard.stats.view_org')}
               <ArrowRight size={12} />
             </button>
           </Card>
 
-          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow">
+          <Card withBorder padding="lg" radius="md" className="group hover:shadow-md transition-shadow bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wide">
+                <p className="text-xs text-slate-500 dark:text-[#8b949e] uppercase font-semibold tracking-wide">
                   {t('dashboard.stats.your_role')}
                 </p>
-                <p className="text-lg font-bold mt-1 text-slate-900">
+                <p className="text-lg font-bold mt-1 text-slate-900 dark:text-[#e6edf3]">
                   {currentOrganization?.role.name || 'Member'}
                 </p>
               </div>
@@ -240,7 +240,7 @@ export function DashboardPage() {
             </div>
             <button
               onClick={() => navigate('/settings')}
-              className="mt-3 text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1"
+              className="mt-3 text-xs text-orange-600 dark:text-[#d29922] hover:text-orange-700 dark:hover:underline font-medium flex items-center gap-1"
             >
               {t('dashboard.stats.view_settings')}
               <ArrowRight size={12} />
@@ -253,9 +253,9 @@ export function DashboardPage() {
         {/* Recent Projects */}
         {hasOrganizations && (
           <div className="lg:col-span-2">
-            <Card withBorder padding="lg" radius="md">
+            <Card withBorder padding="lg" radius="md" className="bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-[#e6edf3]">
                   {t('dashboard.recent_projects')}
                 </h2>
                 <Button
@@ -270,10 +270,10 @@ export function DashboardPage() {
 
               {projectsList.length === 0 ? (
                 <div className="py-8 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-                    <Package size={32} className="text-slate-400" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-[#21262d] flex items-center justify-center">
+                    <Package size={32} className="text-slate-400 dark:text-[#8b949e]" />
                   </div>
-                  <p className="text-slate-500 mb-4">{t('dashboard.no_projects_yet')}</p>
+                  <p className="text-slate-500 dark:text-[#8b949e] mb-4">{t('dashboard.no_projects_yet')}</p>
                   <Button
                     leftSection={<Plus size={16} />}
                     onClick={() => navigate('/projects')}
@@ -287,21 +287,21 @@ export function DashboardPage() {
                     <button
                       key={project.id}
                       onClick={() => navigate(`/projects/${project.projectKey}`)}
-                      className="p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all text-left group"
+                      className="p-4 rounded-lg border border-slate-200 dark:border-[#30363d] hover:border-blue-300 dark:hover:border-[#58a6ff] hover:bg-blue-50/50 dark:hover:bg-[#21262d] transition-all text-left group"
                     >
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shrink-0">
                           <Package size={18} className="text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                          <p className="font-medium text-slate-900 dark:text-[#e6edf3] truncate group-hover:text-blue-600 dark:group-hover:text-[#58a6ff] transition-colors">
                             {project.name}
                           </p>
-                          <p className="text-xs text-slate-500 font-mono mt-0.5">
+                          <p className="text-xs text-slate-500 dark:text-[#8b949e] font-mono mt-0.5">
                             {project.projectKey}
                           </p>
                         </div>
-                        <ArrowRight size={16} className="text-slate-300 group-hover:text-blue-500 transition-colors shrink-0 mt-1" />
+                        <ArrowRight size={16} className="text-slate-300 dark:text-[#6e7681] group-hover:text-blue-500 dark:group-hover:text-[#58a6ff] transition-colors shrink-0 mt-1" />
                       </div>
                     </button>
                   ))}
@@ -313,7 +313,7 @@ export function DashboardPage() {
 
         {/* Onboarding / Getting Started */}
         <div className={hasOrganizations ? 'lg:col-span-1' : 'lg:col-span-3'}>
-          <Card withBorder padding="lg" radius="md">
+          <Card withBorder padding="lg" radius="md" className="bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
             <div className="flex items-center gap-3 mb-4">
               {isOnboardingComplete ? (
                 <ThemeIcon size={40} radius="md" color="green" variant="light">
@@ -325,12 +325,12 @@ export function DashboardPage() {
                 </ThemeIcon>
               )}
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-[#e6edf3]">
                   {isOnboardingComplete
                     ? t('dashboard.onboarding.complete_title')
                     : t('dashboard.onboarding.title')}
                 </h2>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-[#8b949e]">
                   {t('dashboard.onboarding.progress', {
                     completed: completedSteps,
                     total: onboardingSteps.length,
@@ -353,8 +353,8 @@ export function DashboardPage() {
                   key={step.id}
                   className={`p-3 rounded-lg border transition-all ${
                     step.completed
-                      ? 'border-green-200 bg-green-50/50'
-                      : 'border-slate-200 hover:border-blue-200 hover:bg-blue-50/30'
+                      ? 'border-green-200 dark:border-[#238636]/50 bg-green-50/50 dark:bg-[#238636]/10'
+                      : 'border-slate-200 dark:border-[#30363d] hover:border-blue-200 dark:hover:border-[#58a6ff]/50 hover:bg-blue-50/30 dark:hover:bg-[#21262d]'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -367,12 +367,12 @@ export function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p
                         className={`text-sm font-medium ${
-                          step.completed ? 'text-green-700 line-through' : 'text-slate-900'
+                          step.completed ? 'text-green-700 dark:text-[#3fb950] line-through' : 'text-slate-900 dark:text-[#e6edf3]'
                         }`}
                       >
                         {step.label}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-[#8b949e] mt-0.5">
                         {step.description}
                       </p>
                       {!step.completed && (
@@ -396,8 +396,8 @@ export function DashboardPage() {
 
       {/* Quick Actions */}
       {hasOrganizations && (
-        <Card withBorder padding="lg" radius="md">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+        <Card withBorder padding="lg" radius="md" className="bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-[#e6edf3] mb-4">
             {t('dashboard.quick_actions')}
           </h2>
           <div className="flex flex-wrap gap-3">

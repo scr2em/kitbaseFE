@@ -125,10 +125,10 @@ export function WebhooksPage() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-[#e6edf3]">
               {t('webhooks.title')}
             </h1>
-            <p className="text-lg text-gray-500">
+            <p className="text-lg text-gray-500 dark:text-[#8b949e]">
               {t('webhooks.subtitle', { count: totalElements })}
             </p>
           </div>
@@ -165,7 +165,7 @@ export function WebhooksPage() {
           </Card>
         ) : (
           <>
-            <Card withBorder padding={0} radius="md">
+            <Card withBorder padding={0} radius="md" className="bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
               <ScrollArea>
                 <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                   <Table.Thead>
@@ -193,10 +193,10 @@ export function WebhooksPage() {
                         </Table.Td>
                         <Table.Td>
                           <div className="flex items-center gap-2">
-                            <code className="text-xs bg-gray-100 px-2 py-1 rounded max-w-[200px] truncate">
+                            <code className="text-xs bg-gray-100 dark:bg-[#21262d] px-2 py-1 rounded max-w-[200px] truncate text-slate-700 dark:text-[#e6edf3]">
                               {webhook.url}
                             </code>
-                            <ExternalLink size={14} className="text-gray-400 shrink-0" />
+                            <ExternalLink size={14} className="text-gray-400 dark:text-[#6e7681] shrink-0" />
                           </div>
                         </Table.Td>
                         <Table.Td>
@@ -230,7 +230,7 @@ export function WebhooksPage() {
                               <Badge variant="light" color="green" size="xs">
                                 {t('webhooks.delivery.success')}
                               </Badge>
-                              <span className="text-xs text-gray-500 mt-1">
+                              <span className="text-xs text-gray-500 dark:text-[#8b949e] mt-1">
                                 {new Date(webhook.lastSuccessAt).toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
@@ -244,7 +244,7 @@ export function WebhooksPage() {
                               <Badge variant="light" color="red" size="xs">
                                 {t('webhooks.delivery.failed')}
                               </Badge>
-                              <span className="text-xs text-gray-500 mt-1">
+                              <span className="text-xs text-gray-500 dark:text-[#8b949e] mt-1">
                                 {new Date(webhook.lastFailureAt).toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
@@ -254,10 +254,11 @@ export function WebhooksPage() {
                               </span>
                             </div>
                           ) : (
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-400 dark:text-[#6e7681]">
                               {t('webhooks.delivery.never')}
                             </span>
-                          )}
+                          )
+                        }
                         </Table.Td>
                         <Table.Td>
                           <Menu shadow="md" width={200} position="bottom-end">
@@ -308,4 +309,3 @@ export function WebhooksPage() {
     </div>
   );
 }
-

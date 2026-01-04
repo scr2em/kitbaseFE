@@ -122,7 +122,7 @@ export function LoginForm() {
             <div className="w-full border-t border-gray-200 dark:border-white/10" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white dark:bg-[#0a0a0f] text-gray-500">
+            <span className="px-4 bg-white dark:bg-[#0d1117] text-gray-500">
               {t('auth.login.no_account')}
             </span>
           </div>

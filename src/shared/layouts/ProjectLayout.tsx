@@ -142,13 +142,13 @@ export function ProjectLayout() {
   return (
     <div className="flex h-[calc(100vh-60px)]">
       {/* Primary Sidebar - Project Features */}
-      <aside className="w-56 shrink-0 bg-slate-50 border-r border-slate-200 flex flex-col">
+      <aside className="w-56 shrink-0 bg-slate-50 dark:bg-[#161b22] border-r border-slate-200 dark:border-[#30363d] flex flex-col">
         <ScrollArea className="flex-1">
           <div className="p-3">
             {/* Back to Projects */}
             <button
               onClick={() => navigate('/projects')}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors w-full mb-2"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-500 dark:text-[#8b949e] hover:text-slate-700 dark:hover:text-[#e6edf3] hover:bg-slate-100 dark:hover:bg-[#21262d] rounded-md transition-colors w-full mb-2"
             >
               <ArrowLeft size={16} />
               <span>{t('projects.detail.back_to_projects')}</span>
@@ -161,10 +161,10 @@ export function ProjectLayout() {
                   <Package size={18} className="text-white" strokeWidth={2} />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-slate-900 truncate">
+                  <p className="font-semibold text-slate-900 dark:text-[#e6edf3] truncate">
                     {project?.name || projectKey}
                   </p>
-                  <p className="text-xs text-slate-500 font-mono truncate">
+                  <p className="text-xs text-slate-500 dark:text-[#8b949e] font-mono truncate">
                     {projectKey}
                   </p>
                 </div>
@@ -203,9 +203,9 @@ export function ProjectLayout() {
 
       {/* Secondary Sidebar - Feature Sub-navigation */}
       {secondaryNav && (
-        <aside className="w-48 shrink-0 bg-white border-r border-slate-200">
+        <aside className="w-48 shrink-0 bg-white dark:bg-[#161b22] border-r border-slate-200 dark:border-[#30363d]">
           <div className="p-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#8b949e] px-3 mb-3">
               {isInEvents ? t('projects.detail.nav.events') : t('projects.detail.nav.changelog')}
             </p>
             <div className="space-y-1">
@@ -219,12 +219,12 @@ export function ProjectLayout() {
                     className={`
                       flex items-center gap-2.5 px-3 py-2 text-sm rounded-md transition-all w-full text-left
                       ${isActive
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        ? 'bg-[#21262d] text-[#e6edf3] font-medium'
+                        : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#e6edf3]'
                       }
                     `}
                   >
-                    <span className={isActive ? 'text-blue-500' : 'text-slate-400'}>
+                    <span className={isActive ? 'text-[#e6edf3]' : 'text-[#6e7681]'}>
                       {item.icon}
                     </span>
                     {item.label}
@@ -237,10 +237,9 @@ export function ProjectLayout() {
       )}
 
       {/* Content Area */}
-      <main className="flex-1 min-w-0 overflow-auto p-6 bg-white">
+      <main className="flex-1 min-w-0 overflow-auto p-6 bg-white dark:bg-[#161b22]">
         <Outlet />
       </main>
     </div>
   );
 }
-

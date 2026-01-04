@@ -201,7 +201,7 @@ export function ProjectDetailPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/projects')}
-            className="p-1.5 -ml-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 -ml-1.5 rounded-md text-slate-400 dark:text-[#8b949e] hover:text-slate-600 dark:hover:text-[#e6edf3] hover:bg-slate-100 dark:hover:bg-[#21262d] transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
@@ -209,7 +209,7 @@ export function ProjectDetailPage() {
             <Package size={18} className="text-white" strokeWidth={2} />
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-slate-900">{project.name}</h1>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-[#e6edf3]">{project.name}</h1>
             <Badge variant="light" color="gray" size="sm" className="font-mono">
               {project.projectKey}
             </Badge>
@@ -277,10 +277,10 @@ export function ProjectDetailPage() {
       {/* Main Content with Side Navigation */}
       <div className="flex flex-col lg:flex-row gap-0 flex-1 -mx-6 -mb-6">
         {/* Side Navigation */}
-        <aside className="lg:w-56 xl:w-64 shrink-0 bg-slate-50 border-r border-slate-200 min-h-[calc(100vh-180px)]">
+        <aside className="lg:w-56 xl:w-64 shrink-0 bg-slate-50 dark:bg-[#161b22] border-r border-slate-200 dark:border-[#30363d] min-h-[calc(100vh-180px)]">
           <nav className="sticky top-4 py-4">
             <div className="px-3 mb-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3">
+              <span className="text-xs font-semibold text-slate-400 dark:text-[#8b949e] uppercase tracking-wider px-3">
                 {t('navigation.settings')}
               </span>
             </div>
@@ -297,17 +297,17 @@ export function ProjectDetailPage() {
                     className={`
                       relative flex items-center gap-3 px-3 py-2.5 text-left transition-all w-full rounded-md
                       ${isDisabled 
-                        ? 'text-slate-300 cursor-not-allowed'
+                        ? 'text-slate-300 dark:text-[#484f58] cursor-not-allowed'
                         : isActive 
-                          ? 'bg-white text-slate-900 font-medium' 
-                          : 'text-slate-600 hover:bg-white/60 hover:text-slate-900'
+                          ? 'bg-white dark:bg-[#21262d] text-slate-900 dark:text-[#e6edf3] font-medium' 
+                          : 'text-slate-600 dark:text-[#8b949e] hover:bg-white/60 dark:hover:bg-[#21262d] hover:text-slate-900 dark:hover:text-[#e6edf3]'
                       }
                     `}
                   >
                     {isActive && !isDisabled && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 dark:bg-[#58a6ff] rounded-r-full" />
                     )}
-                    <span className={`transition-colors ${isDisabled ? 'text-slate-300' : isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-500'}`}>
+                    <span className={`transition-colors ${isDisabled ? 'text-slate-300 dark:text-[#484f58]' : isActive ? 'text-blue-600 dark:text-[#58a6ff]' : 'text-slate-400 dark:text-[#6e7681] group-hover:text-slate-500'}`}>
                       {item.icon}
                     </span>
                     <span className="text-sm">{item.label}</span>
@@ -319,7 +319,7 @@ export function ProjectDetailPage() {
         </aside>
         
         {/* Content Area */}
-        <main className="flex-1 px-6 py-4 min-w-0">
+        <main className="flex-1 px-6 py-4 min-w-0 bg-white dark:bg-[#0d1117]">
           <Outlet />
         </main>
       </div>

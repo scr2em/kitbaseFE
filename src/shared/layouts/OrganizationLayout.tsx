@@ -46,7 +46,7 @@ export function OrganizationLayout() {
       {/* Secondary Sidebar */}
       <div className="w-56 flex-shrink-0">
         <div className="sticky top-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 px-3 mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8b949e] px-3 mb-3">
             {t('navigation.organization')}
           </p>
           <div className="flex flex-col gap-1">

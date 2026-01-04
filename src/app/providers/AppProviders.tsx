@@ -25,7 +25,7 @@ export function AppProviders() {
   return (
     <QueryClientProvider client={queryClient}>
       <NuqsAdapter>
-        <MantineProvider theme={theme} >
+        <MantineProvider theme={theme} defaultColorScheme="auto">
           <ModalsProvider>
             <Notifications position="top-right" />
             <AuthProvider>

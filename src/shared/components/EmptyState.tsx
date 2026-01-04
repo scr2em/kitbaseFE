@@ -93,10 +93,10 @@ export function EmptyState({
 
       {/* Content */}
       <div className="max-w-md">
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-[#e6edf3] mb-2">
           {title}
         </h3>
-        <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+        <p className="text-sm text-slate-500 dark:text-[#8b949e] mb-6 leading-relaxed">
           {description}
         </p>
       </div>
@@ -129,7 +129,3 @@ export function EmptyState({
     </div>
   );
 }
-
-
-
-

@@ -26,8 +26,8 @@ function MetadataField({ label, value }: { label: string; value?: string | numbe
   const displayValue = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
   return (
     <div>
-      <span className="text-xs text-gray-500">{label}</span>
-      <p className="text-sm font-medium">{displayValue}</p>
+      <span className="text-xs text-gray-500 dark:text-zinc-400">{label}</span>
+      <p className="text-sm font-medium text-slate-900 dark:text-white">{displayValue}</p>
     </div>
   );
 }

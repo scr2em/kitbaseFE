@@ -14,10 +14,12 @@ import {
   Check,
   Search,
   BookOpen,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useCurrentUserQuery } from '../api/queries/user';
-import { usePermissions, useCurrentOrganization } from '../hooks';
+import { usePermissions, useCurrentOrganization, useDarkMode } from '../hooks';
 import { CreateOrganizationModal } from '../../features/organization/create-organization';
 import { NotificationDropdown } from '../components/NotificationDropdown';
 import { spotlight } from '@mantine/spotlight';
@@ -33,6 +35,7 @@ export function AppLayout() {
   const permissions = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
+  const { colorScheme, toggleColorScheme } = useDarkMode();
 
   const handleLogout = () => {
     logout();
@@ -118,9 +121,9 @@ export function AppLayout() {
         collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
       }}
       padding="md"
-      bg="gray.0"
+      className="bg-slate-50 dark:bg-[#0d1117]"
     >
-      <AppShell.Header>
+      <AppShell.Header className="bg-white dark:bg-[#161b22] border-b border-slate-200 dark:border-[#30363d]">
         <div className="h-full px-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ActionIcon
@@ -128,6 +131,7 @@ export function AppLayout() {
               hiddenFrom="sm"
               size="lg"
               variant="subtle"
+              color="gray"
             >
               <MenuIcon size={20} />
             </ActionIcon>
@@ -136,6 +140,7 @@ export function AppLayout() {
               visibleFrom="sm"
               size="lg"
               variant="subtle"
+              color="gray"
             >
               <MenuIcon size={20} />
             </ActionIcon>
@@ -148,7 +153,7 @@ export function AppLayout() {
               >
                 <Building size={20} />
               </ThemeIcon>
-              <span className="text-lg font-bold">
+              <span className="text-lg font-bold text-slate-900 dark:text-[#e6edf3]">
                 Kitbase
               </span>
             </div>
@@ -158,7 +163,7 @@ export function AppLayout() {
             {/* Global Search Button */}
             <button
               onClick={() => spotlight.open()}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 dark:text-[#8b949e] bg-slate-100 dark:bg-[#21262d] hover:bg-slate-200 dark:hover:bg-[#30363d] rounded-lg transition-colors border border-transparent dark:border-[#30363d]"
             >
               <Search size={16} />
               <span className="hidden sm:inline">{t('search.placeholder')}</span>
@@ -179,6 +184,19 @@ export function AppLayout() {
                 color="gray"
               >
                 <BookOpen size={20} />
+              </ActionIcon>
+            </Tooltip>
+
+            {/* Dark Mode Toggle */}
+            <Tooltip label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'} withArrow>
+              <ActionIcon
+                onClick={toggleColorScheme}
+                size="lg"
+                variant="subtle"
+                color="gray"
+                aria-label="Toggle color scheme"
+              >
+                {colorScheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
               </ActionIcon>
             </Tooltip>
 
@@ -228,7 +246,7 @@ export function AppLayout() {
         </div>
       </AppShell.Header>
 
-      <AppShell.Navbar p="xs">
+      <AppShell.Navbar p="xs" className="bg-white dark:bg-[#161b22] border-r border-slate-200 dark:border-[#30363d]">
         <AppShell.Section grow component={ScrollArea}>
           <div className="flex flex-col items-center gap-2">
             {visibleNavigationCategories.map((category) => (
@@ -275,12 +293,7 @@ export function AppLayout() {
         </AppShell.Section>
 
         <AppShell.Section>
-          <div
-            className="flex justify-center py-3"
-            style={{
-              borderTop: '1px solid var(--mantine-color-gray-3)',
-            }}
-          >
+          <div className="flex justify-center py-3 border-t border-slate-200 dark:border-[#30363d]">
             {hasOrganizations ? (
               <Menu shadow="md" width={260} position="right-end">
                 <Menu.Target>
@@ -348,8 +361,7 @@ export function AppLayout() {
         </AppShell.Section>
       </AppShell.Navbar>
 
-      <AppShell.Main>
-      
+      <AppShell.Main className="bg-slate-50 dark:bg-[#0d1117]">
         <Outlet />
       </AppShell.Main>
 

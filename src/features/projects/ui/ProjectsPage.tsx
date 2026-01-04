@@ -26,7 +26,7 @@ const PROJECT_TYPE_COLORS: Record<ProjectType, string> = {
   react: 'bg-sky-500',
   angular: 'bg-red-500',
   vue: 'bg-emerald-500',
-  nextjs: 'bg-neutral-900 dark:bg-white',
+  nextjs: 'bg-neutral-900 dark:bg-[#e6edf3]',
   ionic: 'bg-blue-500',
   flutter: 'bg-cyan-400',
   others: 'bg-slate-400',
@@ -74,10 +74,10 @@ export function ProjectsPage() {
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-center">
           <div>
-            <div className="h-7 w-28 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse mb-2" />
-            <div className="h-4 w-40 bg-neutral-100 dark:bg-neutral-800/50 rounded-md animate-pulse" />
+            <div className="h-7 w-28 bg-neutral-200 dark:bg-[#21262d] rounded-md animate-pulse mb-2" />
+            <div className="h-4 w-40 bg-neutral-100 dark:bg-[#161b22] rounded-md animate-pulse" />
           </div>
-          <div className="h-9 w-32 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
+          <div className="h-9 w-32 bg-neutral-200 dark:bg-[#21262d] rounded-md animate-pulse" />
         </div>
         <SkeletonProjectsGrid count={6} />
       </div>
@@ -131,10 +131,10 @@ export function ProjectsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-[#e6edf3] mb-1">
               {t('projects.title')}
             </h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-neutral-500 dark:text-[#8b949e]">
               {t('projects.subtitle', { count: projectsList.length })}
             </p>
           </div>
@@ -174,16 +174,16 @@ export function ProjectsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {projectsList.map((project) => (
-              <div
-                key={project.id}
-                className="group relative bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 cursor-pointer transition-all duration-200 hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50 hover:-translate-y-0.5"
-                onClick={() => navigate(`/projects/${project.projectKey}`)}
-              >
+                <div
+                  key={project.id}
+                  className="group relative bg-white dark:bg-[#161b22] rounded-xl border border-neutral-200 dark:border-[#30363d] p-5 cursor-pointer transition-all duration-200 hover:border-neutral-300 dark:hover:border-[#8b949e] hover:shadow-lg hover:shadow-neutral-200/50 hover:-translate-y-0.5"
+                  onClick={() => navigate(`/projects/${project.projectKey}`)}
+                >
                 {/* Top Row: Type indicator + Menu */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
                     <div className={`w-2.5 h-2.5 rounded-full ${PROJECT_TYPE_COLORS[project.projectType]}`} />
-                    <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-neutral-500 dark:text-[#8b949e] uppercase tracking-wider">
                       {t(`projects.project_types.${project.projectType}`)}
                     </span>
                   </div>
@@ -231,29 +231,29 @@ export function ProjectsPage() {
                 </div>
 
                 {/* Project Name */}
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-tight mb-1.5 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-[#e6edf3] tracking-tight mb-1.5 flex items-center gap-2">
                   {project.name}
                   <ArrowUpRight 
                     size={16} 
-                    className="text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" 
+                    className="text-neutral-400 dark:text-[#6e7681] opacity-0 group-hover:opacity-100 transition-opacity" 
                   />
                 </h3>
 
                 {/* Project Key */}
-                <p className="text-sm font-mono text-neutral-500 dark:text-neutral-400 mb-3">
+                <p className="text-sm font-mono text-neutral-500 dark:text-[#8b949e] mb-3">
                   {project.projectKey}
                 </p>
 
                 {/* Description */}
                 {project.description && (
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mb-4 leading-relaxed">
+                  <p className="text-sm text-neutral-600 dark:text-[#8b949e] line-clamp-2 mb-4 leading-relaxed">
                     {project.description}
                   </p>
                 )}
 
                 {/* Footer */}
-                <div className="pt-4 mt-auto border-t border-neutral-100 dark:border-neutral-800">
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                <div className="pt-4 mt-auto border-t border-neutral-100 dark:border-[#21262d]">
+                  <p className="text-xs text-neutral-400 dark:text-[#6e7681]">
                     {new Date(project.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',

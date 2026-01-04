@@ -111,10 +111,10 @@ export function OrganizationPage() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-[#e6edf3]">
               {t('organization.view.title')}
             </h1>
-            <p className="text-lg text-gray-500">
+            <p className="text-lg text-gray-500 dark:text-[#8b949e]">
               {t('organization.view.subtitle')}
             </p>
           </div>
@@ -130,7 +130,7 @@ export function OrganizationPage() {
           )}
         </div>
 
-        <Card withBorder p="xl" radius="md">
+        <Card withBorder p="xl" radius="md" className="bg-white dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
           {isEditing && canUpdateOrganization ? (
             <form onSubmit={form.handleSubmit(handleSubmit)}>
               <div className="flex flex-col gap-6">
@@ -172,15 +172,15 @@ export function OrganizationPage() {
             </form>
           ) : (
             <div className="flex flex-col gap-8">
-              <Paper withBorder p="lg" radius="md">
+              <Paper withBorder p="lg" radius="md" className="bg-slate-50 dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
                 <div className="flex flex-col gap-4">
                   <div className="flex gap-3 items-center">
                     <Building size={24} strokeWidth={2} color="var(--mantine-color-blue-6)" />
                     <div className="flex-1">
-                      <p className="text-sm text-gray-500 mb-1">
+                      <p className="text-sm text-gray-500 dark:text-[#8b949e] mb-1">
                         {t('organization.view.name_label')}
                       </p>
-                      <p className="text-xl font-semibold">
+                      <p className="text-xl font-semibold text-slate-900 dark:text-[#e6edf3]">
                         {organization?.name}
                       </p>
                     </div>
@@ -189,26 +189,26 @@ export function OrganizationPage() {
               </Paper>
 
               {organization?.description && (
-                <Paper withBorder p="lg" radius="md">
-                  <p className="text-sm text-gray-500 mb-3">
+                <Paper withBorder p="lg" radius="md" className="bg-slate-50 dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
+                  <p className="text-sm text-gray-500 dark:text-[#8b949e] mb-3">
                     {t('organization.view.description_label')}
                   </p>
-                  <p>
+                  <p className="text-slate-700 dark:text-[#e6edf3]">
                     {organization.description}
                   </p>
                 </Paper>
               )}
 
-              <Paper withBorder p="lg" radius="md">
+              <Paper withBorder p="lg" radius="md" className="bg-slate-50 dark:bg-[#161b22] border-slate-200 dark:border-[#30363d]">
                 <div className="flex gap-8">
                   <div>
                     <div className="flex gap-2 items-center mb-1">
-                      <Calendar size={16} className="text-gray-400" />
-                      <p className="text-sm text-gray-500">
+                      <Calendar size={16} className="text-gray-400 dark:text-[#6e7681]" />
+                      <p className="text-sm text-gray-500 dark:text-[#8b949e]">
                         {t('organization.view.created_at')}
                       </p>
                     </div>
-                    <p className="font-medium">
+                    <p className="font-medium text-slate-900 dark:text-[#e6edf3]">
                       {new Date(organization?.createdAt || '').toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -219,12 +219,12 @@ export function OrganizationPage() {
                   {organization?.updatedAt && (
                     <div>
                       <div className="flex gap-2 items-center mb-1">
-                        <Calendar size={16} className="text-gray-400" />
-                        <p className="text-sm text-gray-500">
+                        <Calendar size={16} className="text-gray-400 dark:text-[#6e7681]" />
+                        <p className="text-sm text-gray-500 dark:text-[#8b949e]">
                           {t('organization.view.updated_at')}
                         </p>
                       </div>
-                      <p className="font-medium">
+                      <p className="font-medium text-slate-900 dark:text-[#e6edf3]">
                         {new Date(organization.updatedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',

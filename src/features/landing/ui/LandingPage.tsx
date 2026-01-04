@@ -88,7 +88,7 @@ export function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#09090b]">
+    <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#0d1117]">
       {/* Subtle Grid Pattern */}
       <div 
         className="fixed inset-0 pointer-events-none opacity-30 dark:opacity-20"
@@ -107,14 +107,14 @@ export function LandingPage() {
       </div>
 
       {/* Header */}
-      <header className="h-16 border-b sticky top-0 z-50 backdrop-blur-xl bg-[#fafafa]/80 dark:bg-[#09090b]/80 border-zinc-200 dark:border-zinc-800">
+      <header className="h-16 border-b sticky top-0 z-50 backdrop-blur-xl bg-[#fafafa]/80 dark:bg-[#161b22]/90 border-zinc-200 dark:border-[#30363d]">
         <div className="max-w-6xl mx-auto h-full px-4 sm:px-6">
           <div className="flex justify-between items-center h-full">
             <Link to="/" className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
                 <Rocket className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+              <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-[#e6edf3]">
                 Kitbase
               </span>
             </Link>
@@ -123,7 +123,7 @@ export function LandingPage() {
               <Anchor 
                 component={Link} 
                 to="#features" 
-                className="text-sm font-medium transition-colors text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                className="text-sm font-medium transition-colors text-zinc-600 hover:text-zinc-900 dark:text-[#8b949e] dark:hover:text-[#e6edf3]"
                 underline="never"
               >
                 {t('landing.navigation.features')}
@@ -131,7 +131,7 @@ export function LandingPage() {
               <Anchor 
                 href="https://docs.kitbase.dev" 
                 target="_blank"
-                className="text-sm font-medium transition-colors flex items-center gap-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                className="text-sm font-medium transition-colors flex items-center gap-1.5 text-zinc-600 hover:text-zinc-900 dark:text-[#8b949e] dark:hover:text-[#e6edf3]"
                 underline="never"
                 display="flex"
               >
@@ -141,7 +141,7 @@ export function LandingPage() {
               <Anchor 
                 component={Link} 
                 to="#pricing" 
-                className="text-sm font-medium transition-colors text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                className="text-sm font-medium transition-colors text-zinc-600 hover:text-zinc-900 dark:text-[#8b949e] dark:hover:text-[#e6edf3]"
                 underline="never"
               >
                 {t('landing.navigation.pricing')}
@@ -195,40 +195,40 @@ export function LandingPage() {
         position="right"
         size="xs"
         title={
-          <span className="font-bold text-zinc-900 dark:text-white">
+          <span className="font-bold text-zinc-900 dark:text-[#e6edf3]">
             Kitbase
           </span>
         }
       >
         <div className="flex flex-col gap-4 pt-4">
-          <Anchor 
-            component={Link} 
-            to="#features" 
-            onClick={closeDrawer}
-            className="text-base font-medium text-zinc-700 dark:text-zinc-300"
-            underline="never"
-          >
-            {t('landing.navigation.features')}
-          </Anchor>
-          <Anchor 
-            href="https://docs.kitbase.dev" 
-            target="_blank"
-            className="text-base font-medium flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300"
-            underline="never"
-          >
-            {t('landing.navigation.docs')}
-            <ExternalLink className="w-4 h-4" />
-          </Anchor>
-          <Anchor 
-            component={Link} 
-            to="#pricing" 
-            onClick={closeDrawer}
-            className="text-base font-medium text-zinc-700 dark:text-zinc-300"
-            underline="never"
-          >
-            {t('landing.navigation.pricing')}
-          </Anchor>
-          <hr className="my-2 border-zinc-200 dark:border-zinc-800" />
+              <Anchor 
+                component={Link} 
+                to="#features" 
+                onClick={closeDrawer}
+                className="text-base font-medium text-zinc-700 dark:text-[#e6edf3]"
+                underline="never"
+              >
+                {t('landing.navigation.features')}
+              </Anchor>
+              <Anchor 
+                href="https://docs.kitbase.dev" 
+                target="_blank"
+                className="text-base font-medium flex items-center gap-1.5 text-zinc-700 dark:text-[#e6edf3]"
+                underline="never"
+              >
+                {t('landing.navigation.docs')}
+                <ExternalLink className="w-4 h-4" />
+              </Anchor>
+              <Anchor 
+                component={Link} 
+                to="#pricing" 
+                onClick={closeDrawer}
+                className="text-base font-medium text-zinc-700 dark:text-[#e6edf3]"
+                underline="never"
+              >
+                {t('landing.navigation.pricing')}
+              </Anchor>
+              <hr className="my-2 border-zinc-200 dark:border-[#30363d]" />
           <Button 
             component={Link} 
             to="/login" 
@@ -264,7 +264,7 @@ export function LandingPage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-zinc-900 dark:text-white leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-zinc-900 dark:text-[#e6edf3] leading-[1.1]">
                 <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
                   {t('landing.hero.title_gradient')}
                 </span>
@@ -273,7 +273,7 @@ export function LandingPage() {
               </h1>
               
               {/* Subtitle */}
-              <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 text-zinc-600 dark:text-[#8b949e] leading-relaxed">
                 {t('landing.hero.subtitle')}
               </p>
               
@@ -297,7 +297,7 @@ export function LandingPage() {
                   target="_blank"
                   radius="xl"
                   leftSection={<Github size={18} />}
-                  className="px-8 h-12 text-base border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="px-8 h-12 text-base border-zinc-300 dark:border-[#30363d] text-zinc-700 dark:text-[#e6edf3] hover:bg-zinc-100 dark:hover:bg-[#21262d]"
                 >
                   {t('landing.hero.cta_secondary')}
                 </Button>
@@ -315,10 +315,10 @@ export function LandingPage() {
                   <BarChart3 className="w-4 h-4" />
                   <span>{t('landing.showcase.events.label')}</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-[#e6edf3]">
                   {t('landing.showcase.events.title')}
                 </h2>
-                <p className="text-lg mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                <p className="text-lg mb-8 text-zinc-600 dark:text-[#8b949e] leading-relaxed">
                   {t('landing.showcase.events.description')}
                 </p>
                 <ul className="space-y-4">
@@ -332,7 +332,7 @@ export function LandingPage() {
                       <div className="w-5 h-5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Check className="w-3 h-3 text-white" />
                       </div>
-                      <span className="text-zinc-700 dark:text-zinc-300">
+                      <span className="text-zinc-700 dark:text-[#e6edf3]">
                         {benefit}
                       </span>
                     </li>
@@ -405,7 +405,7 @@ export function LandingPage() {
           </div>
         </section>
         {/* Feature Flags Section */}
-        <section className="py-16 sm:py-24 bg-white dark:bg-zinc-900/30 border-y border-zinc-200 dark:border-zinc-800">
+        <section className="py-16 sm:py-24 bg-white dark:bg-[#161b22]/50 border-y border-zinc-200 dark:border-[#30363d]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Feature Flags Code Preview */}
@@ -475,10 +475,10 @@ export function LandingPage() {
                   <Flag className="w-4 h-4" />
                   <span>{t('landing.showcase.feature_flags.label')}</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-[#e6edf3]">
                   {t('landing.showcase.feature_flags.title')}
                 </h2>
-                <p className="text-lg mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                <p className="text-lg mb-8 text-zinc-600 dark:text-[#8b949e] leading-relaxed">
                   {t('landing.showcase.feature_flags.description')}
                 </p>
                 <ul className="space-y-4">
@@ -492,7 +492,7 @@ export function LandingPage() {
                       <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Check className="w-3 h-3 text-white" />
                       </div>
-                      <span className="text-zinc-700 dark:text-zinc-300">
+                      <span className="text-zinc-700 dark:text-[#e6edf3]">
                         {benefit}
                       </span>
                     </li>
@@ -506,15 +506,15 @@ export function LandingPage() {
      
 
         {/* Stats Section */}
-        <section className="py-12 sm:py-16 bg-zinc-50 dark:bg-zinc-900/30 border-y border-zinc-200 dark:border-zinc-800">
+        <section className="py-12 sm:py-16 bg-zinc-50 dark:bg-[#161b22]/50 border-y border-zinc-200 dark:border-[#30363d]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center p-4 rounded-2xl bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                <div key={index} className="text-center p-4 rounded-2xl bg-white dark:bg-[#161b22] border border-zinc-200 dark:border-[#30363d]">
                   <div className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <div className="text-sm text-zinc-500 dark:text-[#8b949e]">
                     {stat.label}
                   </div>
                 </div>
@@ -527,10 +527,10 @@ export function LandingPage() {
         <section id="features" className="py-16 sm:py-24">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-white">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-zinc-900 dark:text-[#e6edf3]">
                 {t('landing.features.title')}
               </h2>
-              <p className="text-lg max-w-2xl mx-auto text-zinc-600 dark:text-zinc-400">
+              <p className="text-lg max-w-2xl mx-auto text-zinc-600 dark:text-[#8b949e]">
                 {t('landing.features.subtitle')}
               </p>
             </div>
@@ -539,15 +539,15 @@ export function LandingPage() {
               {features.map((feature, index) => (
                 <div
                   key={index}
-                  className="group relative p-6 rounded-2xl transition-all duration-300 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xl hover:shadow-zinc-200/50 dark:hover:shadow-none"
+                  className="group relative p-6 rounded-2xl transition-all duration-300 bg-white dark:bg-[#161b22] border border-zinc-200 dark:border-[#30363d] hover:border-zinc-300 dark:hover:border-[#8b949e] hover:shadow-xl hover:shadow-zinc-200/50"
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.bgGradient} dark:${feature.bgGradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <feature.icon className={`w-6 h-6 bg-gradient-to-r ${feature.gradient} [&>*]:stroke-violet-500`} style={{ color: 'inherit' }} />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-zinc-900 dark:text-white">
+                  <h3 className="text-lg font-semibold mb-2 text-zinc-900 dark:text-[#e6edf3]">
                     {feature.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm leading-relaxed text-zinc-600 dark:text-[#8b949e]">
                     {feature.description}
                   </p>
                 </div>
@@ -557,14 +557,14 @@ export function LandingPage() {
         </section>
 
         {/* Integration Section */}
-        <section className="py-16 sm:py-24 bg-white dark:bg-zinc-900/30 border-y border-zinc-200 dark:border-zinc-800">
+        <section className="py-16 sm:py-24 bg-white dark:bg-[#161b22]/50 border-y border-zinc-200 dark:border-[#30363d]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-zinc-900 dark:text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-zinc-900 dark:text-[#e6edf3]">
                   {t('landing.integration.title')}
                 </h2>
-                <p className="text-lg mb-8 text-zinc-600 dark:text-zinc-400">
+                <p className="text-lg mb-8 text-zinc-600 dark:text-[#8b949e]">
                   {t('landing.integration.description')}
                 </p>
                 <ul className="space-y-4">
@@ -578,7 +578,7 @@ export function LandingPage() {
                       <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
-                      <span className="text-zinc-700 dark:text-zinc-300">
+                      <span className="text-zinc-700 dark:text-[#e6edf3]">
                         {benefit}
                       </span>
                     </li>
@@ -599,12 +599,12 @@ export function LandingPage() {
                     href={tech.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                    className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-zinc-50 dark:bg-[#161b22] border border-zinc-200 dark:border-[#30363d] hover:border-zinc-300 dark:hover:border-[#8b949e] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer"
                   >
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${tech.gradient} flex items-center justify-center`}>
                       <tech.icon className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <span className="text-sm font-medium text-zinc-700 dark:text-[#e6edf3]">
                       {tech.name}
                     </span>
                   </a>
@@ -655,7 +655,7 @@ export function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-12 bg-white dark:bg-[#09090b] border-zinc-200 dark:border-zinc-800">
+      <footer className="border-t py-12 bg-white dark:bg-[#0d1117] border-zinc-200 dark:border-[#30363d]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
@@ -670,14 +670,14 @@ export function LandingPage() {
             <div className="flex items-center gap-6">
               <Anchor 
                 href="#" 
-                className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-[#e6edf3]"
                 underline="never"
               >
                 {t('landing.footer.privacy')}
               </Anchor>
               <Anchor 
                 href="#" 
-                className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-[#e6edf3]"
                 underline="never"
               >
                 {t('landing.footer.terms')}
@@ -685,7 +685,7 @@ export function LandingPage() {
               <Anchor 
                 href="https://github.com/scr2em/kitbase-sdk" 
                 target="_blank"
-                className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                className="text-zinc-500 hover:text-zinc-700 dark:hover:text-[#e6edf3]"
                 underline="never"
               >
                 <Github size={18} />
