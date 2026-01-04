@@ -1660,7 +1660,10 @@
       "title_rest": "With Confidence",
       "subtitle": "Feature flags, event tracking, and OTA updates for modern mobile apps. Control rollouts, track impact, and iterate faster.",
       "cta_primary": "Get Started",
-      "cta_secondary": "View on GitHub"
+      "cta_secondary": "View on GitHub",
+      "trust_2fa": "Enforce 2FA org-wide",
+      "trust_encryption": "End-to-end encrypted",
+      "trust_self_host": "Self-host option"
     },
     "stats": {
       "flags": "Feature flags",
@@ -1694,6 +1697,10 @@
       "analytics": {
         "title": "Built-in Analytics",
         "description": "Understand flag impact with evaluation analytics. Track how features perform across different user segments."
+      },
+      "enterprise_security": {
+        "title": "Enterprise Security",
+        "description": "Enforce organization-wide 2FA, audit trails, and role-based access. Keep your team and data secure with enterprise-grade controls."
       }
     },
     "showcase": {
@@ -1732,6 +1739,7 @@
       "benefit_2": "Air-gapped deployments for maximum security",
       "benefit_3": "Custom SLAs and dedicated support",
       "benefit_4": "Seamless integration with your existing infrastructure",
+      "benefit_5": "Enforce 2FA for all team members organization-wide",
       "cta_primary": "Contact Sales",
       "cta_secondary": "View Documentation"
     },

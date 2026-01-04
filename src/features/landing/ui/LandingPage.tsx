@@ -54,13 +54,13 @@ export function LandingPage() {
       gradient: 'from-cyan-500 to-blue-600',
       bgGradient: 'from-cyan-500/10 to-blue-600/10',
     },
-    {
-      icon: RefreshCw,
-      title: t('landing.features.ota_updates.title'),
-      description: t('landing.features.ota_updates.description'),
-      gradient: 'from-emerald-500 to-teal-600',
-      bgGradient: 'from-emerald-500/10 to-teal-600/10',
-    },
+    // {
+    //   icon: RefreshCw,
+    //   title: t('landing.features.ota_updates.title'),
+    //   description: t('landing.features.ota_updates.description'),
+    //   gradient: 'from-emerald-500 to-teal-600',
+    //   bgGradient: 'from-emerald-500/10 to-teal-600/10',
+    // },
     {
       icon: Users,
       title: t('landing.features.segments.title'),
@@ -81,6 +81,13 @@ export function LandingPage() {
       description: t('landing.features.analytics.description'),
       gradient: 'from-indigo-500 to-violet-600',
       bgGradient: 'from-indigo-500/10 to-violet-600/10',
+    },
+    {
+      icon: Shield,
+      title: t('landing.features.enterprise_security.title'),
+      description: t('landing.features.enterprise_security.description'),
+      gradient: 'from-emerald-500 to-green-600',
+      bgGradient: 'from-emerald-500/10 to-green-600/10',
     },
   ];
 
@@ -640,6 +647,7 @@ export function LandingPage() {
                     t('landing.self_hosting.benefit_2'),
                     t('landing.self_hosting.benefit_3'),
                     t('landing.self_hosting.benefit_4'),
+                    t('landing.self_hosting.benefit_5'),
                   ].map((benefit, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0 mt-0.5">
