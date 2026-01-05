@@ -4,48 +4,30 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, Button, Alert, SegmentedControl } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ShieldCheck, KeyRound, AlertCircle, ArrowLeft } from 'lucide-react';
-import { useNavigate, useSearchParams, Link } from 'react-router';
+import { useNavigate, useSearchParams, Link, useLocation } from 'react-router';
 import { twoFactorVerifySchema, type TwoFactorVerifyFormData } from '../model/schema';
 import { useVerifyTwoFactorMutation } from '../../../../shared/api/queries/auth';
 import { useAuth } from '../../../../shared/lib/auth';
 import { usePageTitle } from '../../../../shared/hooks';
 
-const TWO_FACTOR_SESSION_KEY = 'twoFactorAuth';
-
-interface TwoFactorSessionData {
+export interface TwoFactorSessionData {
   tempToken: string;
   methods: string[];
   returnUrl?: string | null;
 }
 
-export function getTwoFactorSession(): TwoFactorSessionData | null {
-  try {
-    const data = sessionStorage.getItem(TWO_FACTOR_SESSION_KEY);
-    if (!data) return null;
-    return JSON.parse(data) as TwoFactorSessionData;
-  } catch {
-    return null;
-  }
-}
-
-export function setTwoFactorSession(data: TwoFactorSessionData): void {
-  sessionStorage.setItem(TWO_FACTOR_SESSION_KEY, JSON.stringify(data));
-}
-
-export function clearTwoFactorSession(): void {
-  sessionStorage.removeItem(TWO_FACTOR_SESSION_KEY);
-}
-
 export function TwoFactorVerifyPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { setIsAuthenticated } = useAuth();
   const verifyMutation = useVerifyTwoFactorMutation();
   
   usePageTitle(t('auth.two_factor.page_title'));
 
-  const sessionData = getTwoFactorSession();
+  // Get session data from navigation state (passed via navigate with state)
+  const sessionData = location.state as TwoFactorSessionData | null;
   const returnUrl = searchParams.get('returnUrl') || sessionData?.returnUrl;
   const availableMethods = sessionData?.methods || ['totp'];
   const hasBackupOption = availableMethods.includes('backup');
@@ -78,7 +60,6 @@ export function TwoFactorVerifyPage() {
         type: data.type,
       });
 
-      clearTwoFactorSession();
       setIsAuthenticated(true);
 
       // Handle redirect after successful 2FA verification
@@ -240,7 +221,6 @@ export function TwoFactorVerifyPage() {
                 component={Link}
                 to="/login"
                 leftSection={<ArrowLeft size={16} />}
-                onClick={() => clearTwoFactorSession()}
               >
                 {t('auth.two_factor.back_to_login')}
               </Button>

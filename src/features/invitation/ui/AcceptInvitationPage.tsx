@@ -8,18 +8,21 @@ import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
 import { useAuth } from '../../../shared/lib/auth/AuthContext';
 import { InvitationSignupForm } from './InvitationSignupForm';
+import { TwoFactorSetupFlow } from '../../../shared/components/TwoFactorSetupFlow';
+import type { TwoFactorSessionData } from '../../auth/two-factor/ui/TwoFactorVerifyPage';
 import type { AuthResponse } from '../../../generated-api';
 
-type ViewState = 'options' | 'signup';
+type ViewState = 'options' | 'signup' | 'two-factor-setup';
 
 export function AcceptInvitationPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const showBackendError = useShowBackendError();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
   const [isProcessed, setIsProcessed] = useState(false);
   const [viewState, setViewState] = useState<ViewState>('options');
+  const [tempToken, setTempToken] = useState<string | null>(null);
 
   const token = searchParams.get('token') || '';
   
@@ -88,6 +91,30 @@ export function AcceptInvitationPage() {
   };
 
   const handleSignupSuccess = (authResponse: AuthResponse) => {
+    // Check if 2FA setup is required (org requires 2FA but user hasn't set it up)
+    if (authResponse.twoFactorSetupRequired && authResponse.tempToken) {
+      setTempToken(authResponse.tempToken);
+      setViewState('two-factor-setup');
+      return;
+    }
+
+    // Check if 2FA verification is required (user already has 2FA enabled)
+    if (authResponse.twoFactorRequired && authResponse.tempToken) {
+      const twoFactorState: TwoFactorSessionData = {
+        tempToken: authResponse.tempToken,
+        methods: authResponse.twoFactorMethods || ['totp'],
+        returnUrl: `/invitations/accept?token=${token}`,
+      };
+      navigate('/2fa', { state: twoFactorState });
+      return;
+    }
+
+    // No 2FA required - complete the signup
+    completeSignupRedirect(authResponse);
+  };
+
+  const completeSignupRedirect = (authResponse: AuthResponse) => {
+    setIsAuthenticated(true);
     notifications.show({
       title: t('common.success'),
       message: t('invitation.accept.success_message'),
@@ -103,6 +130,26 @@ export function AcceptInvitationPage() {
     } else {
       navigate('/dashboard');
     }
+  };
+
+  const handleTwoFactorSetupComplete = () => {
+    notifications.show({
+      title: t('common.success'),
+      message: t('auth.two_factor_setup.success_message'),
+      color: 'green',
+    });
+    // Redirect to login so user can log in with their new 2FA
+    navigate(`/login?returnUrl=${encodeURIComponent(`/invitations/accept?token=${token}`)}`);
+  };
+
+  const handleTwoFactorSetupBack = () => {
+    setViewState('signup');
+    setTempToken(null);
+  };
+
+  const handleTwoFactorSetupError = () => {
+    setViewState('signup');
+    setTempToken(null);
   };
 
   // No token provided - show error
@@ -209,6 +256,22 @@ export function AcceptInvitationPage() {
               onSuccess={handleSignupSuccess}
             />
           </div>
+        </Paper>
+      </div>
+    );
+  }
+
+  // 2FA Setup Flow
+  if (viewState === 'two-factor-setup' && tempToken) {
+    return (
+      <div className="max-w-md mx-auto pt-20 px-4">
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <TwoFactorSetupFlow
+            tempToken={tempToken}
+            onComplete={handleTwoFactorSetupComplete}
+            onBack={handleTwoFactorSetupBack}
+            onError={handleTwoFactorSetupError}
+          />
         </Paper>
       </div>
     );

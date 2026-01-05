@@ -6,11 +6,9 @@ import {
   PasswordInput, 
   Button,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { User, Lock, ArrowLeft } from 'lucide-react';
 import { invitationSignupSchema, type InvitationSignupFormData } from '../model/schema';
 import { useCompleteSignupMutation } from '../../../shared/api/queries/auth';
-import { useAuth } from '../../../shared/lib/auth/AuthContext';
 import { useShowBackendError } from '../../../shared/hooks';
 import type { AuthResponse } from '../../../generated-api';
 
@@ -22,7 +20,6 @@ interface InvitationSignupFormProps {
 
 export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSignupFormProps) {
   const { t } = useTranslation();
-  const { setIsAuthenticated } = useAuth();
   const completeSignupMutation = useCompleteSignupMutation(true);
   const { showError } = useShowBackendError();
 
@@ -43,14 +40,8 @@ export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSig
         lastName: data.lastName,
       });
       
-      setIsAuthenticated(true);
-
-      notifications.show({
-        title: t('common.success'),
-        message: t('invitation.signup.success_message'),
-        color: 'green',
-      });
-
+      // Let the parent handle authentication state and redirects
+      // (may need 2FA setup/verification first)
       onSuccess(response);
     } catch (error) {
       showError(error);
@@ -120,9 +111,3 @@ export function InvitationSignupForm({ token, onBack, onSuccess }: InvitationSig
     </form>
   );
 }
-
-
-
-
-
-
