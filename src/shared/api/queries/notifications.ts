@@ -6,6 +6,7 @@ export const NOTIFICATIONS_QUERY_KEY = ['notifications'];
 export function useNotificationsInfiniteQuery() {
   return useInfiniteQuery({
     queryKey: NOTIFICATIONS_QUERY_KEY,
+    refetchInterval: 10000,
     queryFn: async ({ pageParam = 0 }) => {
       const response = await apiClient.notifications.getNotifications({
         page: pageParam,
@@ -50,27 +51,3 @@ export function useMarkAllNotificationsAsReadMutation() {
     },
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
